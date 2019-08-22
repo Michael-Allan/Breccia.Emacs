@@ -11,7 +11,7 @@
 ;;
 ;;       http://reluk.ca/.emacs
 ;;       http://reluk.ca/.Xresources
-;;       http://reluk.ca/project/Breccia/Emacs/mock-up.svg  [pending a screen shot]
+;;       http://reluk.ca/project/Breccia/Emacs/screen_shot.png
 ;;
 ;;
 ;; TERM DEFINITION
