@@ -263,7 +263,7 @@ as necessary.  Returns nil if no change was required, non-nil otherwise."
            ;; Command
            ;; ───────
            (list; `anchored-highlighter`: Try to override in the descriptor the fontification
-            (concat;                      of any keywords that form a command,† namely one of:
+            (concat;                      of any keywords that form a command, namely one of: †
              ":[ \n]+\\(?:"
 
              ;; associative citation
@@ -276,8 +276,9 @@ as necessary.  Returns nil if no change was required, non-nil otherwise."
              "\\|\\(?1:join\\)"
              "\\)\\>")
 
-             ;;; † The fontification attempt may fail here because the pattern above does not
+             ;;; † Here the fontification attempt may fail because its search pattern does not
              ;;;   account for the possibility of interposing commentary or static blocks.
+             ;;;   An obvious workaround for the user is to *post*-position these things instead.
 
             '(funcall; `pre-form`
               (lambda()
