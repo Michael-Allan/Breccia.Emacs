@@ -51,6 +51,27 @@
 
 
 ;; ══════════════════════════════════════════════════════════════════════════════════════════════════════
+;; P r e l i m i n a r y   d e c l a r a t i o n s
+;; ══════════════════════════════════════════════════════════════════════════════════════════════════════
+
+
+(defconst brecGapPattern "[ \n]+"; This is incomplete, it omits commentary and static blocks [D].
+  "The regexp pattern of a gap in a descriptor.")
+
+
+
+(defconst brecBackquotedPatternPattern "`\\(?:\\\\.\\|[^\\`]\\)+`"
+  ;;                                    ╵     └────┘  └────┘    ╵
+  ;;                                    Q       BC      NQ      Q
+  ;;
+  ;; Each element between the backquotes (Q) is either a blackslashed character pair (BC) such as “\n”
+  ;; or “\`”, or a single, non-backquote character (NQ).
+
+  "The regexp pattern of a regexp pattern in backquotes.")
+
+
+
+;; ══════════════════════════════════════════════════════════════════════════════════════════════════════
 ;; D e c l a r a t i o n s   i n   l e x i c a l   o r d e r
 ;; ══════════════════════════════════════════════════════════════════════════════════════════════════════
 
@@ -88,6 +109,41 @@
 (defface brecCommandDescriptorFace
   `((default . (:inherit font-lock-builtin-face)))
   "The face for the descriptor of a command point.")
+
+
+
+(defvar brecCommandHighlighterComponents; Components of an `anchored-highlighter`, that is.
+  (let ((bqPat brecBackquotedPatternPattern)
+        (gap brecGapPattern)); The ommission of commentary and static blocks from `brecGapPattern` (q.v.)
+          ;;; may cause the highlighter to fail in some texts, leaving a command unhighlighted. [BUG]
+          ;;; An obvious workaround for a user editing the text is to remove commentary and static blocks
+          ;;; from within the command and place them instead at the end of the descriptor.
+    (list
+     (concat ":" gap "\\(?:"); (initial component)
+
+     ;; Associative reference
+     ;; ─────────────────────
+     (concat
+      "\\(?:\\(?1:re\\)" gap bqPat gap "\\)?"; Referrer clause.
+
+      ;; Referent clause.  It determines the specific type of associative reference as either
+      "\\(?2:join"  ; a jointer or
+      "\\|see\\)\\>"); a pointer.
+
+     ;; Other commands
+     ;; ──────────────
+     ;; Components for new command patterns may be inserted here.  Each pattern must open with "\\|"
+     ;; and may capture up to two, explicitly numbered groups, e.g. `\(?1:foo\)` and `\(?2:bar\)`.
+     ;; The same fontification will be given to both groups.  For an example of component insertion,
+     ;; see `http://reluk.ca/project/wayic/Waybrec/Emacs/Waybrec_mode.el`.
+
+     "\\)")); (final component)
+
+  "The list of components (each a string) that function `brecKeywords` will concatenate in order
+to form the `anchored-highlighter` it uses to fontify the command portion of each command point.
+Derived modes may modify the list before calling `brecKeywords`, e.g. by inserting components
+in order to fontify additional commands.  Developers should read the instructions in the source code
+of `brecCommandHighlighterComponents` before attempting to do that.")
 
 
 
@@ -201,7 +257,9 @@ as necessary.  Returns nil if no change was required, non-nil otherwise."
 
 
 
-(defconst brecKeywords
+(defun brecKeywords()
+  "Returns the value of `font-lock-keywords` used for highlighting Breccian text by the method
+of search-based fontification."
   (let* ((drawingChar "[\u2500-\u2587\u2589-\u258F\u2591-\u259F]")
          (drawingI (concat "\\(" drawingChar "+\\(?: +" drawingChar "+\\)*\\)"))
            ;;; Capturing (I) a sequence of `drawingChar` inclusive of embedded spaces,
@@ -262,24 +320,8 @@ as necessary.  Returns nil if no change was required, non-nil otherwise."
 
            ;; Command
            ;; ───────
-           (list; `anchored-highlighter`: Try to override in the descriptor the fontification
-            (concat;                      of any keywords that form a command, namely one of: †
-             ":[ \n]+\\(?:"
-
-             ;; associative citation
-             ;; ····················
-             "\\(?:\\(?1:re\\)[ \n]+`\\(?:\\\\.\\|[^\\`]\\)+`[ \n]+\\)?"
-             "\\(?2:see\\)"
-
-             ;; jointer
-             ;; ·······
-             "\\|\\(?1:join\\)"
-             "\\)\\>")
-
-             ;;; † Here the fontification attempt may fail because its search pattern does not
-             ;;;   account for the possibility of interposing commentary or static blocks.
-             ;;;   An obvious workaround for the user is to *post*-position these things instead.
-
+           (list
+            (mapconcat 'identity brecCommandHighlighterComponents ""); Concatenating them to one string.
             '(funcall; `pre-form`
               (lambda()
                 (while (progn (backward-char)                     ; Bringing the bullet ‘:’
@@ -439,15 +481,12 @@ as necessary.  Returns nil if no change was required, non-nil otherwise."
      ;; ════════════════════
      ;; Forbidden whitespace
      ;; ════════════════════
-     (cons "[\t\u2000-\u200A\u202F\u205F\u3000]" '(0 'brecForbiddenWhitespaceFace t))))
+     (cons "[\t\u2000-\u200A\u202F\u205F\u3000]" '(0 'brecForbiddenWhitespaceFace t)))))
        ;;;    9, 2000 - 200A, 202F, 205F, 3000
        ;;;
        ;;; No attempt is made here to fontify any no-break spaces (Unicode A0) that appear
        ;;; in forbidden contexts.  They will at least have a distinct appearance, however,
        ;;; owing to the setting of `nobreak-char-display`.
-
-
-  "The value of `font-lock-keywords` for the search-based fontification of Breccian text.")
 
 
 
@@ -491,9 +530,13 @@ other than a document head.")
 
 ;; NOTES
 ;; ─────
+;;   BUG  This is a bug.
+;;
 ;;   CIL  Commentary may appear within inverse labeling.  That nevertheless it appears there
 ;;        entirely in plain video, even its spaces must be fontified.
 ;;        http://reluk.ca/project/Breccia/language_definition.brec § Division
+;;
+;;   D ·· Descriptor.  http://reluk.ca/project/Breccia/language_definition.brec § Descriptor
 ;;
 ;;   FLB  Font lock basics.
 ;;        https://www.gnu.org/software/emacs/manual/html_node/elisp/Font-Lock-Basics.html
