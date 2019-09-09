@@ -159,22 +159,22 @@ of `brecCommandHighlighterComponents` before attempting to do that.")
 
 
 
-(defface brecDivisionInverseLabelFace
+(defface brecDivisionInverseLabelingFace
   `((default . (:inherit (bold brecDividerFace)))
     (t :inverse-video t))
-  "The face for an inverse label.")
+  "The face for inverse labeling and reverse video in a division label.")
 
 
 
 (defface brecDivisionLabelFace
   `((default . (:inherit brecDividerFace)))
-  "The face for an ordinary label in a divider.")
+  "The face for a label in a divider.")
 
 
 
-(defface brecDivisionTitleFace
+(defface brecDivisionTitlingFace
   `((default . (:inherit (bold brecDivisionLabelFace))))
-  "The face for a title as formed in a divider.")
+  "The face for a titling sequence in a division label.")
 
 
 
@@ -274,8 +274,7 @@ of search-based fontification."
          (titlingI (concat "\n +\\(" labeling "\\)")); Capturing (I) an instance of titling.
 
          (inversionMark "[\u2588\u2590]")
-         (inverseLabelingIII
-          (concat "\\(" inversionMark "\\)\\( *\\(?:" labeling " *\\)?\\)\\(\u2588\\)?"))
+         (inversionIII (concat "\\(" inversionMark "\\)\\( *\\(?:" labeling " *\\)?\\)\\(\u2588\\)?"))
            ;;; Capturing (I) an inversion mark, (II) any `labeling` together with any space characters
            ;;; around it, and (III) any full block character.
          regionStart regionEnd)
@@ -333,27 +332,27 @@ of search-based fontification."
      ;; ═══════
      ;; Divider
      ;; ═══════
-     ;; A divider starts with a perfectly indented (PI) sequence of drawing or inverse labeling.
+     ;; A divider starts with a perfectly indented (PI) sequence of drawing or inversion.
      (list
-      (concat "^ \\{4\\}*\\(?:" drawingI "\\|" inverseLabelingIII "\\)")
+      (concat "^ \\{4\\}*\\(?:" drawingI "\\|" inversionIII "\\)")
       ;;       └────────┘
       ;;            PI
 
       '(1 'brecDividerFace nil t); `drawingI`
       '(2 'brecDividerFace nil t)             ; I,
-      '(3 'brecDivisionInverseLabelFace nil t); II and
-      '(4 'brecDividerFace nil t)             ; III of `inverseLabelingIII`.
+      '(3 'brecDivisionInverseLabelingFace nil t); II and
+      '(4 'brecDividerFace nil t)             ; III of `inversionIII`.
 
-      ;; Thence it may include any mix of drawing, titling, labeling and inverse labeling sequences.
-      (list (concat drawingI "\\|" titlingI "\\|" labelingI "\\|" inverseLabelingIII)
+      ;; Thence it may include any mix of drawing, titling, labeling and inversion sequences.
+      (list (concat drawingI "\\|" titlingI "\\|" labelingI "\\|" inversionIII)
             '(brecSegEnd); `pre-form`: Making the search region cover a whole segment of it. [PSE]
             nil; `post-form`
             '(1 'brecDividerFace nil t); `drawingI`
-            '(2 'brecDivisionTitleFace nil t) ; `titlingI`
+            '(2 'brecDivisionTitlingFace nil t) ; `titlingI`
             '(3 'brecDivisionLabelFace nil t) ; `labelingI`
             '(4 'brecDividerFace nil t)             ; I,
-            '(5 'brecDivisionInverseLabelFace nil t); II and
-            '(6 'brecDividerFace nil t)))           ; III of `inverseLabelingIII`.
+            '(5 'brecDivisionInverseLabelingFace nil t); II and
+            '(6 'brecDividerFace nil t)))           ; III of `inversionIII`.
 
 
      ;; ════════════════
@@ -465,7 +464,7 @@ of search-based fontification."
      ;; ══════════
      ;; Commentary is delimited per line by one or more backslashes (\⋯) together isolated
      ;; in whitespace.  Usually the delimiter is followed by commentary content (C) too.
-     (list "\\(?:^\\| \\)\\(\\\\+\\)\\( +.*\\)?$"; [CIL, SPC]
+     (list "\\(?:^\\| \\)\\(\\\\+\\)\\( +.*\\)?$"; [RWC, SPC]
            ;;              └───────┘  └──────┘
            ;;                  \⋯         C
 
@@ -473,7 +472,7 @@ of search-based fontification."
 
      ;; Moreover where a line of pure commentary is delimited by two or more backslashes (\\⋯),
      ;; any content is taken to be a block label (L).
-     (cons "^ *\\\\\\{2,\\}\\( +.+\\)$" '(1 'brecCommentBlockLabelFace t)); [CIL, OCF, SPC]
+     (cons "^ *\\\\\\{2,\\}\\( +.+\\)$" '(1 'brecCommentBlockLabelFace t)); [OCF, RWC, SPC]
        ;;;     └──────────┘  └──────┘
        ;;;         \\⋯           L
 
@@ -532,10 +531,6 @@ other than a document head.")
 ;; ─────
 ;;   BUG  This is a bug.
 ;;
-;;   CIL  Commentary may appear within inverse labeling.  That nevertheless it appears there
-;;        entirely in plain video, even its spaces must be fontified.
-;;        http://reluk.ca/project/Breccia/language_definition.brec § Division
-;;
 ;;   D ·· Descriptor.  http://reluk.ca/project/Breccia/language_definition.brec § Descriptor
 ;;
 ;;   FLB  Font lock basics.
@@ -558,6 +553,9 @@ other than a document head.")
 ;;        for multi-line anchoring.  The manual warns, ‘It is generally a bad idea to return a position
 ;;        greater than the end of the line’ [SBF].  But this appears to be a bug in the manual.
 ;;        https://stackoverflow.com/a/9456757/2402790
+;;
+;;   RWC  Refontifying whitespace in comments.  It too must be refontified in order to override [OCF]
+;;        any improper fontification arising from inverse labeling or user customization of faces.
 ;;
 ;;   SBF  Search-based fontification.
 ;;        https://www.gnu.org/software/emacs/manual/html_node/elisp/Search_002dbased-Fontification.html
