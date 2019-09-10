@@ -17,7 +17,7 @@
 ;; TERM DEFINITION
 ;; ───────────────
 ;;   fontification segment
-;;       One of a document head, point head or divider segment.  In other words, a nodal head
+;;       One of a document head, point head or divider segment.  In other words, a fractal head
 ;;       with the exception of a divider, which instead is fontified segment by segment.
 ;;
 ;;
@@ -547,7 +547,7 @@ other than a document head.")
 ;;        Mere syntax tabulation would have been inadequate here, unable to grasp the form of Breccian
 ;;        commentary; instead we could probably have relied on the macro `syntax-propertize-rules` to
 ;;        set syntax properties on the comment delimiters.  But then could the `subexp-highlighters` for
-;;        the containing node have worked around the comments, e.g. with `override` at nil?  [SBF]
+;;        the containing fractum have worked around the comments, e.g. with `override` at nil?  [SBF]
 ;;
 ;;   PSE  `pre-form` search extension: extending the end boundary of the search region
 ;;        for multi-line anchoring.  The manual warns, ‘It is generally a bad idea to return a position
