@@ -76,6 +76,19 @@
 ;; ══════════════════════════════════════════════════════════════════════════════════════════════════════
 
 
+(defface brecAlarmBulletFace
+  `((default . (:inherit (brecBulletFace font-lock-warning-face))))
+  "The face for the bullet of an alarm point.")
+
+
+
+(defface brecAlarmBulletTerminatorFace
+  `((default . (:inherit brecAlarmBulletFace))
+    (t :weight normal))
+  "The face for the bullet terminator ‘!!’ of an alarm point.")
+
+
+
 (defface brecAsideBulletFace
   `((default . (:inherit (brecBulletFace brecAsideDescriptorFace))))
   "The face for the bullet of an aside point.")
@@ -175,19 +188,6 @@ of `brecCommandHighlighterComponents` before attempting to do that.")
 (defface brecDivisionTitlingFace
   `((default . (:inherit (bold brecDivisionLabelFace))))
   "The face for a titling sequence in a division label.")
-
-
-
-(defface brecExceptionBulletFace
-  `((default . (:inherit (brecBulletFace font-lock-warning-face))))
-  "The face for the bullet of an exception point.")
-
-
-
-(defface brecExceptionBulletTerminatorFace
-  `((default . (:inherit brecExceptionBulletFace))
-    (t :weight normal))
-  "The face for the bullet terminator ‘!!’ of an exception point.")
 
 
 
@@ -356,7 +356,7 @@ of search-based fontification."
 
 
      ;; ════════════════
-     ;; Free form bullet of an exception, task or generic point
+     ;; Free form bullet of an alarm, task or generic point
      ;; ════════════════
      (list
       (lambda( limit ); Seek the next such bullet.
@@ -405,7 +405,7 @@ of search-based fontification."
                         (throw 'isMatched t))
 
                       (let ((length (- m1End m1Beg)))
-                        (when (and (> length 1)     ; If an exception bullet is captured,
+                        (when (and (> length 1)     ; If an alarm bullet is captured,
                                    (char-equal ?! charLast)
                                    (char-equal ?! (char-before (1- m1End))))
                           (set 'm4Beg m1Beg)        ; then recapture it as follows.
@@ -441,7 +441,7 @@ of search-based fontification."
           (throw 'result nil)))
       '(1 'brecGenericBulletFace nil t)
       '(2 'brecTaskBulletFace nil t) '(3 'brecTaskBulletTerminatorFace nil t)
-      '(4 'brecExceptionBulletFace nil t) '(5 'brecExceptionBulletTerminatorFace nil t))
+      '(4 'brecAlarmBulletFace nil t) '(5 'brecAlarmBulletTerminatorFace nil t))
 
      (cons; Refontify the non-alphanumeric characters of generic bullets.
       (lambda( limit )
