@@ -37,7 +37,7 @@
  ;;; Unexpectedly that wrecks rather than helps the following.
   (set (make-local-variable 'paragraph-start) (concat brecSegStartPattern ".*$"))
   (set (make-local-variable 'paragraph-separate) "^ *\\(?:\u00A0.*\\|\\\\+\\( +.*\\)?\\)?$")
-    ;;; Blank lines, static blocks and block commentary, that is.
+    ;;; Blank lines, indentation blinds and block commentary, that is.
 
   ;; Set up font-lock
   ;; ────────────────
@@ -55,7 +55,7 @@
 ;; ══════════════════════════════════════════════════════════════════════════════════════════════════════
 
 
-(defconst brecGapPattern "[ \n]+"; This is incomplete, it omits commentary and static blocks [D].
+(defconst brecGapPattern "[ \n]+"; This is incomplete, it omits commentary and indentation blinds [D].
   "The regexp pattern of a gap in a descriptor.")
 
 
@@ -127,10 +127,10 @@
 
 (defvar brecCommandHighlighterComponents; Components of an `anchored-highlighter`, that is.
   (let ((bqPat brecBackquotedPatternPattern)
-        (gap brecGapPattern)); The ommission of commentary and static blocks from `brecGapPattern` (q.v.)
+        (gap brecGapPattern)); Absence of commentary and indentation blinds in `brecGapPattern` (q.v.)
           ;;; may cause the highlighter to fail in some texts, leaving a command unhighlighted. [BUG]
-          ;;; An obvious workaround for a user editing the text is to remove commentary and static blocks
-          ;;; from within the command and place them instead at the end of the descriptor.
+          ;;; An obvious workaround for a user editing the text is to pull commentary and indentation
+          ;;; blinds out of the command and put them instead at the end of the descriptor.
     (list
      (concat ":" gap "\\(?:"); (initial component)
 
