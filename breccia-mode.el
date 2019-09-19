@@ -4,7 +4,7 @@
 ;; ─────
 ;;   In your initialization file:
 ;;
-;;      (require 'Breccia_mode)
+;;      (require 'breccia-mode)
 ;;      (add-to-list 'auto-mode-alist '("\\.brec\\'" . breccia-mode))
 ;;
 ;;   Working example:
@@ -148,7 +148,7 @@
      ;; Components for new command patterns may be inserted here.  Each pattern must open with "\\|"
      ;; and may capture up to two, explicitly numbered groups, e.g. `\(?1:foo\)` and `\(?2:bar\)`.
      ;; The same fontification will be given to both groups.  For an example of component insertion,
-     ;; see `http://reluk.ca/project/wayic/Waybrec/Emacs/Waybrec_mode.el`.
+     ;; see `http://reluk.ca/project/wayic/Waybrec/Emacs/waybrec-mode.el`.
 
      "\\)")); (final component)
 
@@ -524,7 +524,7 @@ other than a document head.")
 
 ;;;;;;;;;;;;;;;;;;;;
 
-(provide 'Breccia_mode)
+(provide 'breccia-mode); Providing these features of `breccia-mode.el` for all who `require` them.
 
 
 ;; NOTES
