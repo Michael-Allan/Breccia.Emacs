@@ -29,7 +29,8 @@
   "Breccia"
   "A major mode for editing Breccian text"
   (modify-syntax-entry ?\u00A0 " " breccia-mode-syntax-table); Giving to no-break spaces (Unicode A0)
-  (set (make-local-variable 'nobreak-char-display) t)        ; whitespace syntax and a distinct look.
+  (set (make-local-variable 'nobreak-char-display) t)        ; whitespace syntax, and a distinct look
+     ;;; as defined by the Emacs standard face `nobreak-space`. [SF]
 
   ;; Define paragraph bounds, e.g. for sake of the `fill-paragraph` command
   ;; ───────────────────────
@@ -51,7 +52,7 @@
 
 
 ;; ══════════════════════════════════════════════════════════════════════════════════════════════════════
-;; P r e l i m i n a r y   d e c l a r a t i o n s
+;;  P r e l i m i n a r y   d e c l a r a t i o n s
 ;; ══════════════════════════════════════════════════════════════════════════════════════════════════════
 
 
@@ -72,7 +73,7 @@
 
 
 ;; ══════════════════════════════════════════════════════════════════════════════════════════════════════
-;; D e c l a r a t i o n s   i n   l e x i c a l   o r d e r
+;;  D e c l a r a t i o n s   i n   l e x i c a l   o r d e r
 ;; ══════════════════════════════════════════════════════════════════════════════════════════════════════
 
 
@@ -96,7 +97,7 @@
 
 
 (defface brec-aside-descriptor-face
-  `((default . (:inherit font-lock-doc-face)))
+  `((default . (:inherit shadow)))
   "The face for the descriptor of an aside point.")
 
 
@@ -560,8 +561,11 @@ other than a document head.")
 ;;   SBF  Search-based fontification.
 ;;        https://www.gnu.org/software/emacs/manual/html_node/elisp/Search_002dbased-Fontification.html
 ;;
+;;   SF · Standard faces: `https://www.gnu.org/software/emacs/manual/html_node/emacs/Standard-Faces.html`
+;;        and § Standard faces at `http://git.savannah.gnu.org/cgit/emacs.git/tree/lisp/faces.el`.
+;;
 ;;   SPC  Synchronized pattern of commentary.  Marking an instance of a pattern or anti-pattern,
 ;;        one of several that together are maintained in synchrony.
 
 
-                                      ;;; Copyright © 2019 Michael Allan and contributors.  Licence MIT.
+                                       ;;; Copyright © 2019 Michael Allan and contributors.  Licence MIT.
