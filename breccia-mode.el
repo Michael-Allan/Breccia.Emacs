@@ -523,7 +523,8 @@ other than a document head.")
 
 
 
-;;;;;;;;;;;;;;;;;;;;
+;; ══════════════════════════════════════════════════════════════════════════════════════════════════════
+
 
 (provide 'breccia-mode); Providing these features of `breccia-mode.el` for all who `require` them.
 
