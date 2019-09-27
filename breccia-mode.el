@@ -1,4 +1,4 @@
-;; The implementation of Breccia mode, a major mode for editing Breccian text.
+;; The definition of Breccia mode, a major mode for editing Breccian text.
 ;;
 ;; USAGE
 ;; ─────
@@ -25,8 +25,7 @@
 
 
 (define-derived-mode breccia-mode text-mode
-  "Breccia"
-  "A major mode for editing Breccian text"
+  "Breccia" "A major mode for editing Breccian text"
   (modify-syntax-entry ?\u00A0 " " breccia-mode-syntax-table); Giving to no-break spaces (Unicode A0)
   (set (make-local-variable 'nobreak-char-display) t)        ; whitespace syntax, and a distinct look
      ;;; as defined by the Emacs standard face `nobreak-space`. [SF]
@@ -258,8 +257,7 @@ as necessary.  Returns nil if no change was required, non-nil otherwise."
 
 
 (defun brec-keywords()
-  "Returns the value of `font-lock-keywords` used for highlighting Breccian text by the method
-of search-based fontification."
+  "Returns the value of `font-lock-keywords` to use for highlighting Breccian text."
   (let* ((drawing-char "[\u2500-\u2587\u2589-\u258F\u2591-\u259F]")
          (drawing-i (concat "\\(" drawing-char "+\\(?: +" drawing-char "+\\)*\\)"))
            ;;; Capturing (i) a sequence of `drawing-char` inclusive of embedded spaces,
