@@ -14,11 +14,10 @@
 ;;       http://reluk.ca/project/Breccia/Emacs/screen_shot.png
 ;;
 ;;
-;; TERM DEFINITION
-;; ───────────────
+;; TERMS
+;; ─────
 ;;   fontification segment
-;;       One of a document head, point head or divider segment.  In other words, a fractal head
-;;       with the exception of a divider, which instead is fontified segment by segment.
+;;       One of a document head, point head or divider segment.
 ;;
 ;;
 ;; NOTES  (see at bottom)
@@ -546,10 +545,10 @@ other than a document head.")
 ;;        any fontification of its containing head, and must therefore follow it in `brec-keywords`.
 ;;
 ;;        We might have tried fontifying the commentary using the syntax system, which runs earlier.
-;;        Mere syntax tabulation would have been inadequate here, unable to grasp the form of Breccian
-;;        commentary; instead we could probably have relied on the macro `syntax-propertize-rules` to
-;;        set syntax properties on the comment delimiters.  But then could the `subexp-highlighters` for
-;;        the containing fractum have worked around the comments, e.g. with `override` at nil?  [SBF]
+;;        Not by mere syntax tabulation, which is unable to grasp the form of Breccian commentary;
+;;        rather we would probably have used the macro `syntax-propertize-rules` to set syntax properties
+;;        on the comment delimiters.  But then could the `subexp-highlighters` for the containing fractum
+;;        have worked around the comments, e.g. with `override` at nil?  [SBF]
 ;;
 ;;   PSE  `pre-form` search extension: extending the end boundary of the search region
 ;;        for multi-line anchoring.  The manual warns, ‘It is generally a bad idea to return a position
