@@ -448,7 +448,7 @@ as necessary.  Returns nil if no change was required, non-nil otherwise."
             (let ((face (get-text-property (point) 'face))
                   (face-limit (next-single-property-change (point) 'face (current-buffer) limit)))
               (when (and (eq face 'brec-generic-bullet-face)
-                         (re-search-forward "\\([^[:alnum:] \u00A0]+\\)" face-limit t))
+                         (re-search-forward "[^[:alnum:] \u00A0]+" face-limit t))
                 (throw 'result t))
               (goto-char face-limit)))
           (throw 'result nil)))
