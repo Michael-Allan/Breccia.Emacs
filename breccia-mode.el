@@ -76,50 +76,49 @@
 
 
 (defface brec-alarm-bullet-face
-  `((default . (:inherit (brec-bullet-face font-lock-warning-face))))
+  `((t . (:inherit (brec-bullet-face font-lock-warning-face))))
   "The face for the bullet of an alarm point.")
 
 
 
 (defface brec-alarm-bullet-terminator-face
-  `((default . (:inherit brec-alarm-bullet-face))
-    (t :weight normal))
+  `((t . (:inherit brec-alarm-bullet-face :weight normal)))
   "The face for the bullet terminator ‘!!’ of an alarm point.")
 
 
 
 (defface brec-aside-bullet-face
-  `((default . (:inherit (brec-bullet-face brec-aside-descriptor-face))))
+  `((t . (:inherit (brec-bullet-face brec-aside-descriptor-face))))
   "The face for the bullet of an aside point.")
 
 
 
 (defface brec-aside-descriptor-face
-  `((default . (:inherit shadow)))
+  `((t . (:inherit shadow)))
   "The face for the descriptor of an aside point.")
 
 
 
 (defface brec-bullet-face
-  `((default . (:inherit bold)))
+  `((t . (:inherit bold)))
   "The face for a bullet.")
 
 
 
 (defface brec-command-keyword-face
-  `((default . (:inherit brec-command-descriptor-face)))
+  `((t . (:inherit brec-command-descriptor-face)))
   "The face for a keyword in the descriptor of a command point.")
 
 
 
 (defface brec-command-bullet-face
-  `((default . (:inherit (brec-bullet-face brec-command-descriptor-face))))
+  `((t . (:inherit (brec-bullet-face brec-command-descriptor-face))))
   "The face for the bullet of a command point.")
 
 
 
 (defface brec-command-descriptor-face
-  `((default . (:inherit font-lock-builtin-face)))
+  `((t . (:inherit font-lock-builtin-face)))
   "The face for the descriptor of a command point.")
 
 
@@ -160,32 +159,31 @@ of `brec-command-highlighter-components` before attempting to do that.")
 
 
 (defface brec-comment-block-label-face
-  `((default . (:inherit font-lock-doc-face)))
+  `((t . (:inherit font-lock-doc-face)))
   "The face for a comment block label.")
 
 
 
 (defface brec-divider-face
-  `((default . (:inherit font-lock-doc-face)))
+  `((t . (:inherit font-lock-doc-face)))
   "The face for a divider.")
 
 
 
 (defface brec-division-inverse-labeling-face
-  `((default . (:inherit (bold brec-divider-face)))
-    (t :inverse-video t))
+  `((t . (:inherit (bold brec-divider-face) :inverse-video t)))
   "The face for inverse labeling and reverse video in a division label.")
 
 
 
 (defface brec-division-label-face
-  `((default . (:inherit brec-divider-face)))
+  `((t . (:inherit brec-divider-face)))
   "The face for a label in a divider.")
 
 
 
 (defface brec-division-titling-face
-  `((default . (:inherit (bold brec-division-label-face))))
+  `((t . (:inherit (bold brec-division-label-face))))
   "The face for a titling sequence in a division label.")
 
 
@@ -237,21 +235,19 @@ as necessary.  Returns nil if no change was required, non-nil otherwise."
 
 
 (defface brec-forbidden-whitespace-face
-  `((default . (:inherit font-lock-warning-face))
-    (t :inverse-video t))
+  `((t . (:inherit font-lock-warning-face :inverse-video t)))
   "The face for disallowed, horizontal whitespace characters.")
 
 
 
 (defface brec-generic-bullet-face
-  `((default . (:inherit (brec-bullet-face font-lock-keyword-face))))
+  `((t . (:inherit (brec-bullet-face font-lock-keyword-face))))
   "The face for the bullet of a generic point.")
 
 
 
 (defface brec-generic-bullet-punctuation-face
-  `((default . (:inherit brec-generic-bullet-face))
-    (t :weight normal))
+  `((t . (:inherit brec-generic-bullet-face :weight normal)))
   "The face for non-alphanumeric characters in the bullet of a generic point.")
 
 
@@ -401,7 +397,6 @@ as necessary.  Returns nil if no change was required, non-nil otherwise."
                         (set 'm1-end nil)
                         (set 'is-match-changed t)
                         (throw 'is-matched t))
-
                       (let ((length (- m1-end m1-beg)))
                         (when (and (> length 1)     ; If an alarm bullet is captured,
                                    (char-equal ?! char-last)
@@ -416,7 +411,6 @@ as necessary.  Returns nil if no change was required, non-nil otherwise."
                           (set 'm1-end nil)
                           (set 'is-match-changed t)
                           (throw 'is-matched t))
-
                         (let ((char-first (char-after m1-beg)))
                           ;; Abandon any unwanted match — of either a non-bullet (divider) or a bullet
                           ;; of tightly constrained form (aside point or command point) — as follows.
@@ -424,7 +418,6 @@ as necessary.  Returns nil if no change was required, non-nil otherwise."
                                      (or (char-equal ?/ char-first)  ; either an aside bullet
                                          (char-equal ?: char-first))); or command bullet,
                             (throw 'is-matched nil)); then abandon the match and continue seeking.
-
                           (when (and (>= char-first ?\u2500) ; If a divider mark leads the match,
                                      (<= char-first ?\u259F)); then abandon it and continue seeking.
                             (throw 'is-matched nil)))))
@@ -509,13 +502,13 @@ other than a document head.")
 
 
 (defface brec-task-bullet-face
-  `((default . (:inherit (brec-bullet-face font-lock-function-name-face))))
+  `((t . (:inherit (brec-bullet-face font-lock-function-name-face))))
   "The face for the bullet of a task point.")
 
 
 
 (defface brec-task-bullet-terminator-face
-  `((default . (:inherit font-lock-comment-face)))
+  `((t . (:inherit font-lock-comment-face)))
   "The face for the bullet terminator ‘+’ of a task point.")
 
 
