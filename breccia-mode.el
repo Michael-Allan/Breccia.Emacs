@@ -75,49 +75,49 @@
 ;; ══════════════════════════════════════════════════════════════════════════════════════════════════════
 
 
-(defface brec-alarm-bullet-face
-  `((t . (:inherit (brec-bullet-face font-lock-warning-face))))
+(defface brec-alarm-bullet
+  `((t . (:inherit (brec-bullet font-lock-warning-face))))
   "The face for the bullet of an alarm point.")
 
 
 
-(defface brec-alarm-bullet-terminator-face
-  `((t . (:inherit brec-alarm-bullet-face :weight normal)))
+(defface brec-alarm-bullet-terminator
+  `((t . (:inherit brec-alarm-bullet :weight normal)))
   "The face for the bullet terminator ‘!!’ of an alarm point.")
 
 
 
-(defface brec-aside-bullet-face
-  `((t . (:inherit (brec-bullet-face brec-aside-descriptor-face))))
+(defface brec-aside-bullet
+  `((t . (:inherit (brec-bullet brec-aside-descriptor))))
   "The face for the bullet of an aside point.")
 
 
 
-(defface brec-aside-descriptor-face
+(defface brec-aside-descriptor
   `((t . (:inherit shadow)))
   "The face for the descriptor of an aside point.")
 
 
 
-(defface brec-bullet-face
+(defface brec-bullet
   `((t . (:inherit bold)))
   "The face for a bullet.")
 
 
 
-(defface brec-command-keyword-face
-  `((t . (:inherit brec-command-descriptor-face)))
+(defface brec-command-keyword
+  `((t . (:inherit brec-command-descriptor)))
   "The face for a keyword in the descriptor of a command point.")
 
 
 
-(defface brec-command-bullet-face
-  `((t . (:inherit (brec-bullet-face brec-command-descriptor-face))))
+(defface brec-command-bullet
+  `((t . (:inherit (brec-bullet brec-command-descriptor))))
   "The face for the bullet of a command point.")
 
 
 
-(defface brec-command-descriptor-face
+(defface brec-command-descriptor
   `((t . (:inherit font-lock-builtin-face)))
   "The face for the descriptor of a command point.")
 
@@ -158,32 +158,32 @@ of `brec-command-highlighter-components` before attempting to do that.")
 
 
 
-(defface brec-comment-block-label-face
+(defface brec-comment-block-label
   `((t . (:inherit font-lock-doc-face)))
   "The face for a comment block label.")
 
 
 
-(defface brec-divider-face
+(defface brec-divider
   `((t . (:inherit font-lock-doc-face)))
   "The face for a divider.")
 
 
 
-(defface brec-division-inverse-labeling-face
-  `((t . (:inherit (bold brec-divider-face) :inverse-video t)))
+(defface brec-division-inverse-labeling
+  `((t . (:inherit (bold brec-divider) :inverse-video t)))
   "The face for inverse labeling and reverse video in a division label.")
 
 
 
-(defface brec-division-label-face
-  `((t . (:inherit brec-divider-face)))
+(defface brec-division-label
+  `((t . (:inherit brec-divider)))
   "The face for a label in a divider.")
 
 
 
-(defface brec-division-titling-face
-  `((t . (:inherit (bold brec-division-label-face))))
+(defface brec-division-titling
+  `((t . (:inherit (bold brec-division-label))))
   "The face for a titling sequence in a division label.")
 
 
@@ -234,20 +234,20 @@ as necessary.  Returns nil if no change was required, non-nil otherwise."
 
 
 
-(defface brec-forbidden-whitespace-face
+(defface brec-forbidden-whitespace
   `((t . (:inherit font-lock-warning-face :inverse-video t)))
   "The face for disallowed, horizontal whitespace characters.")
 
 
 
-(defface brec-generic-bullet-face
-  `((t . (:inherit (brec-bullet-face font-lock-keyword-face))))
+(defface brec-generic-bullet
+  `((t . (:inherit (brec-bullet font-lock-keyword-face))))
   "The face for the bullet of a generic point.")
 
 
 
-(defface brec-generic-bullet-punctuation-face
-  `((t . (:inherit brec-generic-bullet-face :weight normal)))
+(defface brec-generic-bullet-punctuation
+  `((t . (:inherit brec-generic-bullet :weight normal)))
   "The face for non-alphanumeric characters in the bullet of a generic point.")
 
 
@@ -282,12 +282,12 @@ as necessary.  Returns nil if no change was required, non-nil otherwise."
            ;; ┈──────┘
            ;;    PI
 
-           '(1 'brec-aside-bullet-face)
+           '(1 'brec-aside-bullet)
 
            (list                     ; Usually a descriptor follows the bullet,
             "\\(\\(?:.\\|\n\\)+\\)"  ; extending thence to the end of the point head.
             '(brec-seg-end); `pre-form`: Making the search region cover the whole of it. [PSE]
-            nil '(1 'brec-aside-descriptor-face)))
+            nil '(1 'brec-aside-descriptor)))
 
 
      ;; ═════════════
@@ -298,7 +298,7 @@ as necessary.  Returns nil if no change was required, non-nil otherwise."
            ;; ┈──────┘
            ;;    PI
 
-           '(1 'brec-command-bullet-face)
+           '(1 'brec-command-bullet)
 
            ;; Descriptor
            ;; ──────────
@@ -309,7 +309,7 @@ as necessary.  Returns nil if no change was required, non-nil otherwise."
                 (set 'region-start (point))     ; For later recall.  Now return `brec-seg-end`, making
                 (set 'region-end (brec-seg-end)))); the search region cover the whole descriptor. [PSE]
             '(funcall (lambda() (goto-char region-start))); `post-form`: Clean-up for next highlighter.
-            '(1 'brec-command-descriptor-face))
+            '(1 'brec-command-descriptor))
 
            ;; Command
            ;; ───────
@@ -320,7 +320,7 @@ as necessary.  Returns nil if no change was required, non-nil otherwise."
                 (while (progn (backward-char)                     ; Bringing the bullet ‘:’
                               (not (char-equal ?: (char-after))))); into the search region
                 region-end)); and (again) ensuring it extends to the end of the descriptor.
-            nil '(1 'brec-command-keyword-face t t) '(2 'brec-command-keyword-face t t)))
+            nil '(1 'brec-command-keyword t t) '(2 'brec-command-keyword t t)))
 
 
      ;; ═══════
@@ -332,21 +332,21 @@ as necessary.  Returns nil if no change was required, non-nil otherwise."
       ;;       └────────┘
       ;;            PI
 
-      '(1 'brec-divider-face nil t); `drawing-i`
-      '(2 'brec-divider-face nil t)                  ; i,
-      '(3 'brec-division-inverse-labeling-face nil t); ii and
-      '(4 'brec-divider-face nil t)                  ; iii of `inversion-iii`.
+      '(1 'brec-divider nil t); `drawing-i`
+      '(2 'brec-divider nil t)                  ; i,
+      '(3 'brec-division-inverse-labeling nil t); ii and
+      '(4 'brec-divider nil t)                  ; iii of `inversion-iii`.
 
       ;; Thence it may include any mix of drawing, titling, labeling and inversion sequences.
       (list (concat drawing-i "\\|" titling-i "\\|" labeling-i "\\|" inversion-iii)
             '(brec-seg-end); `pre-form`: Making the search region cover a whole segment of it. [PSE]
             nil; `post-form`
-            '(1 'brec-divider-face nil t);          `drawing-i`
-            '(2 'brec-division-titling-face nil t); `titling-i`
-            '(3 'brec-division-label-face nil t);  `labeling-i`
-            '(4 'brec-divider-face nil t)                  ; i,
-            '(5 'brec-division-inverse-labeling-face nil t); ii and
-            '(6 'brec-divider-face nil t)))                ; iii of `inversion-iii`.
+            '(1 'brec-divider nil t);          `drawing-i`
+            '(2 'brec-division-titling nil t); `titling-i`
+            '(3 'brec-division-label nil t);  `labeling-i`
+            '(4 'brec-divider nil t)                  ; i,
+            '(5 'brec-division-inverse-labeling nil t); ii and
+            '(6 'brec-divider nil t)))                ; iii of `inversion-iii`.
 
 
      ;; ════════════════
@@ -430,9 +430,9 @@ as necessary.  Returns nil if no change was required, non-nil otherwise."
                           (current-buffer))))
                 (throw 'result t))))
           (throw 'result nil)))
-      '(1 'brec-generic-bullet-face nil t)
-      '(2 'brec-task-bullet-face nil t) '(3 'brec-task-bullet-terminator-face nil t)
-      '(4 'brec-alarm-bullet-face nil t) '(5 'brec-alarm-bullet-terminator-face nil t))
+      '(1 'brec-generic-bullet nil t)
+      '(2 'brec-task-bullet nil t) '(3 'brec-task-bullet-terminator nil t)
+      '(4 'brec-alarm-bullet nil t) '(5 'brec-alarm-bullet-terminator nil t))
 
      (cons; Refontify the non-alphanumeric characters of generic bullets.
       (lambda( limit )
@@ -440,12 +440,12 @@ as necessary.  Returns nil if no change was required, non-nil otherwise."
           (while (< (point) limit)
             (let ((face (get-text-property (point) 'face))
                   (face-limit (next-single-property-change (point) 'face (current-buffer) limit)))
-              (when (and (eq face 'brec-generic-bullet-face)
+              (when (and (eq face 'brec-generic-bullet)
                          (re-search-forward "[^[:alnum:] \u00A0]+" face-limit t))
                 (throw 'result t))
               (goto-char face-limit)))
           (throw 'result nil)))
-      '(0 'brec-generic-bullet-punctuation-face t))
+      '(0 'brec-generic-bullet-punctuation t))
 
 
    ;;; ──  D e f e r r e d   f o n t i f i c a t i o n  ─────────────────────────────────────────────────
@@ -463,7 +463,7 @@ as necessary.  Returns nil if no change was required, non-nil otherwise."
 
      ;; Moreover where a line of pure commentary is delimited by two or more backslashes (\\⋯),
      ;; any content is taken to be a block label (L).
-     (cons "^ *\\\\\\{2,\\}\\( +.+\\)$" '(1 'brec-comment-block-label-face t)); [OCF, RWC, SPC]
+     (cons "^ *\\\\\\{2,\\}\\( +.+\\)$" '(1 'brec-comment-block-label t)); [OCF, RWC, SPC]
        ;;;     └──────────┘  └──────┘
        ;;;         \\⋯           L
 
@@ -471,7 +471,7 @@ as necessary.  Returns nil if no change was required, non-nil otherwise."
      ;; ════════════════════
      ;; Forbidden whitespace
      ;; ════════════════════
-     (cons "[\t\u2000-\u200A\u202F\u205F\u3000]" '(0 'brec-forbidden-whitespace-face t)))))
+     (cons "[\t\u2000-\u200A\u202F\u205F\u3000]" '(0 'brec-forbidden-whitespace t)))))
        ;;;    9, 2000 - 200A, 202F, 205F, 3000
        ;;;
        ;;; No attempt is made here to fontify any no-break spaces (Unicode A0) that appear
@@ -501,13 +501,13 @@ other than a document head.")
 
 
 
-(defface brec-task-bullet-face
-  `((t . (:inherit (brec-bullet-face font-lock-function-name-face))))
+(defface brec-task-bullet
+  `((t . (:inherit (brec-bullet font-lock-function-name-face))))
   "The face for the bullet of a task point.")
 
 
 
-(defface brec-task-bullet-terminator-face
+(defface brec-task-bullet-terminator
   `((t . (:inherit font-lock-comment-face)))
   "The face for the bullet terminator ‘+’ of a task point.")
 
