@@ -54,6 +54,11 @@
 ;; ══════════════════════════════════════════════════════════════════════════════════════════════════════
 
 
+(defvar font-lock-beg); Else byte compiler warns, ‘reference to free variable’.
+(defvar font-lock-end)
+
+
+
 (defconst brec-gap-pattern "[ \n]+"; This is incomplete, it omits commentary and indentation blinds [D].
   "The regexp pattern of a gap in a descriptor.")
 
