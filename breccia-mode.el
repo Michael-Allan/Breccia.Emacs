@@ -77,49 +77,65 @@
 
 (defface brec-alarm-bullet
   `((t . (:inherit (brec-bullet font-lock-warning-face))))
-  "The face for the bullet of an alarm point.")
+  "The face for the bullet of an alarm point."
+  :group 'breccia)
 
 
 
 (defface brec-alarm-bullet-terminator
   `((t . (:inherit brec-alarm-bullet :weight normal)))
-  "The face for the bullet terminator ‘!!’ of an alarm point.")
+  "The face for the bullet terminator ‘!!’ of an alarm point."
+  :group 'breccia)
 
 
 
 (defface brec-aside-bullet
   `((t . (:inherit (brec-bullet brec-aside-descriptor))))
-  "The face for the bullet of an aside point.")
+  "The face for the bullet of an aside point."
+  :group 'breccia)
 
 
 
 (defface brec-aside-descriptor
   `((t . (:inherit shadow)))
-  "The face for the descriptor of an aside point.")
+  "The face for the descriptor of an aside point."
+  :group 'breccia)
 
 
 
 (defface brec-bullet
   `((t . (:inherit bold)))
-  "The face for a bullet.")
+  "The face for a bullet."
+  :group 'breccia)
+
+
+
+(defgroup breccia nil
+  "A major mode for editing Breccian text"
+  :group 'text :group 'faces
+  :prefix "brec-"
+  :link '(url-link "http://reluk.ca/project/Breccia/Emacs/"))
 
 
 
 (defface brec-command-keyword
   `((t . (:inherit brec-command-descriptor)))
-  "The face for a keyword in the descriptor of a command point.")
+  "The face for a keyword in the descriptor of a command point."
+  :group 'breccia)
 
 
 
 (defface brec-command-bullet
   `((t . (:inherit (brec-bullet brec-command-descriptor))))
-  "The face for the bullet of a command point.")
+  "The face for the bullet of a command point."
+  :group 'breccia)
 
 
 
 (defface brec-command-descriptor
   `((t . (:inherit font-lock-builtin-face)))
-  "The face for the descriptor of a command point.")
+  "The face for the descriptor of a command point."
+  :group 'breccia)
 
 
 
@@ -160,31 +176,36 @@ of `brec-command-highlighter-components` before attempting to do that.")
 
 (defface brec-comment-block-label
   `((t . (:inherit font-lock-doc-face)))
-  "The face for a comment block label.")
+  "The face for a comment block label."
+  :group 'breccia)
 
 
 
 (defface brec-divider
   `((t . (:inherit font-lock-doc-face)))
-  "The face for a divider.")
+  "The face for a divider."
+  :group 'breccia)
 
 
 
 (defface brec-division-inverse-labeling
   `((t . (:inherit (bold brec-divider) :inverse-video t)))
-  "The face for inverse labeling and reverse video in a division label.")
+  "The face for inverse labeling and reverse video in a division label."
+  :group 'breccia)
 
 
 
 (defface brec-division-label
   `((t . (:inherit brec-divider)))
-  "The face for a label in a divider.")
+  "The face for a label in a divider."
+  :group 'breccia)
 
 
 
 (defface brec-division-titling
   `((t . (:inherit (bold brec-division-label))))
-  "The face for a titling sequence in a division label.")
+  "The face for a titling sequence in a division label."
+  :group 'breccia)
 
 
 
@@ -236,19 +257,22 @@ as necessary.  Returns nil if no change was required, non-nil otherwise."
 
 (defface brec-forbidden-whitespace
   `((t . (:inherit font-lock-warning-face :inverse-video t)))
-  "The face for disallowed, horizontal whitespace characters.")
+  "The face for disallowed, horizontal whitespace characters."
+  :group 'breccia)
 
 
 
 (defface brec-generic-bullet
   `((t . (:inherit (brec-bullet font-lock-keyword-face))))
-  "The face for the bullet of a generic point.")
+  "The face for the bullet of a generic point."
+  :group 'breccia)
 
 
 
 (defface brec-generic-bullet-punctuation
   `((t . (:inherit brec-generic-bullet :weight normal)))
-  "The face for non-alphanumeric characters in the bullet of a generic point.")
+  "The face for non-alphanumeric characters in the bullet of a generic point."
+  :group 'breccia)
 
 
 
@@ -503,13 +527,15 @@ other than a document head.")
 
 (defface brec-task-bullet
   `((t . (:inherit (brec-bullet font-lock-function-name-face))))
-  "The face for the bullet of a task point.")
+  "The face for the bullet of a task point."
+  :group 'breccia)
 
 
 
 (defface brec-task-bullet-terminator
   `((t . (:inherit font-lock-comment-face)))
-  "The face for the bullet terminator ‘+’ of a task point.")
+  "The face for the bullet terminator ‘+’ of a task point."
+  :group 'breccia)
 
 
 
