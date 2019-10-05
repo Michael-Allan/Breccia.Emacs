@@ -1,4 +1,4 @@
-;; The definition of Breccia mode, a major mode for editing Breccian text.
+;; The definition of Breccia mode, a major mode for editing Breccian text.  -*- lexical-binding: t; -*-
 ;;
 ;; USAGE
 ;; ─────
@@ -54,13 +54,8 @@
 ;; ══════════════════════════════════════════════════════════════════════════════════════════════════════
 
 
-(defvar font-lock-beg); Else byte compiler warns, ‘reference to free variable’.
+(defvar font-lock-beg); These communicate with Font Lock.
 (defvar font-lock-end)
-
-
-
-(defconst brec-gap-pattern "[ \n]+"; This is incomplete, it omits commentary and indentation blinds [D].
-  "The regexp pattern of a gap in a descriptor.")
 
 
 
@@ -75,8 +70,18 @@
 
 
 
+(defconst brec-gap-pattern "[ \n]+"; This is incomplete, it omits commentary and indentation blinds [D].
+  "The regexp pattern of a gap in a descriptor.")
+
+
+
+(defvar brec-region-start)
+(defvar brec-region-end)
+
+
+
 ;; ══════════════════════════════════════════════════════════════════════════════════════════════════════
-;;  D e c l a r a t i o n s   i n   l e x i c a l   o r d e r
+;;  D e c l a r a t i o n s   i n   l e x i c o g r a p h i c   o r d e r
 ;; ══════════════════════════════════════════════════════════════════════════════════════════════════════
 
 
@@ -239,7 +244,7 @@ as necessary.  Returns nil if no change was required, non-nil otherwise."
       (goto-char (point-max)))
     (when (< font-lock-end (point))
       (set 'font-lock-end (point))
-      (set 'is-changed t))
+      (setq is-changed t))
     is-changed))
 
 
@@ -255,7 +260,7 @@ as necessary.  Returns nil if no change was required, non-nil otherwise."
       (goto-char (point-min)))
     (when (> font-lock-beg (point))
       (set 'font-lock-beg (point))
-      (set 'is-changed t))
+      (setq is-changed t))
     is-changed))
 
 
@@ -297,10 +302,9 @@ as necessary.  Returns nil if no change was required, non-nil otherwise."
          (titling-i (concat "\n +\\(" labeling "\\)")); Capturing (i) an instance of titling.
 
          (inversion-mark "[\u2588\u2590]")
-         (inversion-iii (concat "\\(" inversion-mark "\\)\\( *\\(?:" labeling " *\\)?\\)\\(\u2588\\)?"))
+         (inversion-iii (concat "\\(" inversion-mark "\\)\\( *\\(?:" labeling " *\\)?\\)\\(\u2588\\)?")))
            ;;; Capturing (i) an inversion mark, (ii) any `labeling` together with any space characters
            ;;; around it, and (iii) any full block character.
-         region-start region-end)
     (list
 
      ;; ═══════════
@@ -333,22 +337,19 @@ as necessary.  Returns nil if no change was required, non-nil otherwise."
            ;; ──────────
            (list; `anchored-highlighter`: Usually a descriptor follows the bullet,
             "\\(\\(?:.\\|\n\\)+\\)";      extending thence to the end of the point head.
-            '(funcall; `pre-form`
-              (lambda()
-                (set 'region-start (point))     ; For later recall.  Now return `brec-seg-end`, making
-                (set 'region-end (brec-seg-end)))); the search region cover the whole descriptor. [PSE]
-            '(funcall (lambda() (goto-char region-start))); `post-form`: Clean-up for next highlighter.
+            '(setq brec-region-start (point); `pre-form` For later recall.  Now return `brec-seg-end`, so
+                   brec-region-end (brec-seg-end)); the search region covers the whole descriptor. [PSE]
+            '(goto-char brec-region-start); `post-form`: Clean-up for next highlighter.
             '(1 'brec-command-descriptor))
 
            ;; Command
            ;; ───────
            (list
             (mapconcat 'identity brec-command-highlighter-components ""); Concatenating all the
-            '(funcall; `pre-form`                                         components to one string.
-              (lambda()
-                (while (progn (backward-char)                     ; Bringing the bullet ‘:’
-                              (not (char-equal ?: (char-after))))); into the search region
-                region-end)); and (again) ensuring it extends to the end of the descriptor.
+            '(progn; `pre-form`                                           components to one string.
+               (while (progn (backward-char)                     ; Bringing the bullet ‘:’
+                             (not (char-equal ?: (char-after))))); into the search region
+               brec-region-end); and (again) ensuring it extends to the end of the descriptor.
             nil '(1 'brec-command-keyword t t) '(2 'brec-command-keyword t t)))
 
 
@@ -407,38 +408,38 @@ as necessary.  Returns nil if no change was required, non-nil otherwise."
                  ;; It is either a delimiter of inline commentary (regexp pattern ‘ +\\+’)
                  ;; or a sequence of trailing space at the line end (‘ +$’).  Trim it thus:
                 (while (char-equal (char-before end) ?\\); For any trailing backslashes captured,
-                  (set 'end (1- end)))                   ; scan backward past them.
+                  (setq end (1- end)))                   ; scan backward past them.
                 (while (char-equal (char-before end) ?\s); For any trailing space characters,
-                  (set 'end (1- end))                    ; scan backward past them, and trim
-                  (set 'm1-end end)                       ; the whole from the captive group.
-                  (set 'is-match-changed t)))
+                  (setq end (1- end)                     ; scan backward past them, and trim
+                        m1-end end                       ; the whole from the captive group.
+                        is-match-changed t)))
               (when
                   (catch 'is-matched
                     (let ((char-last (char-before m1-end)))
                       (when (char-equal ?+ char-last); If a task bullet is captured,
-                        (set 'm2-beg m1-beg)          ; then recapture it as follows.
-                        (if (= 1 (- m1-end m1-beg))   ; If it comprises ‘+’ alone,
-                            (set 'm2-end m1-end)      ; then recapture it as group 2.
-                          (set 'm2-end (- m1-end 1))  ; Else it has a ‘body’, too.
-                          (set 'm3-beg m2-end)        ; Recapture its body as group 2
-                          (set 'm3-end m1-end))       ; and its ‘+’ terminator as group 3.
-                        (set 'm1-beg nil)
-                        (set 'm1-end nil)
-                        (set 'is-match-changed t)
+                        (setq m2-beg m1-beg)         ; then recapture it as follows.
+                        (if (= 1 (- m1-end m1-beg))  ; If it comprises ‘+’ alone,
+                            (setq m2-end m1-end)     ; then recapture it as group 2.
+                          (setq m2-end (- m1-end 1)  ; Else it has a ‘body’, too.
+                                m3-beg m2-end        ; Recapture its body as group 2
+                                m3-end m1-end))      ; and its ‘+’ terminator as group 3.
+                        (setq m1-beg nil
+                              m1-end nil
+                              is-match-changed t)
                         (throw 'is-matched t))
                       (let ((length (- m1-end m1-beg)))
-                        (when (and (> length 1)     ; If an alarm bullet is captured,
+                        (when (and (> length 1)      ; If an alarm bullet is captured,
                                    (char-equal ?! char-last)
                                    (char-equal ?! (char-before (1- m1-end))))
-                          (set 'm4-beg m1-beg)        ; then recapture it as follows.
-                          (if (= 2 (- m1-end m1-beg)) ; If it comprises ‘!!’ alone,
-                              (set 'm4-end m1-end)    ; then recapture it as group 4.
-                            (set 'm4-end (- m1-end 2)); Else it has a ‘body’, too.
-                            (set 'm5-beg m4-end)      ; Recapture its body as group 4
-                            (set 'm5-end m1-end))     ; and its ‘!!’ terminator as group 5.
-                          (set 'm1-beg nil)
-                          (set 'm1-end nil)
-                          (set 'is-match-changed t)
+                          (setq m4-beg m1-beg)       ; then recapture it as follows.
+                          (if (= 2 (- m1-end m1-beg)); If it comprises ‘!!’ alone,
+                              (setq m4-end m1-end)   ; then recapture it as group 4.
+                            (setq m4-end (- m1-end 2); Else it has a ‘body’, too.
+                                  m5-beg m4-end      ; Recapture its body as group 4
+                                  m5-end m1-end))    ; and its ‘!!’ terminator as group 5.
+                          (setq m1-beg nil
+                                m1-end nil
+                                is-match-changed t)
                           (throw 'is-matched t))
                         (let ((char-first (char-after m1-beg)))
                           ;; Abandon any unwanted match — of either a non-bullet (divider) or a bullet
