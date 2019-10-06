@@ -54,7 +54,7 @@
 ;; ══════════════════════════════════════════════════════════════════════════════════════════════════════
 
 
-(defvar font-lock-beg); These communicate with Font Lock.
+(defvar font-lock-beg); [FV]
 (defvar font-lock-end)
 
 
@@ -563,6 +563,9 @@ other than a document head.")
 ;;   FLE  Font lock extension.  The alternative to `font-lock-extend-region-functions`, namely the
 ;;        little used `font-lock-extend-after-change-region-function`, appears to be a design error.
 ;;        https://lists.gnu.org/archive/html/bug-gnu-emacs/2015-03/msg00818.html
+;;
+;;   FV · Suppressing sporadic compiler warnings ‘reference to free variable’
+;;        or ‘assignment to free variable’.
 ;;
 ;;   OCF  Overrides in comment fontification.  The fontification of a comment must override (`t`)
 ;;        any fontification of its containing head, and must therefore follow it in `brec-keywords`.
