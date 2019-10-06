@@ -9,7 +9,7 @@
 ;;
 ;;   Working example:
 ;;
-;;       http://reluk.ca/.emacs
+;;       http://reluk.ca/sys/computer/Havoc/etc/emacs/user-initialization.el
 ;;       http://reluk.ca/.Xresources
 ;;       http://reluk.ca/project/Breccia/Emacs/screen_shot.png
 ;;
