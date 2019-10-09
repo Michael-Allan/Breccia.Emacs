@@ -28,7 +28,7 @@
 
 
   (define-derived-mode breccia-mode text-mode
-    "Breccia" "A major mode for editing Breccian text"
+    "Breccia" "A major mode for editing Breccian text" :group 'breccia
     (modify-syntax-entry ?\u00A0 " " breccia-mode-syntax-table); Giving to no-break spaces (Unicode A0)
     (set (make-local-variable 'nobreak-char-display) t)        ; whitespace syntax, and a distinct look
        ;;; as defined by the Emacs standard face `nobreak-space`. [SF]
