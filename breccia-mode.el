@@ -41,7 +41,7 @@
     (set (make-local-variable 'paragraph-separate) "^ *\\(?:\u00A0.*\\|\\\\+\\( +.*\\)?\\)?$")
       ;;; Blank lines, indentation blinds and block commentary, that is.
 
-    ;; Set up font-lock
+    ;; Set up Font Lock
     ;; ────────────────
  ;;;(set (make-local-variable 'font-lock-multiline) t)
   ;;; This setting does not, however, seem necessary; nor does the documentation imply that it would be.
@@ -75,11 +75,6 @@
 
   (defconst brec-gap-pattern "[ \n]+" "The regexp pattern of a gap in a descriptor.")
      ;;; This is incomplete, it omits commentary and indentation blinds [D].
-
-
-
-  (defvar brec-region-start)
-  (defvar brec-region-end)
 
 
 
@@ -322,7 +317,7 @@
 
              (list                     ; Usually a descriptor follows the bullet,
               "\\(\\(?:.\\|\n\\)+\\)"  ; extending thence to the end of the point head.
-              '(brec-seg-end); `pre-form`: Making the search region cover the whole of it. [PSE]
+              '(brec-seg-end); *pre-form*: Making the search region cover the whole of it. [PSE]
               nil '(1 'brec-aside-descriptor)))
 
 
@@ -340,19 +335,21 @@
              ;; ──────────
              (list; `anchored-highlighter`: Usually a descriptor follows the bullet,
               "\\(\\(?:.\\|\n\\)+\\)";      extending thence to the end of the point head.
-              '(setq brec-region-start (point); `pre-form` For later recall.  Now return `brec-seg-end`,
-                     brec-region-end (brec-seg-end)); so search region covers whole descriptor. [PSE]
-              '(goto-char brec-region-start); `post-form`: Clean-up for next highlighter.
+              '(setq; *pre-form*
+                brec-x (point); Caching the start of search region.
+                brec-y (brec-seg-end)); Caching the limit of the present fontification segment and
+                  ;;; returning it, so extending the search region over the whole descriptor. [PSE]
+              '(goto-char brec-x); *post-form*: Clean-up for next highlighter.
               '(1 'brec-command-descriptor))
 
              ;; Command
              ;; ───────
              (list
               (mapconcat 'identity brec-command-highlighter-components ""); Concatenating all the
-              '(progn; `pre-form`                                           components to one string.
+              '(progn; *pre-form*                                           components to one string.
                  (while (progn (backward-char)                     ; Bringing the bullet ‘:’
                                (not (char-equal ?: (char-after))))); into the search region
-                 brec-region-end); and (again) ensuring it extends to the end of the descriptor.
+                 brec-y); and (again) ensuring it extends over the whole descriptor.
               nil '(1 'brec-command-keyword t t) '(2 'brec-command-keyword t t)))
 
 
@@ -372,8 +369,8 @@
 
         ;; Thence it may include any mix of drawing, titling, labeling and inversion sequences.
         (list (concat drawing-i "\\|" titling-i "\\|" labeling-i "\\|" inversion-iii)
-              '(brec-seg-end); `pre-form`: Making the search region cover a whole segment of it. [PSE]
-              nil; `post-form`
+              '(brec-seg-end); *pre-form*: Making the search region cover a whole segment of it. [PSE]
+              nil; *post-form*
               '(1 'brec-divider nil t);          `drawing-i`
               '(2 'brec-division-titling nil t); `titling-i`
               '(3 'brec-division-label nil t);  `labeling-i`
@@ -548,6 +545,12 @@
 
 
 
+  (defvar brec-x); General purpose variables in global scope.  For access from forms evaluated
+  (defvar brec-y); outside of this package’s lexical scope, e.g. from an anchored highlighter’s
+    ;;; *pre-form* or *post-form* which has been quoted for later evaluation by Font Lock.
+
+
+
   ;; ════════════════════════════════════════════════════════════════════════════════════════════════════
 
 
@@ -560,10 +563,10 @@
 ;;
 ;;   D ·· Descriptor.  http://reluk.ca/project/Breccia/language_definition.brec § Descriptor
 ;;
-;;   FLB  Font lock basics.
+;;   FLB  Font Lock basics.
 ;;        https://www.gnu.org/software/emacs/manual/html_node/elisp/Font-Lock-Basics.html
 ;;
-;;   FLE  Font lock extension.  The alternative to `font-lock-extend-region-functions`, namely the
+;;   FLE  Font Lock extension.  The alternative to `font-lock-extend-region-functions`, namely the
 ;;        little used `font-lock-extend-after-change-region-function`, appears to be a design error.
 ;;        https://lists.gnu.org/archive/html/bug-gnu-emacs/2015-03/msg00818.html
 ;;
@@ -579,7 +582,7 @@
 ;;        on the comment delimiters.  But then could the `subexp-highlighters` for the containing fractum
 ;;        have worked around the comments, e.g. with `override` at nil?  [SBF]
 ;;
-;;   PSE  `pre-form` search extension: extending the end boundary of the search region
+;;   PSE  *pre-form* search extension: extending the end boundary of the search region
 ;;        for multi-line anchoring.  The manual warns, ‘It is generally a bad idea to return a position
 ;;        greater than the end of the line’ [SBF].  But this appears to be a bug in the manual.
 ;;        https://stackoverflow.com/a/9456757/2402790
