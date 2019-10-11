@@ -174,11 +174,11 @@
 
        "\\)")); (final component)
 
-    "The list of components (each a string) that function `brec-keywords` will concatenate in order
-  to form the `anchored-highlighter` it uses to fontify the command portion of each command point.
-  Derived modes may modify the list before calling `brec-keywords`, e.g. by inserting components
+    "The list of components (each a string) that function \\=`brec-keywords\\=` will concatenate in order
+  to form the \\=`anchored-highlighter\\=` it uses to fontify the command portion of each command point.
+  Derived modes may modify the list before calling \\=`brec-keywords\\=`, e.g. by inserting components
   in order to fontify additional commands.  Developers should read the instructions in the source code
-  of `brec-command-highlighter-components` before attempting to do that.")
+  of \\=`brec-command-highlighter-components\\=` before attempting to do that.")
 
 
 
@@ -227,8 +227,8 @@
 
 
   (defun brec-extend-search-down ()
-    "Ensures that `font-lock-end` bisects no fontification segment, moving it forward in the buffer
-  as necessary.  Returns nil if no change was required, non-nil otherwise."
+    "Ensures that \\=`font-lock-end\\=` bisects no fontification segment, moving it forward
+  in the buffer as necessary.  Returns nil if no change was required, non-nil otherwise."
     (goto-char font-lock-end)
     (when (not (or (bolp)(eolp))) ; When the prior extenders such as `font-lock-extend-region-wholelines`
       ;; do not leave `font-lock-end` at a line terminus, as usually they do, then the search
@@ -248,8 +248,8 @@
 
 
   (defun brec-extend-search-up ()
-    "Ensures that `font-lock-beg` bisects no fontification segment, moving it backward in the buffer
-  as necessary.  Returns nil if no change was required, non-nil otherwise."
+    "Ensures that \\=`font-lock-beg\\=` bisects no fontification segment, moving it backward
+  in the buffer as necessary.  Returns nil if no change was required, non-nil otherwise."
     (goto-char font-lock-beg)
     (end-of-line); That `re-search-backward` (below) finds any leader on the present line.
     (let (is-changed)
@@ -285,7 +285,7 @@
 
 
   (defun brec-keywords ()
-    "Returns the value of `font-lock-keywords` to use for highlighting Breccian text."
+    "Returns the value of \\=`font-lock-keywords\\=` to use for highlighting Breccian text."
     (let* ((drawing-char "[\u2500-\u2587\u2589-\u258F\u2591-\u259F]")
            (drawing-i (concat "\\(" drawing-char "+\\(?: +" drawing-char "+\\)*\\)"))
              ;;; Capturing (i) a sequence of `drawing-char` inclusive of embedded spaces,
