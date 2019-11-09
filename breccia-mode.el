@@ -30,20 +30,20 @@
   (define-derived-mode breccia-mode text-mode
     "Breccia" "A major mode for editing Breccian text" :group 'breccia
     (modify-syntax-entry ?\u00A0 " " breccia-mode-syntax-table); Giving to no-break spaces (Unicode A0)
-    (set (make-local-variable 'nobreak-char-display) t)        ; whitespace syntax, and a distinct look
-       ;;; as defined by the Emacs standard face `nobreak-space`. [SF]
+    (setq-local nobreak-char-display t); whitespace syntax, and a distinct look as defined by the Emacs
+       ;;; standard face `nobreak-space`. [SF]
 
     ;; Define paragraph bounds, e.g. for sake of the `fill-paragraph` command
     ;; ───────────────────────
  ;;;(set 'use-hard-newlines t); It says, ‘Automatically becomes permanently buffer-local when set.’
   ;;; Unexpectedly that wrecks rather than helps the following.
-    (set (make-local-variable 'paragraph-start) (concat brec-seg-start-pattern ".*$"))
-    (set (make-local-variable 'paragraph-separate) "^ *\\(?:\u00A0.*\\|\\\\+\\( +.*\\)?\\)?$")
+    (setq-local paragraph-start (concat brec-seg-start-pattern ".*$"))
+    (setq-local paragraph-separate "^ *\\(?:\u00A0.*\\|\\\\+\\( +.*\\)?\\)?$")
       ;;; Blank lines, indentation blinds and block commentary, that is.
 
     ;; Set up Font Lock
     ;; ────────────────
- ;;;(set (make-local-variable 'font-lock-multiline) t)
+ ;;;(setq-local font-lock-multiline t)
   ;;; This setting does not, however, seem necessary; nor does the documentation imply that it would be.
   ;;; Should fontification ever depend on *subsequent* lines, there I think this setting would at least
   ;;; speed the response to changes.  Meantime, it seems that `brec-extend-search` alone will suffice:
@@ -67,7 +67,8 @@
     ;;                                       Q       BC      NQ      Q
     ;;
     ;; Each element between the backquotes (Q) is either a blackslashed character pair (BC) such as “\n”
-    ;; or “\`”, or a single, non-backquote character (NQ).
+    ;; or “\`”, or a single character that is neither a backslash, nor a backquote (NQ).
+    ;; See also `https://stackoverflow.com/q/249791/2402790`.
 
     "The regexp pattern of a regexp pattern in backquotes.")
 
