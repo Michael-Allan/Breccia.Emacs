@@ -231,12 +231,12 @@
     "Ensures that \\=`font-lock-end\\=` bisects no fontification segment, moving it forward
   in the buffer as necessary.  Returns nil if no change was required, non-nil otherwise."
     (goto-char font-lock-end)
-    (when (not (or (bolp)(eolp))) ; When the prior extenders such as `font-lock-extend-region-wholelines`
+    (unless (or (bolp)(eolp)); When the prior extenders such as `font-lock-extend-region-wholelines`
       ;; do not leave `font-lock-end` at a line terminus, as usually they do, then the search
       ;; region bisects the text of the line, which means the text of a fontification segment
       ;; (a Breccian document contains nothing else), and each segment covers the whole of its lines.
-      (end-of-line)) ; Thus far at least the present segment must extend; extend it now,
-                   ;;; that `re-search-forward` (below) must miss its leader.
+      (end-of-line)); Thus far at least the present segment must extend; extend it now,
+                  ;;; that `re-search-forward` (below) must miss its leader.
     (let (is-changed)
       (if (re-search-forward brec-seg-start-pattern nil t); Cf. `brec-seg-end`.
           (end-of-line 0); Moving to the end of the previous line.
