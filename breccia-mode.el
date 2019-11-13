@@ -70,7 +70,7 @@
     ;; or “\`”, or a single character that is neither a backslash, nor a backquote (NQ).
     ;; See also `https://stackoverflow.com/q/249791/2402790`.
 
-    "The regexp pattern of a regexp pattern in backquotes.")
+    "The regexp pattern of a regexp pattern which is delimited by backquotes.")
 
 
 
@@ -175,11 +175,12 @@
 
        "\\)")); (final component)
 
-    "The list of components (each a string) that function \\=`brec-keywords\\=` will concatenate in order
-  to form the \\=`anchored-highlighter\\=` it uses to fontify the command portion of each command point.
-  Derived modes may modify the list before calling \\=`brec-keywords\\=`, e.g. by inserting components
-  in order to fontify additional commands.  Developers should read the instructions in the source code
-  of \\=`brec-command-highlighter-components\\=` before attempting to do that.")
+    "The list of components (each a string) that function ‘brec-keywords’ will
+concatenate in order to form the \\=`anchored-highlighter\\=` it uses to fontify
+the command portion of each command point.  Derived modes may modify the list
+before calling ‘brec-keywords’, e.g. by inserting components in order to fontify
+additional commands.  Developers should read the instructions in the source code
+of this variable before attempting to do that.")
 
 
 
@@ -219,8 +220,9 @@
 
 
   (defun brec-extend-search ()
-    "Ensures that the font-lock search region extends to cover the whole of its fontification segments,
-  bisecting none of them.  Returns nil if already it does, non-nil otherwise."
+    "Ensures that the font-lock search region extends to cover the whole of its
+fontification segments, bisecting none of them.  Returns nil if already it does,
+non-nil otherwise."
     (save-excursion
       (let ((is-changed (brec-extend-search-up)))
         (or (brec-extend-search-down) is-changed))))
@@ -228,8 +230,9 @@
 
 
   (defun brec-extend-search-down ()
-    "Ensures that \\=`font-lock-end\\=` bisects no fontification segment, moving it forward
-  in the buffer as necessary.  Returns nil if no change was required, non-nil otherwise."
+    "Ensures that ‘font-lock-end’ bisects no fontification segment, moving it
+forward in the buffer as necessary.  Returns nil if no change was required,
+non-nil otherwise."
     (goto-char font-lock-end)
     (unless (or (bolp)(eolp)); When the prior extenders such as `font-lock-extend-region-wholelines`
       ;; do not leave `font-lock-end` at a line terminus, as usually they do, then the search
@@ -249,8 +252,9 @@
 
 
   (defun brec-extend-search-up ()
-    "Ensures that \\=`font-lock-beg\\=` bisects no fontification segment, moving it backward
-  in the buffer as necessary.  Returns nil if no change was required, non-nil otherwise."
+    "Ensures that ‘font-lock-beg’ bisects no fontification segment, moving it
+backward in the buffer as necessary.  Returns nil if no change was required,
+non-nil otherwise."
     (goto-char font-lock-beg)
     (end-of-line); That `re-search-backward` (below) finds any leader on the present line.
     (let (is-changed)
@@ -286,7 +290,7 @@
 
 
   (defun brec-keywords ()
-    "Returns the value of \\=`font-lock-keywords\\=` to use for highlighting Breccian text."
+    "Returns the value of ‘font-lock-keywords’ to use for highlighting Breccian text."
     (let* ((drawing-char "[\u2500-\u2587\u2589-\u258F\u2591-\u259F]")
            (drawing-i (concat "\\(" drawing-char "+\\(?: +" drawing-char "+\\)*\\)"))
              ;;; Capturing (i) a sequence of `drawing-char` inclusive of embedded spaces,
@@ -512,8 +516,9 @@
 
 
   (defun brec-seg-end ()
-    "Returns the end position of the present fontification segment, provided that point is *not*
-  at the beginning of the segment.  If point is at the beginning, then the result is undefined."
+    "Returns the end position of the present fontification segment, provided that
+point is *not* at the beginning of the segment.  If point is at the beginning,
+then the result is undefined."
     (save-excursion
       (if (re-search-forward brec-seg-start-pattern nil t); Cf. `brec-extend-search-down`.
           (end-of-line 0); Moving to the end of the previous line.
@@ -528,7 +533,7 @@
     ;;    PI     \⋯       C        ; whitespace nor a backslash.
 
     "The regexp pattern of the sequence marking the start of a fontification segment
-  other than a document head.")
+other than a document head.")
 
 
 
@@ -574,7 +579,7 @@
 ;;   FV · Suppressing sporadic compiler warnings ‘reference to free variable’
 ;;        or ‘assignment to free variable’.
 ;;
-;;   OCF  Overrides in comment fontification.  The fontification of a comment must override (`t`)
+;;   OCF  Overrides in comment fontification.  The fontification of a comment must override (t)
 ;;        any fontification of its containing head, and must therefore follow it in `brec-keywords`.
 ;;
 ;;        We might have tried fontifying the commentary using the syntax system, which runs earlier.
