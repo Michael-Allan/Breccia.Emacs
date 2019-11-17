@@ -588,9 +588,9 @@ other than a document head.")
 ;;        on the comment delimiters.  But then could the `subexp-highlighters` for the containing fractum
 ;;        have worked around the comments, e.g. with `override` at nil?  [SBF]
 ;;
-;;   PSE  *pre-form* search extension: extending the end boundary of the search region
-;;        for multi-line anchoring.  The manual warns, ‘It is generally a bad idea to return a position
-;;        greater than the end of the line’ [SBF].  But this appears to be a bug in the manual.
+;;   PSE  *pre-form* search extension: extending the end boundary of the search region for multi-line
+;;        anchoring.  The manual warns, ‘It is generally a bad idea to return a position greater than
+;;        the end of the line’ [SBF].  But this appears to be a bug in the manual.
 ;;        https://stackoverflow.com/a/9456757/2402790
 ;;
 ;;   RWC  Refontifying whitespace in comments.  It too must be refontified in order to override [OCF]
