@@ -14,6 +14,13 @@
 ;;       http://reluk.ca/project/Breccia/Emacs/screen_shot.png
 ;;
 ;;
+;; CUSTOMIZATION
+;; ─────────────
+;;   For the customizeable faces, see the `defface` declarations further below.
+;;
+;;   If you are coding a derived mode, then see also `brec-command-highlighter-components`.
+;;
+;;
 ;; TERMS
 ;; ─────
 ;;   fontification segment
@@ -28,7 +35,11 @@
 
 
   (define-derived-mode breccia-mode text-mode
-    "Breccia" "A major mode for editing Breccian text" :group 'breccia
+    "Breccia"
+    "A major mode for editing Breccian text.
+        Home page URL ‘http://reluk.ca/project/Breccia/Emacs/’
+User instructions URL ‘http://reluk.ca/project/Breccia/Emacs/breccia-mode.el’"
+    :group 'breccia
     (modify-syntax-entry ?\u00A0 " " breccia-mode-syntax-table); Giving to no-break spaces (Unicode A0)
     (setq-local nobreak-char-display t); whitespace syntax, and a distinct look as defined by the Emacs
        ;;; standard face `nobreak-space`. [SF]
@@ -560,7 +571,7 @@ other than a document head.")
   ;; ════════════════════════════════════════════════════════════════════════════════════════════════════
 
 
-  (provide 'breccia-mode)); Providing these features of `breccia-mode.el` for any who `require` them.
+  (provide 'breccia-mode))
 
 
 ;; NOTES
