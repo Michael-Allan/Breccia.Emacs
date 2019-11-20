@@ -302,77 +302,77 @@ non-nil otherwise."
 
   (defun brec-keywords ()
     "Returns the value of ‘font-lock-keywords’ to use for highlighting Breccian text."
-    (let* ((drawing-char "[\u2500-\u2587\u2589-\u258F\u2591-\u259F]")
-           (drawing-i (concat "\\(" drawing-char "+\\(?: +" drawing-char "+\\)*\\)"))
-             ;;; Capturing (i) a sequence of `drawing-char` inclusive of embedded spaces,
-             ;;; yet exclusive of embedded newlines.
+    (list
 
-           (labeling-char "[^[:space:]\u2500-\u259F]")
-             ;;; A division labeling character exclusive of whitespace.
-           (labeling (concat labeling-char "+\\(?: +" labeling-char "+\\)*"))
-             ;;; A sequence of `labeling-char` inclusive of embedded spaces,
-             ;;; yet exclusive of embedded newlines.
-           (labeling-i (concat "\\(" labeling "\\)"))   ; Capturing (i) an instance of labeling.
-           (titling-i (concat "\n +\\(" labeling "\\)")); Capturing (i) an instance of titling.
+     ;; ═══════════
+     ;; Aside point
+     ;; ═══════════
+     ;; An aside point starts with a perfectly indented (PI) bullet comprising one slash (/).
+     (list "^ \\{4\\}*\\(/\\)\\(?: +\\|$\\)"
+           ;; ┈──────┘
+           ;;    PI
 
-           (inversion-mark "[\u2588\u2590]")
-           (inversion-iii; Capturing (i) an inversion mark, (ii) any `labeling` together with
-            ;; any space characters around it, and (iii) any full block character.
-            (concat "\\(" inversion-mark "\\)\\( *\\(?:" labeling " *\\)?\\)\\(\u2588\\)?")))
-      (list
+           '(1 'brec-aside-bullet)
 
-       ;; ═══════════
-       ;; Aside point
-       ;; ═══════════
-       ;; An aside point starts with a perfectly indented (PI) bullet comprising one slash (/).
-       (list "^ \\{4\\}*\\(/\\)\\(?: +\\|$\\)"
-             ;; ┈──────┘
-             ;;    PI
-
-             '(1 'brec-aside-bullet)
-
-             (list                     ; Usually a descriptor follows the bullet,
-              "\\(\\(?:.\\|\n\\)+\\)"  ; extending thence to the end of the point head.
-              '(brec-seg-end); *pre-form*: Making the search region cover the whole of it. [PSE]
-              nil '(1 'brec-aside-descriptor)))
+           (list                     ; Usually a descriptor follows the bullet,
+            "\\(\\(?:.\\|\n\\)+\\)"  ; extending thence to the end of the point head.
+            '(brec-seg-end); *pre-form*: Making the search region cover the whole of it. [PSE]
+            nil '(1 'brec-aside-descriptor)))
 
 
-       ;; ═════════════
-       ;; Command point
-       ;; ═════════════
-       ;; A command point starts with a perfectly indented (PI) bullet comprising one colon (:).
-       (list "^ \\{4\\}*\\(:\\)\\(?: +\\|$\\)"
-             ;; ┈──────┘
-             ;;    PI
+     ;; ═════════════
+     ;; Command point
+     ;; ═════════════
+     ;; A command point starts with a perfectly indented (PI) bullet comprising one colon (:).
+     (list "^ \\{4\\}*\\(:\\)\\(?: +\\|$\\)"
+           ;; ┈──────┘
+           ;;    PI
 
-             '(1 'brec-command-bullet)
+           '(1 'brec-command-bullet)
 
-             ;; Descriptor
-             ;; ──────────
-             (list; `anchored-highlighter`: Usually a descriptor follows the bullet,
-              "\\(\\(?:.\\|\n\\)+\\)";      extending thence to the end of the point head.
-              '(setq; *pre-form*
-                brec-x (point); Caching the start of search region.
-                brec-y (brec-seg-end)); Caching the limit of the present fontification segment and
-                  ;;; returning it, so extending the search region over the whole descriptor. [PSE]
-              '(goto-char brec-x); *post-form*: Clean-up for next highlighter.
-              '(1 'brec-command-descriptor))
+           ;; Descriptor
+           ;; ──────────
+           (list; `anchored-highlighter`: Usually a descriptor follows the bullet,
+            "\\(\\(?:.\\|\n\\)+\\)";      extending thence to the end of the point head.
+            '(setq; *pre-form*
+              brec-x (point); Caching the start of search region.
+              brec-y (brec-seg-end)); Caching the limit of the present fontification segment and
+                ;;; returning it, so extending the search region over the whole descriptor. [PSE]
+            '(goto-char brec-x); *post-form*: Clean-up for next highlighter.
+            '(1 'brec-command-descriptor))
 
-             ;; Command
-             ;; ───────
-             (list
-              (mapconcat 'identity brec-command-highlighter-components ""); Concatenating all the
-              '(progn; *pre-form*                                           components to one string.
-                 (while (progn (backward-char)                     ; Bringing the bullet ‘:’
-                               (not (char-equal ?: (char-after))))); into the search region
-                 brec-y); and (again) ensuring it extends over the whole descriptor.
-              nil '(1 'brec-command-keyword t t) '(2 'brec-command-keyword t t)))
+           ;; Command
+           ;; ───────
+           (list
+            (mapconcat 'identity brec-command-highlighter-components ""); Concatenating all the
+            '(progn; *pre-form*                                           components to one string.
+               (while (progn (backward-char)                     ; Bringing the bullet ‘:’
+                             (not (char-equal ?: (char-after))))); into the search region
+               brec-y); and (again) ensuring it extends over the whole descriptor.
+            nil '(1 'brec-command-keyword t t) '(2 'brec-command-keyword t t)))
 
 
-       ;; ═══════
-       ;; Divider
-       ;; ═══════
-       ;; A divider starts with a perfectly indented (PI) sequence of drawing or inversion.
+     ;; ═══════
+     ;; Divider
+     ;; ═══════
+     ;; A divider starts with a perfectly indented (PI) sequence of drawing or inversion.
+     (let* ((drawing-char "[\u2500-\u2587\u2589-\u258F\u2591-\u259F]")
+            (drawing-i (concat "\\(" drawing-char "+\\(?: +" drawing-char "+\\)*\\)"))
+              ;;; Capturing (i) a sequence of `drawing-char` inclusive of embedded spaces,
+              ;;; yet exclusive of embedded newlines.
+
+            (labeling-char "[^[:space:]\u2500-\u259F]")
+              ;;; A division labeling character exclusive of whitespace.
+            (labeling (concat labeling-char "+\\(?: +" labeling-char "+\\)*"))
+              ;;; A sequence of `labeling-char` inclusive of embedded spaces,
+              ;;; yet exclusive of embedded newlines.
+            (labeling-i (concat "\\(" labeling "\\)"))   ; Capturing (i) an instance of labeling.
+            (titling-i (concat "\n +\\(" labeling "\\)")); Capturing (i) an instance of titling.
+
+            (inversion-mark "[\u2588\u2590]")
+            (inversion-iii; Capturing (i) an inversion mark, (ii) any `labeling` together with
+             ;; any space characters around it, and (iii) any full block character.
+             (concat "\\(" inversion-mark "\\)\\( *\\(?:" labeling " *\\)?\\)\\(\u2588\\)?")))
        (list
         (concat "^ \\{4\\}*\\(?:" drawing-i "\\|" inversion-iii "\\)")
         ;;       └────────┘
@@ -392,31 +392,30 @@ non-nil otherwise."
               '(3 'brec-division-label nil t);  `labeling-i`
               '(4 'brec-divider nil t)                  ; i,
               '(5 'brec-division-inverse-labeling nil t); ii and
-              '(6 'brec-divider nil t)))                ; iii of `inversion-iii`.
+              '(6 'brec-divider nil t))))               ; iii of `inversion-iii`.
 
 
-       ;; ════════════════
-       ;; Free form bullet of an alarm, task or generic point
-       ;; ════════════════
-       (list
+     ;; ════════════════
+     ;; Free form bullet of an alarm, task or generic point
+     ;; ════════════════
+     (list
+      (let ((rough-bullet-pattern; The best a regexp can do here, allowing some false matches.
+             (concat
+              "^ \\{4\\}*\\(\\\\*"; Perfectly indented (PI), the bullet starts with
+              ;; ┈──────┘   └───┘   zero or more backslashes (\⋯) and a character
+              ;;    PI        \⋯    that is neither whitespace nor a backslash:
+              ;;
+              "\\(?:[[:alnum:]]+ *\\|[^[:alnum:][:space:]\\][\u00A0]*\\)"
+
+              ;; Thence it continues.  It ends before a space that comes immediately after
+              ;; a non-alphanumeric, non-space character; or it ends before a newline.
+              ;; (Notably, a no-break space (Unicode A0) that comes immediately after
+              ;; a non-alphanumeric, non-space character does *not* end the bullet.)
+              "\\(?:[[:alnum:]]+ *\\|[^[:alnum:][:space:]]+[\u00A0]*\\)*\\)")))
         (lambda (limit); Seek the next such bullet.
-          (catch 'result
-            (while (re-search-forward; Start with a naive search, the best a regexp can do here.
-                    (concat
-                     "^ \\{4\\}*\\(\\\\*"; Perfectly indented (PI), the bullet starts with
-                     ;; ┈──────┘   └───┘   zero or more backslashes (\⋯) and a character
-                     ;;    PI        \⋯    that is neither whitespace nor a backslash:
-                     ;;
-                     "\\(?:[[:alnum:]]+ *\\|[^[:alnum:][:space:]\\][\u00A0]*\\)"
-
-                     ;; Thence it continues.  It ends before a space that comes immediately after
-                     ;; a non-alphanumeric, non-space character; or it ends before a newline.
-                     ;; (Notably, a no-break space (Unicode A0) that comes immediately after
-                     ;; a non-alphanumeric, non-space character does *not* end the bullet.)
-                     "\\(?:[[:alnum:]]+ *\\|[^[:alnum:][:space:]]+[\u00A0]*\\)*\\)")
-
-                    limit t)
-              (let ((m1-beg (match-beginning 1)); Now ensure the resulting (naive) match is correct.
+          (catch 'to-fontify
+            (while (re-search-forward rough-bullet-pattern limit t); Starting with a naive search.
+              (let ((m1-beg (match-beginning 1)); Now ensure the (naive) find is correct.
                     (m1-end (match-end 1))
                     m2-beg m2-end m3-beg m3-end m4-beg m4-end m5-beg m5-end is-match-changed)
 
@@ -430,7 +429,7 @@ non-nil otherwise."
                           m1-end end                       ; the whole from the captive group.
                           is-match-changed t)))
                 (when
-                    (catch 'is-matched
+                    (catch 'is-free-form-bullet
                       (let ((char-last (char-before m1-end)))
                         (when (char-equal ?+ char-last); If a task bullet is captured,
                           (setq m2-beg m1-beg)         ; then recapture it as follows.
@@ -442,7 +441,7 @@ non-nil otherwise."
                           (setq m1-beg nil
                                 m1-end nil
                                 is-match-changed t)
-                          (throw 'is-matched t))
+                          (throw 'is-free-form-bullet t))
                         (let ((length (- m1-end m1-beg)))
                           (when (and (> length 1)      ; If an alarm bullet is captured,
                                      (char-equal ?! char-last)
@@ -456,17 +455,17 @@ non-nil otherwise."
                             (setq m1-beg nil
                                   m1-end nil
                                   is-match-changed t)
-                            (throw 'is-matched t))
+                            (throw 'is-free-form-bullet t))
                           (let ((char-first (char-after m1-beg)))
                             ;; Abandon any unwanted match — of either a non-bullet (divider) or a bullet
                             ;; of tightly constrained form (aside point or command point) — as follows.
                             (when (and (= 1 length); If exactly one character is captured and it is
                                        (or (char-equal ?/ char-first)  ; either an aside bullet
-                                           (char-equal ?: char-first))); or command bullet,
-                              (throw 'is-matched nil)); then abandon the match and continue seeking.
+                                           (char-equal ?: char-first))); or command bullet, then
+                              (throw 'is-free-form-bullet nil)); abandon the match and continue seeking.
                             (when (and (>= char-first ?\u2500) ; If a divider mark leads the match,
                                        (<= char-first ?\u259F)); then abandon it and continue seeking.
-                              (throw 'is-matched nil)))))
+                              (throw 'is-free-form-bullet nil)))))
                       t)
                   (when is-match-changed
                     (set-match-data
@@ -474,55 +473,55 @@ non-nil otherwise."
                            m2-beg m2-end m3-beg m3-end
                            m4-beg m4-end m5-beg m5-end
                            (current-buffer))))
-                  (throw 'result t))))
-            (throw 'result nil)))
-        '(1 'brec-generic-bullet nil t)
-        '(2 'brec-task-bullet nil t) '(3 'brec-task-bullet-terminator nil t)
-        '(4 'brec-alarm-bullet nil t) '(5 'brec-alarm-bullet-terminator nil t))
+                  (throw 'to-fontify t))))
+            (throw 'to-fontify nil))))
+      '(1 'brec-generic-bullet nil t)
+      '(2 'brec-task-bullet nil t) '(3 'brec-task-bullet-terminator nil t)
+      '(4 'brec-alarm-bullet nil t) '(5 'brec-alarm-bullet-terminator nil t))
 
-       (cons; Refontify the non-alphanumeric characters of generic bullets.
-        (lambda (limit)
-          (catch 'result
-            (while (< (point) limit)
-              (let ((face (get-text-property (point) 'face))
-                    (face-limit (next-single-property-change (point) 'face (current-buffer) limit)))
-                (when (and (eq face 'brec-generic-bullet)
-                           (re-search-forward "[^[:alnum:] \u00A0]+" face-limit t))
-                  (throw 'result t))
-                (goto-char face-limit)))
-            (throw 'result nil)))
-        '(0 'brec-generic-bullet-punctuation t))
-
-
-     ;;; ──  D e f e r r e d   f o n t i f i c a t i o n  ───────────────────────────────────────────────
-
-       ;; ══════════
-       ;; Commentary
-       ;; ══════════
-       ;; Commentary is delimited per line by one or more backslashes (\⋯) together isolated
-       ;; in whitespace.  Usually the delimiter is followed by commentary content (C) too.
-       (list "\\(?:^\\| \\)\\(\\\\+\\)\\( +.*\\)?$"; [RWC, SPC]
-             ;;              └───────┘  └──────┘
-             ;;                  \⋯         C
-
-             '(1 'font-lock-comment-delimiter-face t) '(2 'font-lock-comment-face t t)); [OCF]
-
-       ;; Moreover where a line of pure commentary is delimited by two or more backslashes (\\⋯),
-       ;; any content is taken to be a block label (L).
-       (cons "^ *\\\\\\{2,\\}\\( +.+\\)$" '(1 'brec-comment-block-label t)); [OCF, RWC, SPC]
-         ;;;     └──────────┘  └──────┘
-         ;;;         \\⋯           L
+     (cons; Refontify the non-alphanumeric characters of generic bullets.
+      (lambda (limit)
+        (catch 'to-refontify
+          (while (< (point) limit)
+            (let ((face (get-text-property (point) 'face))
+                  (face-limit (next-single-property-change (point) 'face (current-buffer) limit)))
+              (when (and (eq face 'brec-generic-bullet)
+                         (re-search-forward "[^[:alnum:] \u00A0]+" face-limit t))
+                (throw 'to-refontify t))
+              (goto-char face-limit)))
+          (throw 'to-refontify nil)))
+      '(0 'brec-generic-bullet-punctuation t))
 
 
-       ;; ════════════════════
-       ;; Forbidden whitespace
-       ;; ════════════════════
-       (cons "[\t\u2000-\u200A\u202F\u205F\u3000]" '(0 'brec-forbidden-whitespace t)))))
-         ;;;    9, 2000 - 200A, 202F, 205F, 3000
-         ;;;
-         ;;; No attempt is made here to fontify any no-break spaces (Unicode A0) that appear
-         ;;; in forbidden contexts.  They will at least have a distinct appearance, however,
-         ;;; owing to the setting of `nobreak-char-display`.
+   ;;; ──  D e f e r r e d   f o n t i f i c a t i o n  ───────────────────────────────────────────────
+
+     ;; ══════════
+     ;; Commentary
+     ;; ══════════
+     ;; Commentary is delimited per line by one or more backslashes (\⋯) together isolated
+     ;; in whitespace.  Usually the delimiter is followed by commentary content (C) too.
+     (list "\\(?:^\\| \\)\\(\\\\+\\)\\( +.*\\)?$"; [RWC, SPC]
+           ;;              └───────┘  └──────┘
+           ;;                  \⋯         C
+
+           '(1 'font-lock-comment-delimiter-face t) '(2 'font-lock-comment-face t t)); [OCF]
+
+     ;; Moreover where a line of pure commentary is delimited by two or more backslashes (\\⋯),
+     ;; any content is taken to be a block label (L).
+     (cons "^ *\\\\\\{2,\\}\\( +.+\\)$" '(1 'brec-comment-block-label t)); [OCF, RWC, SPC]
+       ;;;     └──────────┘  └──────┘
+       ;;;         \\⋯           L
+
+
+     ;; ════════════════════
+     ;; Forbidden whitespace
+     ;; ════════════════════
+     (cons "[\t\u2000-\u200A\u202F\u205F\u3000]" '(0 'brec-forbidden-whitespace t))))
+       ;;;    9, 2000 - 200A, 202F, 205F, 3000
+       ;;;
+       ;;; No attempt is made here to fontify any no-break spaces (Unicode A0) that appear
+       ;;; in forbidden contexts.  They will at least have a distinct appearance, however,
+       ;;; owing to the setting of `nobreak-char-display`.
 
 
 
