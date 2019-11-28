@@ -34,35 +34,6 @@
 (let ()
 
 
-  (define-derived-mode breccia-mode text-mode
-    "Breccia"
-    "A major mode for editing Breccian text.
-        Home page URL ‘http://reluk.ca/project/Breccia/Emacs/’
-User instructions URL ‘http://reluk.ca/project/Breccia/Emacs/breccia-mode.el’"
-    :group 'breccia
-    (modify-syntax-entry ?\u00A0 " " breccia-mode-syntax-table); Giving to no-break spaces (Unicode A0)
-    (setq-local nobreak-char-display t); whitespace syntax, and a distinct look as defined by the Emacs
-       ;;; standard face `nobreak-space`. [SF]
-
-    ;; Define paragraph bounds, e.g. for sake of the `fill-paragraph` command
-    ;; ───────────────────────
- ;;;(set 'use-hard-newlines t); It says, ‘Automatically becomes permanently buffer-local when set.’
-  ;;; Unexpectedly that wrecks rather than helps the following.
-    (setq-local paragraph-start (concat brec-seg-start-pattern ".*$"))
-    (setq-local paragraph-separate "^ *\\(?:\u00A0.*\\|\\\\+\\( +.*\\)?\\)?$")
-      ;;; Blank lines, indentation blinds and block commentary, that is.
-
-    ;; Set up Font Lock
-    ;; ────────────────
- ;;;(setq-local font-lock-multiline t)
-  ;;; This setting does not, however, seem necessary; nor does the documentation imply that it would be.
-  ;;; Should fontification ever depend on *subsequent* lines, there I think this setting would at least
-  ;;; speed the response to changes.  Meantime, it seems that `brec-extend-search` alone will suffice:
-    (add-hook 'font-lock-extend-region-functions 'brec-extend-search t t) ; [FLE]
-    (set 'font-lock-defaults '(brec-keywords))); ‘It automatically becomes buffer-local when set.’ [FLB]
-
-
-
   ;; ════════════════════════════════════════════════════════════════════════════════════════════════════
   ;;  P r e l i m i n a r y   d e c l a r a t i o n s
   ;; ════════════════════════════════════════════════════════════════════════════════════════════════════
@@ -568,6 +539,35 @@ other than a document head.")
 
 
   ;; ════════════════════════════════════════════════════════════════════════════════════════════════════
+
+
+  (define-derived-mode breccia-mode text-mode
+    "Breccia"
+    "A major mode for editing Breccian text.
+        Home page URL ‘http://reluk.ca/project/Breccia/Emacs/’
+User instructions URL ‘http://reluk.ca/project/Breccia/Emacs/breccia-mode.el’"
+    :group 'breccia
+    (modify-syntax-entry ?\u00A0 " " breccia-mode-syntax-table); Giving to no-break spaces (Unicode A0)
+    (setq-local nobreak-char-display t); whitespace syntax, and a distinct look as defined by the Emacs
+       ;;; standard face `nobreak-space`. [SF]
+
+    ;; Define paragraph bounds, e.g. for sake of the `fill-paragraph` command
+    ;; ───────────────────────
+ ;;;(set 'use-hard-newlines t); It says, ‘Automatically becomes permanently buffer-local when set.’
+  ;;; Unexpectedly that wrecks rather than helps the following.
+    (setq-local paragraph-start (concat brec-seg-start-pattern ".*$"))
+    (setq-local paragraph-separate "^ *\\(?:\u00A0.*\\|\\\\+\\( +.*\\)?\\)?$")
+      ;;; Blank lines, indentation blinds and block commentary, that is.
+
+    ;; Set up Font Lock
+    ;; ────────────────
+ ;;;(setq-local font-lock-multiline t)
+  ;;; This setting does not, however, seem necessary; nor does the documentation imply that it would be.
+  ;;; Should fontification ever depend on *subsequent* lines, there I think this setting would at least
+  ;;; speed the response to changes.  Meantime, it seems that `brec-extend-search` alone will suffice:
+    (add-hook 'font-lock-extend-region-functions 'brec-extend-search t t) ; [FLE]
+    (set 'font-lock-defaults '(brec-keywords))); ‘It automatically becomes buffer-local when set.’ [FLB]
+
 
 
   (provide 'breccia-mode))
