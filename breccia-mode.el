@@ -34,6 +34,11 @@
 (let ()
 
 
+  (eval-when-compile
+    (require 'cl-lib))
+
+
+
   ;; ════════════════════════════════════════════════════════════════════════════════════════════════════
   ;;  P r e l i m i n a r y   d e c l a r a t i o n s
   ;; ════════════════════════════════════════════════════════════════════════════════════════════════════
@@ -518,6 +523,14 @@ other than a document head.")
 
 
 
+  (defun brec-set-for-buffer (variable value)
+    "Sets VARIABLE (a symbol) to VALUE.  Signals an error if the setting
+is not buffer local."
+    (set variable value)
+    (cl-assert (local-variable-p variable)))
+
+
+
   (defface brec-task-bullet
     `((t . (:inherit (brec-bullet font-lock-function-name-face))))
     "The face for the bullet of a task point."
@@ -561,12 +574,12 @@ User instructions URL ‘http://reluk.ca/project/Breccia/Emacs/breccia-mode.el�
 
     ;; Set up Font Lock
     ;; ────────────────
- ;;;(setq-local font-lock-multiline t)
+ ;;;(brec-set-for-buffer 'font-lock-multiline t)
   ;;; This setting does not, however, seem necessary; nor does the documentation imply that it would be.
   ;;; Should fontification ever depend on *subsequent* lines, there I think this setting would at least
   ;;; speed the response to changes.  Meantime, it seems that `brec-extend-search` alone will suffice:
     (add-hook 'font-lock-extend-region-functions 'brec-extend-search t t) ; [FLE]
-    (set 'font-lock-defaults '(brec-keywords))); ‘It automatically becomes buffer-local when set.’ [FLB]
+    (brec-set-for-buffer 'font-lock-defaults '(brec-keywords)))
 
 
 
@@ -578,9 +591,6 @@ User instructions URL ‘http://reluk.ca/project/Breccia/Emacs/breccia-mode.el�
 ;;   BUG  This is a bug.
 ;;
 ;;   D ·· Descriptor.  http://reluk.ca/project/Breccia/language_definition.brec § Descriptor
-;;
-;;   FLB  Font Lock basics.
-;;        https://www.gnu.org/software/emacs/manual/html_node/elisp/Font-Lock-Basics.html
 ;;
 ;;   FLE  Font Lock extension.  The alternative to `font-lock-extend-region-functions`, namely the
 ;;        little used `font-lock-extend-after-change-region-function`, appears to be a design error.
