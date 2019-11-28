@@ -58,7 +58,7 @@ User instructions URL ‘http://reluk.ca/project/Breccia/Emacs/breccia-mode.el�
   ;;; This setting does not, however, seem necessary; nor does the documentation imply that it would be.
   ;;; Should fontification ever depend on *subsequent* lines, there I think this setting would at least
   ;;; speed the response to changes.  Meantime, it seems that `brec-extend-search` alone will suffice:
-    (add-hook 'font-lock-extend-region-functions 'brec-extend-search) ; [FLE]
+    (add-hook 'font-lock-extend-region-functions 'brec-extend-search t t) ; [FLE]
     (set 'font-lock-defaults '(brec-keywords))); ‘It automatically becomes buffer-local when set.’ [FLB]
 
 
