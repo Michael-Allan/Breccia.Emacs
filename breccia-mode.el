@@ -456,16 +456,19 @@ non-nil otherwise."
       '(4 'brec-alarm-bullet nil t) '(5 'brec-alarm-bullet-terminator nil t))
 
      (cons; Refontify the non-alphanumeric characters of generic bullets.
-      (lambda (limit)
-        (catch 'to-refontify
-          (while (< (point) limit)
-            (let ((face (get-text-property (point) 'face))
-                  (face-limit (next-single-property-change (point) 'face (current-buffer) limit)))
-              (when (and (eq face 'brec-generic-bullet)
-                         (re-search-forward "[^[:alnum:] \u00A0]+" face-limit t))
-                (throw 'to-refontify t))
-              (goto-char face-limit)))
-          nil))
+      (let (face match-beg match-end)
+        (lambda (limit)
+          (setq match-beg (point)); Presumptively.
+          (catch 'to-refontify
+            (while (< match-beg limit)
+              (setq face (get-text-property match-beg 'face)
+                    match-end (next-single-property-change match-beg 'face (current-buffer) limit))
+              (when (eq face 'brec-generic-bullet)
+                (goto-char match-beg)
+                (when (re-search-forward "[^[:alnum:] \u00A0]+" match-end t)
+                  (throw 'to-refontify t)))
+              (setq match-beg match-end))
+            nil)))
       '(0 'brec-generic-bullet-punctuation t))
 
 
