@@ -387,69 +387,71 @@ non-nil otherwise."
               ;; a non-alphanumeric, non-space character; or it ends before a newline.
               ;; (Notably, a no-break space (Unicode A0) that comes immediately after
               ;; a non-alphanumeric, non-space character does *not* end the bullet.)
-              "\\(?:[[:alnum:]]+ *\\|[^[:alnum:][:space:]]+[\u00A0]*\\)*\\)")))
+              "\\(?:[[:alnum:]]+ *\\|[^[:alnum:][:space:]]+[\u00A0]*\\)*\\)"))
+            char-last char-first length
+            m1-beg m1-end m2-beg m2-end m3-beg m3-end m4-beg m4-end m5-beg m5-end is-match-changed)
         (lambda (limit); Seek the next such bullet.
           (catch 'to-fontify
             (while (re-search-forward rough-bullet-pattern limit t); Starting with a naive search.
-              (let ((m1-beg (match-beginning 1)); Now ensure the (naive) find is correct.
-                    (m1-end (match-end 1))
-                    m2-beg m2-end m3-beg m3-end m4-beg m4-end m5-beg m5-end is-match-changed)
+              (setq m1-beg (match-beginning 1); Now ensure the (naive) find is correct.
+                    m1-end (match-end 1))
 
-                (let ((end m1-end)); Trim from the match any unwanted end boundary missed above.
-                   ;;; It is either a delimiter of inline commentary (regexp pattern ‘ +\\+’)
-                   ;;; or a sequence of trailing space at the line end (‘ +$’).  Trim it thus:
-                  (while (char-equal (char-before end) ?\\); For any trailing backslashes captured,
-                    (setq end (1- end)))                   ; scan backward past them.
-                  (while (char-equal (char-before end) ?\s); For any trailing space characters,
-                    (setq end (1- end)                     ; scan backward past them, and trim
-                          m1-end end                       ; the whole from the captive group.
-                          is-match-changed t)))
-                (when
-                    (catch 'is-free-form-bullet
-                      (let ((char-last (char-before m1-end)))
-                        (when (char-equal ?+ char-last); If a task bullet is captured,
-                          (setq m2-beg m1-beg)         ; then recapture it as follows.
-                          (if (= 1 (- m1-end m1-beg))  ; If it comprises ‘+’ alone,
-                              (setq m2-end m1-end)     ; then recapture it as group 2.
-                            (setq m2-end (- m1-end 1)  ; Else it has a ‘body’, too.
-                                  m3-beg m2-end        ; Recapture its body as group 2
-                                  m3-end m1-end))      ; and its ‘+’ terminator as group 3.
-                          (setq m1-beg nil
-                                m1-end nil
-                                is-match-changed t)
-                          (throw 'is-free-form-bullet t))
-                        (let ((length (- m1-end m1-beg)))
-                          (when (and (> length 1)      ; If an alarm bullet is captured,
-                                     (char-equal ?! char-last)
-                                     (char-equal ?! (char-before (1- m1-end))))
-                            (setq m4-beg m1-beg)       ; then recapture it as follows.
-                            (if (= 2 (- m1-end m1-beg)); If it comprises ‘!!’ alone,
-                                (setq m4-end m1-end)   ; then recapture it as group 4.
-                              (setq m4-end (- m1-end 2); Else it has a ‘body’, too.
-                                    m5-beg m4-end      ; Recapture its body as group 4
-                                    m5-end m1-end))    ; and its ‘!!’ terminator as group 5.
-                            (setq m1-beg nil
-                                  m1-end nil
-                                  is-match-changed t)
-                            (throw 'is-free-form-bullet t))
-                          (let ((char-first (char-after m1-beg)))
-                            ;; Abandon any unwanted match — of either a non-bullet (divider) or a bullet
-                            ;; of tightly constrained form (aside point or command point) — as follows.
-                            (when (and (= 1 length); If exactly one character is captured and it is
-                                       (or (char-equal ?/ char-first)  ; either an aside bullet
-                                           (char-equal ?: char-first))); or command bullet, then
-                              (throw 'is-free-form-bullet nil)); abandon the match and continue seeking.
-                            (when (and (>= char-first ?\u2500) ; If a divider mark leads the match,
-                                       (<= char-first ?\u259F)); then abandon it and continue seeking.
-                              (throw 'is-free-form-bullet nil)))))
-                      t)
-                  (when is-match-changed
-                    (set-match-data
-                     (list (match-beginning 0) (match-end 0) m1-beg m1-end
-                           m2-beg m2-end m3-beg m3-end
-                           m4-beg m4-end m5-beg m5-end
-                           (current-buffer))))
-                  (throw 'to-fontify t))))
+              (let ((end m1-end)); Trim from the match any unwanted end boundary missed above.
+                 ;;; It is either a delimiter of inline commentary (regexp pattern ‘ +\\+’)
+                 ;;; or a sequence of trailing space at the line end (‘ +$’).  Trim it thus:
+                (while (char-equal (char-before end) ?\\); For any trailing backslashes captured,
+                  (setq end (1- end)))                   ; scan backward past them.
+                (while (char-equal (char-before end) ?\s); For any trailing space characters,
+                  (setq end (1- end)                     ; scan backward past them, and trim
+                        m1-end end                       ; the whole from the captive group.
+                        is-match-changed t)))
+              (when
+                  (catch 'is-free-form-bullet
+                    (setq char-last (char-before m1-end))
+                    (when (char-equal ?+ char-last); If a task bullet is captured,
+                      (setq m2-beg m1-beg)         ; then recapture it as follows.
+                      (if (= 1 (- m1-end m1-beg))  ; If it comprises ‘+’ alone,
+                          (setq m2-end m1-end)     ; then recapture it as group 2.
+                        (setq m2-end (- m1-end 1)  ; Else it has a ‘body’, too.
+                              m3-beg m2-end        ; Recapture its body as group 2
+                              m3-end m1-end))      ; and its ‘+’ terminator as group 3.
+                      (setq m1-beg nil
+                            m1-end nil
+                            is-match-changed t)
+                      (throw 'is-free-form-bullet t))
+                    (setq length (- m1-end m1-beg))
+                    (when (and (> length 1)      ; If an alarm bullet is captured,
+                               (char-equal ?! char-last)
+                               (char-equal ?! (char-before (1- m1-end))))
+                      (setq m4-beg m1-beg)       ; then recapture it as follows.
+                      (if (= 2 (- m1-end m1-beg)); If it comprises ‘!!’ alone,
+                          (setq m4-end m1-end)   ; then recapture it as group 4.
+                        (setq m4-end (- m1-end 2); Else it has a ‘body’, too.
+                              m5-beg m4-end      ; Recapture its body as group 4
+                              m5-end m1-end))    ; and its ‘!!’ terminator as group 5.
+                      (setq m1-beg nil
+                            m1-end nil
+                            is-match-changed t)
+                      (throw 'is-free-form-bullet t))
+
+                    ;; Abandon any unwanted match — of either a non-bullet (divider) or a bullet
+                    ;; of tightly constrained form (aside point or command point) — as follows.
+                    (setq char-first (char-after m1-beg))
+                    (when (and (= 1 length); If exactly one character is captured and it is
+                               (or (char-equal ?/ char-first)  ; either an aside bullet
+                                   (char-equal ?: char-first))); or command bullet, then
+                      (throw 'is-free-form-bullet nil)); abandon the match and continue seeking.
+                    (when (and (>= char-first ?\u2500) ; If a divider mark leads the match,
+                               (<= char-first ?\u259F)); then abandon it and continue seeking.
+                      (throw 'is-free-form-bullet nil))
+                    t)
+                (when is-match-changed
+                  (set-match-data
+                   (list (match-beginning 0) (match-end 0) m1-beg m1-end
+                         m2-beg m2-end m3-beg m3-end
+                         m4-beg m4-end m5-beg m5-end
+                         (current-buffer))))
+                (throw 'to-fontify t)))
             nil)))
       '(1 'brec-generic-bullet nil t)
       '(2 'brec-task-bullet nil t) '(3 'brec-task-bullet-terminator nil t)
