@@ -450,7 +450,7 @@ non-nil otherwise."
                            m4-beg m4-end m5-beg m5-end
                            (current-buffer))))
                   (throw 'to-fontify t))))
-            (throw 'to-fontify nil))))
+            nil)))
       '(1 'brec-generic-bullet nil t)
       '(2 'brec-task-bullet nil t) '(3 'brec-task-bullet-terminator nil t)
       '(4 'brec-alarm-bullet nil t) '(5 'brec-alarm-bullet-terminator nil t))
@@ -465,7 +465,7 @@ non-nil otherwise."
                          (re-search-forward "[^[:alnum:] \u00A0]+" face-limit t))
                 (throw 'to-refontify t))
               (goto-char face-limit)))
-          (throw 'to-refontify nil)))
+          nil))
       '(0 'brec-generic-bullet-punctuation t))
 
 
