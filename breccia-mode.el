@@ -394,7 +394,9 @@ non-nil otherwise."
           (catch 'to-fontify
             (while (re-search-forward rough-bullet-pattern limit t); Starting with a naive search.
               (setq m1-beg (match-beginning 1); Now ensure the (naive) find is correct.
-                    m1-end (match-end 1))
+                    m1-end (match-end 1)
+                    m2-beg nil m2-end nil m3-beg nil m3-end nil m4-beg nil m4-end nil
+                    m5-beg nil m5-end nil is-match-changed nil)
 
               (let ((end m1-end)); Trim from the match any unwanted end boundary missed above.
                  ;;; It is either a delimiter of inline commentary (regexp pattern ‘ +\\+’)
