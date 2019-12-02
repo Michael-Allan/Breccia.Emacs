@@ -78,8 +78,15 @@
 
 
 
-  (defface brec-alarm-bullet-terminator
+  (defface brec-alarm-bullet-punctuation
     `((t . (:inherit brec-alarm-bullet :weight normal)))
+    "The face for non-alphanumeric characters in the bullet of a alarm point."
+    :group 'breccia)
+
+
+
+  (defface brec-alarm-bullet-terminator
+    `((t . (:inherit brec-alarm-bullet-punctuation)))
     "The face for the bullet terminator ‘!!’ of an alarm point."
     :group 'breccia)
 
@@ -252,6 +259,10 @@ non-nil otherwise."
         (set 'font-lock-beg (point))
         (setq is-changed t))
       is-changed))
+
+
+
+  (defvar brec-face nil "A face indirectly referred to by a fontifier.")
 
 
 
@@ -459,21 +470,26 @@ non-nil otherwise."
       '(2 'brec-task-bullet nil t) '(3 'brec-task-bullet-terminator nil t)
       '(4 'brec-alarm-bullet nil t) '(5 'brec-alarm-bullet-terminator nil t))
 
-     (cons; Refontify the non-alphanumeric characters of generic bullets.
+     (cons; Refontify the non-alphanumeric characters of free-form bullets.
       (let (face match-beg match-end)
         (lambda (limit)
           (setq match-beg (point)); Presumptively.
-          (catch 'to-refontify
-            (while (< match-beg limit)
-              (setq face (get-text-property match-beg 'face)
-                    match-end (next-single-property-change match-beg 'face (current-buffer) limit))
-              (when (eq face 'brec-generic-bullet)
-                (goto-char match-beg)
-                (when (re-search-forward "[^[:alnum:] \u00A0]+" match-end t)
-                  (throw 'to-refontify t)))
-              (setq match-beg match-end))
-            nil)))
-      '(0 'brec-generic-bullet-punctuation t))
+          (set
+           'brec-face
+           (catch 'to-refontify
+             (while (< match-beg limit)
+               (setq face (get-text-property match-beg 'face)
+                     match-end (next-single-property-change match-beg 'face (current-buffer) limit))
+               (when (or (eq face 'brec-generic-bullet)
+                         (eq face 'brec-task-bullet)
+                         (eq face 'brec-alarm-bullet))
+                 (goto-char match-beg)
+                 (when (re-search-forward "[^[:alnum:] \u00A0]+" match-end t)
+                   (throw 'to-refontify (intern (concat (symbol-name face) "-punctuation")))))
+                     ;;; Refontify these characters using the punctuation variant of the face.
+               (setq match-beg match-end))
+             nil))))
+      '(0 brec-face t))
 
 
    ;;; ──  D e f e r r e d   f o n t i f i c a t i o n  ───────────────────────────────────────────────
@@ -541,6 +557,13 @@ is not buffer local."
   (defface brec-task-bullet
     `((t . (:inherit (brec-bullet font-lock-function-name-face))))
     "The face for the bullet of a task point."
+    :group 'breccia)
+
+
+
+  (defface brec-task-bullet-punctuation
+    `((t . (:inherit brec-task-bullet :weight normal)))
+    "The face for non-alphanumeric characters in the bullet of a task point."
     :group 'breccia)
 
 
