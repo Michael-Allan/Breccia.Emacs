@@ -262,7 +262,7 @@ non-nil otherwise."
 
 
 
-  (defvar brec-face nil "A face indirectly referred to by a fontifier.")
+  (defvar brec-face 'default "A variable face referred to by a fontifier.")
 
 
 
@@ -474,21 +474,20 @@ non-nil otherwise."
       (let (face match-beg match-end)
         (lambda (limit)
           (setq match-beg (point)); Presumptively.
-          (set
-           'brec-face
-           (catch 'to-refontify
-             (while (< match-beg limit)
-               (setq face (get-text-property match-beg 'face)
-                     match-end (next-single-property-change match-beg 'face (current-buffer) limit))
-               (when (or (eq face 'brec-generic-bullet)
-                         (eq face 'brec-task-bullet)
-                         (eq face 'brec-alarm-bullet))
-                 (goto-char match-beg)
-                 (when (re-search-forward "[^[:alnum:] \u00A0]+" match-end t)
-                   (throw 'to-refontify (intern (concat (symbol-name face) "-punctuation")))))
-                     ;;; Refontify these characters using the punctuation variant of the face.
-               (setq match-beg match-end))
-             nil))))
+          (catch 'to-refontify
+            (while (< match-beg limit)
+              (setq face (get-text-property match-beg 'face)
+                    match-end (next-single-property-change match-beg 'face (current-buffer) limit))
+              (when (or (eq face 'brec-generic-bullet)
+                        (eq face 'brec-task-bullet)
+                        (eq face 'brec-alarm-bullet))
+                (goto-char match-beg)
+                (when (re-search-forward "[^[:alnum:] \u00A0]+" match-end t)
+                  (set 'brec-face (intern (concat (symbol-name face) "-punctuation")))
+                    ;;; To the punctuation variant of the face.
+                  (throw 'to-refontify t)))
+              (setq match-beg match-end))
+            nil)))
       '(0 brec-face t))
 
 
