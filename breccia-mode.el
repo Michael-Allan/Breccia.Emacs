@@ -80,14 +80,23 @@
 
   (defface brec-alarm-bullet-punctuation
     `((t . (:inherit brec-alarm-bullet :weight normal)))
-    "The face for non-alphanumeric characters in the bullet of a alarm point."
+    "The face for any non-alphanumeric character of an alarm bullet other than
+those of ‘brec-alarm-bullet-singleton’ and ‘brec-alarm-bullet-terminator’."
+    :group 'breccia)
+
+
+
+  (defface brec-alarm-bullet-singleton
+    `((t . (:inherit brec-alarm-bullet)))
+    "The face for an alarm bullet that comprises ‘!!’ alone."
     :group 'breccia)
 
 
 
   (defface brec-alarm-bullet-terminator
     `((t . (:inherit brec-alarm-bullet-punctuation)))
-    "The face for the bullet terminator ‘!!’ of an alarm point."
+    "The face for the bullet terminator ‘!!’ of an alarm point.
+Cf. ‘brec-alarm-bullet-singleton’."
     :group 'breccia)
 
 
@@ -262,7 +271,11 @@ non-nil otherwise."
 
 
 
-  (defvar brec-face 'default "A variable face referred to by a fontifier.")
+  (defvar brec-face nil "A variable for fontifiers.")
+
+
+
+  (defvar brec-face-2 nil "A variable for fontifiers.")
 
 
 
@@ -394,20 +407,18 @@ non-nil otherwise."
               ;;
               "\\(?:[[:alnum:]]+ *\\|[^[:alnum:][:space:]\\][\u00A0]*\\)"
 
-              ;; Thence it continues.  It ends before a space that comes immediately after
-              ;; a non-alphanumeric, non-space character; or it ends before a newline.
-              ;; (Notably, a no-break space (Unicode A0) that comes immediately after
-              ;; a non-alphanumeric, non-space character does *not* end the bullet.)
+              ;; It ends just before either a) a space that directly after a non-alphanumeric, non-space
+              ;; character, or b) a newline.  Note that a no-break space (Unicode A0) will not end it.
               "\\(?:[[:alnum:]]+ *\\|[^[:alnum:][:space:]]+[\u00A0]*\\)*\\)"))
-            char-last char-first length
-            m1-beg m1-end m2-beg m2-end m3-beg m3-end m4-beg m4-end m5-beg m5-end is-match-changed)
+            char-first char-last is-match-changed length m1-beg m1-end m2-beg m2-end
+            match-last match-end)
         (lambda (limit); Seek the next such bullet.
           (catch 'to-fontify
-            (while (re-search-forward rough-bullet-pattern limit t); Starting with a naive search.
-              (setq m1-beg (match-beginning 1); Now ensure the (naive) find is correct.
-                    m1-end (match-end 1)
-                    m2-beg nil m2-end nil m3-beg nil m3-end nil m4-beg nil m4-end nil
-                    m5-beg nil m5-end nil is-match-changed nil)
+            (while (re-search-forward rough-bullet-pattern limit t); Starting the search on this naive
+              (setq match-end (match-end 0)                        ; pattern, thence ensure each match
+                    m1-beg (match-beginning 1)                     ; is correct, as follows:
+                    m1-end match-end
+                    m2-beg nil m2-end nil is-match-changed nil)
 
               (let ((end m1-end)); Trim from the match any unwanted end boundary missed above.
                  ;;; It is either a delimiter of inline commentary (regexp pattern ‘ +\\+’)
@@ -420,55 +431,60 @@ non-nil otherwise."
                         is-match-changed t)))
               (when
                   (catch 'is-free-form-bullet
-                    (setq char-last (char-before m1-end))
-                    (when (char-equal ?+ char-last); If a task bullet is captured,
-                      (setq m2-beg m1-beg)         ; then recapture it as follows.
-                      (if (= 1 (- m1-end m1-beg))  ; If it comprises ‘+’ alone,
-                          (setq m2-end m1-end)     ; then recapture it as group 2.
-                        (setq m2-end (- m1-end 1)  ; Else it has a ‘body’, too.
-                              m3-beg m2-end        ; Recapture its body as group 2
-                              m3-end m1-end))      ; and its ‘+’ terminator as group 3.
-                      (setq m1-beg nil
-                            m1-end nil
-                            is-match-changed t)
-                      (throw 'is-free-form-bullet t))
-                    (setq length (- m1-end m1-beg))
-                    (when (and (> length 1)      ; If an alarm bullet is captured,
-                               (char-equal ?! char-last)
-                               (char-equal ?! (char-before (1- m1-end))))
-                      (setq m4-beg m1-beg)       ; then recapture it as follows.
-                      (if (= 2 (- m1-end m1-beg)); If it comprises ‘!!’ alone,
-                          (setq m4-end m1-end)   ; then recapture it as group 4.
-                        (setq m4-end (- m1-end 2); Else it has a ‘body’, too.
-                              m5-beg m4-end      ; Recapture its body as group 4
-                              m5-end m1-end))    ; and its ‘!!’ terminator as group 5.
-                      (setq m1-beg nil
-                            m1-end nil
-                            is-match-changed t)
+                    (setq length (- m1-end m1-beg)
+                          match-last (1- m1-end); The last position in the match, that is.
+                          char-last (char-after match-last))
+
+                    ;; Task bullet
+                    ;; ───────────
+                    (when (char-equal ?+ char-last)
+                      (if (= length 1)
+                          (set 'brec-face 'brec-task-bullet-singleton)
+                        (setq m2-end m1-end
+                              m2-beg match-last
+                              m1-end m2-beg
+                              is-match-changed t)
+                        (set 'brec-face   'brec-task-bullet)
+                        (set 'brec-face-2 'brec-task-bullet-terminator))
                       (throw 'is-free-form-bullet t))
 
-                    ;; Abandon any unwanted match — of either a non-bullet (divider) or a bullet
-                    ;; of tightly constrained form (aside point or command point) — as follows.
+                    ;; Alarm bullet
+                    ;; ────────────
+                    (when (and (> length 1)
+                               (char-equal ?! char-last)
+                               (char-equal ?! (char-before match-last)))
+                      (if (= length 2)
+                          (set 'brec-face 'brec-alarm-bullet-singleton)
+                        (setq m2-end m1-end
+                              m2-beg (1- match-last)
+                              m1-end m2-beg
+                              is-match-changed t)
+                        (set 'brec-face   'brec-alarm-bullet)
+                        (set 'brec-face-2 'brec-alarm-bullet-terminator))
+                      (throw 'is-free-form-bullet t))
+
+                    ;; Miscapture of non-bullet (divider) | tightly constrained (aside|command) bullet
+                    ;; ──────────
                     (setq char-first (char-after m1-beg))
-                    (when (and (= 1 length); If exactly one character is captured and it is
-                               (or (char-equal ?/ char-first)  ; either an aside bullet
-                                   (char-equal ?: char-first))); or command bullet, then
-                      (throw 'is-free-form-bullet nil)); abandon the match and continue seeking.
-                    (when (and (>= char-first ?\u2500) ; If a divider mark leads the match,
-                               (<= char-first ?\u259F)); then abandon it and continue seeking.
+                    (when (and (= 1 length)                    ; When an aside or command bullet
+                               (or (char-equal ?/ char-first)  ; is captured, abandon the match
+                                   (char-equal ?: char-first))); and continue seeking.
                       (throw 'is-free-form-bullet nil))
+                    (when (and (>= char-first ?\u2500) ; When a divider mark leads the match,
+                               (<= char-first ?\u259F)); abandon the match and continue seeking.
+                      (throw 'is-free-form-bullet nil))
+
+                    ;; Generic bullet
+                    ;; ──────────────
+                    (set 'brec-face 'brec-generic-bullet)
                     t)
+
                 (when is-match-changed
                   (set-match-data
-                   (list (match-beginning 0) (match-end 0) m1-beg m1-end
-                         m2-beg m2-end m3-beg m3-end
-                         m4-beg m4-end m5-beg m5-end
-                         (current-buffer))))
+                   (list (match-beginning 0) match-end m1-beg m1-end m2-beg m2-end (current-buffer))))
                 (throw 'to-fontify t)))
             nil)))
-      '(1 'brec-generic-bullet nil t)
-      '(2 'brec-task-bullet nil t) '(3 'brec-task-bullet-terminator nil t)
-      '(4 'brec-alarm-bullet nil t) '(5 'brec-alarm-bullet-terminator nil t))
+      '(1 brec-face) '(2 brec-face-2 nil t))
 
      (cons; Refontify the non-alphanumeric characters of free-form bullets.
       (let (face match-beg match-end)
@@ -562,14 +578,23 @@ is not buffer local."
 
   (defface brec-task-bullet-punctuation
     `((t . (:inherit brec-task-bullet :weight normal)))
-    "The face for non-alphanumeric characters in the bullet of a task point."
+    "The face for any non-alphanumeric character of a task bullet other than
+those of ‘brec-task-bullet-singleton’ and ‘brec-task-bullet-terminator’."
+    :group 'breccia)
+
+
+
+  (defface brec-task-bullet-singleton
+    `((t . (:inherit brec-task-bullet)))
+    "The face for a task bullet that comprises ‘+’ alone."
     :group 'breccia)
 
 
 
   (defface brec-task-bullet-terminator
     `((t . (:inherit font-lock-comment-face)))
-    "The face for the bullet terminator ‘+’ of a task point."
+    "The face for the bullet terminator ‘+’ of a task point.
+Cf. ‘brec-task-bullet-singleton’."
     :group 'breccia)
 
 
