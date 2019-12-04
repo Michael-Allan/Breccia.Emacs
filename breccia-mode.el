@@ -642,7 +642,7 @@ User instructions URL ‘http://reluk.ca/project/Breccia/Emacs/breccia-mode.el�
 
 ;; NOTES
 ;; ─────
-;;   BUG  This is a bug.
+;;   BUG  This code is incorrect.
 ;;
 ;;   D ·· Descriptor.  http://reluk.ca/project/Breccia/language_definition.brec § Descriptor
 ;;
