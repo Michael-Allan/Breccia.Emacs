@@ -151,7 +151,7 @@ Cf. ‘brec-alarm-bullet-singleton’."
 
 
 
-  (defvar brec-command-highlighter-components; Components of an `anchored-highlighter`, that is.
+  (defvar brec-command-highlighter-components; Components of an anchored highlighter, that is.
     (let ((bq-pat brec-backquoted-pattern-pattern)
           (gap brec-gap-pattern)); Lack of commentary or indentation blinds in `brec-gap-pattern` (q.v.)
             ;;; may cause the highlighter to fail in some texts, leaving a command unhighlighted. [BUG]
@@ -178,12 +178,12 @@ Cf. ‘brec-alarm-bullet-singleton’."
 
        "\\)")); (final component)
 
-    "The list of components (each a string) that function ‘brec-keywords’ will
-concatenate in order to form the \\=`anchored-highlighter\\=` it uses to fontify
-the command portion of each command point.  Derived modes may modify the list
-before calling ‘brec-keywords’, e.g. by inserting components in order to fontify
-additional commands.  Developers should read the instructions in the source code
-of this variable before attempting to do that.")
+    "The list of components (each a string) that function ‘brec-keywords’
+will concatenate in order to form the anchored highlighter it uses to
+fontify the command portion of each command point.  Derived modes may modify
+the list before calling ‘brec-keywords’, e.g. by inserting components in order
+to fontify additional commands.  Developers should read the instructions
+in the source code of this variable before attempting to do that.")
 
 
 
@@ -271,11 +271,7 @@ non-nil otherwise."
 
 
 
-  (defvar brec-face nil "A variable for fontifiers.")
-
-
-
-  (defvar brec-face-2 nil "A variable for fontifiers.")
+  (defvar brec-f); [GVF]
 
 
 
@@ -283,6 +279,10 @@ non-nil otherwise."
     `((t . (:inherit font-lock-warning-face :inverse-video t)))
     "The face for disallowed, horizontal whitespace characters."
     :group 'breccia)
+
+
+
+  (defvar brec-g); [GVF]
 
 
 
@@ -314,9 +314,9 @@ non-nil otherwise."
 
            '(1 'brec-aside-bullet)
 
-           (list                     ; Usually a descriptor follows the bullet,
-            "\\(\\(?:.\\|\n\\)+\\)"  ; extending thence to the end of the point head.
-            '(brec-seg-end); *pre-form*: Making the search region cover the whole of it. [PSE]
+           (list; (anchored highlighter) Usually a descriptor follows the bullet,
+            "\\(\\(?:.\\|\n\\)+\\)";     extending thence to the end of the point head.
+            '(brec-seg-end); (pre-form) Making the search region cover the whole of it. [PSE]
             nil '(1 'brec-aside-descriptor)))
 
 
@@ -332,23 +332,23 @@ non-nil otherwise."
 
            ;; Descriptor
            ;; ──────────
-           (list; `anchored-highlighter`: Usually a descriptor follows the bullet,
-            "\\(\\(?:.\\|\n\\)+\\)";      extending thence to the end of the point head.
-            '(setq; *pre-form*
-              brec-x (point); Caching the start of search region.
-              brec-y (brec-seg-end)); Caching the limit of the present fontification segment and
+           (list; (anchored highlighter) Usually a descriptor follows the bullet,
+            "\\(\\(?:.\\|\n\\)+\\)";     extending thence to the end of the point head.
+            '(setq; (pre-form)
+              brec-f (point); Caching the start of search region.
+              brec-g (brec-seg-end)); Caching the limit of the present fontification segment and
                 ;;; returning it, so extending the search region over the whole descriptor. [PSE]
-            '(goto-char brec-x); *post-form*: Clean-up for next highlighter.
+            '(goto-char brec-f); (post-form) Clean-up for next anchored highlighter.
             '(1 'brec-command-descriptor))
 
            ;; Command
            ;; ───────
-           (list
+           (list; (anchored highlighter)
             (mapconcat 'identity brec-command-highlighter-components ""); Concatenating all the
-            '(progn; *pre-form*                                           components to one string.
+            '(progn; (pre-form)                                           components to one string.
                (while (progn (backward-char)                     ; Bringing the bullet ‘:’
                              (not (char-equal ?: (char-after))))); into the search region
-               brec-y); and (again) ensuring it extends over the whole descriptor.
+               brec-g); and (again) ensuring it extends over the whole descriptor.
             nil '(1 'brec-command-keyword t t) '(2 'brec-command-keyword t t)))
 
 
@@ -383,10 +383,10 @@ non-nil otherwise."
         '(3 'brec-division-inverse-labeling nil t); ii and
         '(4 'brec-divider nil t)                  ; iii of `inversion-iii`.
 
-        ;; Thence it may include any mix of drawing, titling, labeling and inversion sequences.
-        (list (concat drawing-i "\\|" titling-i "\\|" labeling-i "\\|" inversion-iii)
-              '(brec-seg-end); *pre-form*: Making the search region cover a whole segment of it. [PSE]
-              nil; *post-form*
+        ;; (anchored highlighter) Thence it may include any mix of drawing, titling, labeling and in-
+        (list (concat drawing-i "\\|" titling-i "\\|" labeling-i "\\|" inversion-iii); version sequences.
+              '(brec-seg-end); (pre-form) Making the search region cover a whole segment of it. [PSE]
+              nil; (post-form)
               '(1 'brec-divider nil t);          `drawing-i`
               '(2 'brec-division-titling nil t); `titling-i`
               '(3 'brec-division-label nil t);  `labeling-i`
@@ -439,13 +439,13 @@ non-nil otherwise."
                     ;; ───────────
                     (when (char-equal ?+ char-last)
                       (if (= length 1)
-                          (set 'brec-face 'brec-task-bullet-singleton)
+                          (set 'brec-f 'brec-task-bullet-singleton)
                         (setq m2-end m1-end
                               m2-beg match-last
                               m1-end m2-beg
                               is-match-changed t)
-                        (set 'brec-face   'brec-task-bullet)
-                        (set 'brec-face-2 'brec-task-bullet-terminator))
+                        (set 'brec-f 'brec-task-bullet)
+                        (set 'brec-g 'brec-task-bullet-terminator))
                       (throw 'is-free-form-bullet t))
 
                     ;; Alarm bullet
@@ -454,13 +454,13 @@ non-nil otherwise."
                                (char-equal ?! char-last)
                                (char-equal ?! (char-before match-last)))
                       (if (= length 2)
-                          (set 'brec-face 'brec-alarm-bullet-singleton)
+                          (set 'brec-f 'brec-alarm-bullet-singleton)
                         (setq m2-end m1-end
                               m2-beg (1- match-last)
                               m1-end m2-beg
                               is-match-changed t)
-                        (set 'brec-face   'brec-alarm-bullet)
-                        (set 'brec-face-2 'brec-alarm-bullet-terminator))
+                        (set 'brec-f 'brec-alarm-bullet)
+                        (set 'brec-g 'brec-alarm-bullet-terminator))
                       (throw 'is-free-form-bullet t))
 
                     ;; Miscapture of non-bullet (divider) | tightly constrained (aside|command) bullet
@@ -476,7 +476,7 @@ non-nil otherwise."
 
                     ;; Generic bullet
                     ;; ──────────────
-                    (set 'brec-face 'brec-generic-bullet)
+                    (set 'brec-f 'brec-generic-bullet)
                     t)
 
                 (when is-match-changed
@@ -484,13 +484,13 @@ non-nil otherwise."
                    (list (match-beginning 0) match-end m1-beg m1-end m2-beg m2-end (current-buffer))))
                 (throw 'to-fontify t)))
             nil)))
-      '(1 brec-face) '(2 brec-face-2 nil t))
+      '(1 brec-f) '(2 brec-g nil t))
 
-     (cons; Refontify the non-alphanumeric characters of free-form bullets.
+     (cons; Reface the non-alphanumeric characters of free-form bullets.
       (let (face match-beg match-end)
         (lambda (limit)
           (setq match-beg (point)); Presumptively.
-          (catch 'to-refontify
+          (catch 'to-reface
             (while (< match-beg limit)
               (setq face (get-text-property match-beg 'face)
                     match-end (next-single-property-change match-beg 'face (current-buffer) limit))
@@ -499,12 +499,12 @@ non-nil otherwise."
                         (eq face 'brec-alarm-bullet))
                 (goto-char match-beg)
                 (when (re-search-forward "[^[:alnum:] \u00A0]+" match-end t)
-                  (set 'brec-face (intern (concat (symbol-name face) "-punctuation")))
+                  (set 'brec-f (intern (concat (symbol-name face) "-punctuation")))
                     ;;; To the punctuation variant of the face.
-                  (throw 'to-refontify t)))
+                  (throw 'to-reface t)))
               (setq match-beg match-end))
             nil)))
-      '(0 brec-face t))
+      '(0 brec-f t))
 
 
    ;;; ──  D e f e r r e d   f o n t i f i c a t i o n  ───────────────────────────────────────────────
@@ -533,9 +533,9 @@ non-nil otherwise."
      (cons "[\t\u2000-\u200A\u202F\u205F\u3000]" '(0 'brec-forbidden-whitespace t))))
        ;;;    9, 2000 - 200A, 202F, 205F, 3000
        ;;;
-       ;;; No attempt is made here to fontify any no-break spaces (Unicode A0) that appear
-       ;;; in forbidden contexts.  They will at least have a distinct appearance, however,
-       ;;; owing to the setting of `nobreak-char-display`.
+       ;;; No attempt is made here to reface any no-break space (Unicode A0) that appears
+       ;;; in a forbidden context.  It will already have a distinct appearance, however,
+       ;;; owing to the setting herein of `nobreak-char-display`, q.v.
 
 
 
@@ -599,12 +599,6 @@ Cf. ‘brec-task-bullet-singleton’."
 
 
 
-  (defvar brec-x); General purpose variables in global scope.  For access from forms evaluated
-  (defvar brec-y); outside of this package’s lexical scope, e.g. from an anchored highlighter’s
-    ;;; *pre-form* or *post-form* which has been quoted for later evaluation by Font Lock.
-
-
-
   ;; ════════════════════════════════════════════════════════════════════════════════════════════════════
 
 
@@ -653,6 +647,9 @@ User instructions URL ‘http://reluk.ca/project/Breccia/Emacs/breccia-mode.el�
 ;;   FV · Suppressing sporadic compiler warnings ‘reference to free variable’
 ;;        or ‘assignment to free variable’.
 ;;
+;;   GVF  A global variable for the use of fontifiers, e.g. from within forms they quote and pass
+;;        to Font Lock to be evaluated outside of their lexical scope.
+;;
 ;;   OCF  Overrides in comment fontification.  The fontification of a comment must override (t)
 ;;        any fontification of its containing head, and must therefore follow it in `brec-keywords`.
 ;;
@@ -662,7 +659,7 @@ User instructions URL ‘http://reluk.ca/project/Breccia/Emacs/breccia-mode.el�
 ;;        on the comment delimiters.  But then could the `subexp-highlighters` for the containing fractum
 ;;        have worked around the comments, e.g. with `override` at nil?  [SBF]
 ;;
-;;   PSE  *pre-form* search extension: extending the end boundary of the search region for multi-line
+;;   PSE  Pre-form search extension: extending the end boundary of the search region for multi-line
 ;;        anchoring.  The manual warns, ‘It is generally a bad idea to return a position greater than
 ;;        the end of the line’ [SBF].  But this appears to be a bug in the manual.
 ;;        https://stackoverflow.com/a/9456757/2402790
