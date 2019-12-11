@@ -53,8 +53,8 @@
   ;; Each element between the backquotes (Q) is either a blackslashed character pair (BC) such as “\n”
   ;; or “\`”, or a single character that is neither a backslash, nor a backquote (NQ).
   ;; See also `https://stackoverflow.com/q/249791/2402790`.
-
-  "The regexp pattern of a regexp pattern which is delimited by backquotes.")
+  "\
+The regexp pattern of a regexp pattern which is delimited by backquotes.")
 
 
 
@@ -69,58 +69,58 @@
 
 
 (defface brec-alarm-bullet
-  `((t . (:inherit (brec-bullet font-lock-warning-face))))
-  "The face for the bullet of an alarm point."
+  `((t . (:inherit (brec-bullet font-lock-warning-face)))) "\
+The face for the bullet of an alarm point."
   :group 'breccia)
 
 
 
 (defface brec-alarm-bullet-punctuation
-  `((t . (:inherit brec-alarm-bullet :weight normal)))
-  "The face for any non-alphanumeric character of an alarm bullet other than
+  `((t . (:inherit brec-alarm-bullet :weight normal))) "\
+The face for any non-alphanumeric character of an alarm bullet other than
 those of ‘brec-alarm-bullet-singleton’ and ‘brec-alarm-bullet-terminator’."
   :group 'breccia)
 
 
 
 (defface brec-alarm-bullet-singleton
-  `((t . (:inherit brec-alarm-bullet)))
-  "The face for an alarm bullet that comprises ‘!!’ alone."
+  `((t . (:inherit brec-alarm-bullet))) "\
+The face for an alarm bullet that comprises ‘!!’ alone."
   :group 'breccia)
 
 
 
 (defface brec-alarm-bullet-terminator
-  `((t . (:inherit brec-alarm-bullet-punctuation)))
-  "The face for the bullet terminator ‘!!’ of an alarm point.
+  `((t . (:inherit brec-alarm-bullet-punctuation))) "\
+The face for the bullet terminator ‘!!’ of an alarm point.
 Cf. ‘brec-alarm-bullet-singleton’."
   :group 'breccia)
 
 
 
 (defface brec-aside-bullet
-  `((t . (:inherit (brec-bullet brec-aside-descriptor))))
-  "The face for the bullet of an aside point."
+  `((t . (:inherit (brec-bullet brec-aside-descriptor)))) "\
+The face for the bullet of an aside point."
   :group 'breccia)
 
 
 
 (defface brec-aside-descriptor
-  `((t . (:inherit shadow)))
-  "The face for the descriptor of an aside point."
+  `((t . (:inherit shadow))) "\
+The face for the descriptor of an aside point."
   :group 'breccia)
 
 
 
 (defface brec-bullet
-  `((t . (:inherit bold)))
-  "The face for a bullet."
+  `((t . (:inherit bold))) "\
+The face for a bullet."
   :group 'breccia)
 
 
 
-(defgroup breccia nil
-  "A major mode for editing Breccian text"
+(defgroup breccia nil "\
+A major mode for editing Breccian text"
   :group 'text :group 'faces
   :prefix "brec-"
   :link '(url-link "http://reluk.ca/project/Breccia/Emacs/"))
@@ -128,22 +128,22 @@ Cf. ‘brec-alarm-bullet-singleton’."
 
 
 (defface brec-command-keyword
-  `((t . (:inherit brec-command-descriptor)))
-  "The face for a keyword in the descriptor of a command point."
+  `((t . (:inherit brec-command-descriptor))) "\
+The face for a keyword in the descriptor of a command point."
   :group 'breccia)
 
 
 
 (defface brec-command-bullet
-  `((t . (:inherit (brec-bullet brec-command-descriptor))))
-  "The face for the bullet of a command point."
+  `((t . (:inherit (brec-bullet brec-command-descriptor)))) "\
+The face for the bullet of a command point."
   :group 'breccia)
 
 
 
 (defface brec-command-descriptor
-  `((t . (:inherit font-lock-builtin-face)))
-  "The face for the descriptor of a command point."
+  `((t . (:inherit font-lock-builtin-face))) "\
+The face for the descriptor of a command point."
   :group 'breccia)
 
 
@@ -174,8 +174,8 @@ Cf. ‘brec-alarm-bullet-singleton’."
      ;; see `http://reluk.ca/project/wayic/Waybrec/Emacs/waybrec-mode.el`.
 
      "\\)")); (final component)
-
-  "The list of components (each a string) that function ‘brec-keywords’
+  "\
+The list of components (each a string) that function ‘brec-keywords’
 will concatenate in order to form the anchored highlighter it uses to
 fontify the command portion of each command point.  Derived modes may modify
 the list before calling ‘brec-keywords’, e.g. by inserting components in order
@@ -185,42 +185,42 @@ in the source code of this variable before attempting to do that.")
 
 
 (defface brec-comment-block-label
-  `((t . (:inherit font-lock-doc-face)))
-  "The face for a comment block label."
+  `((t . (:inherit font-lock-doc-face))) "\
+The face for a comment block label."
   :group 'breccia)
 
 
 
 (defface brec-divider
-  `((t . (:inherit font-lock-doc-face)))
-  "The face for a divider."
+  `((t . (:inherit font-lock-doc-face))) "\
+The face for a divider."
   :group 'breccia)
 
 
 
 (defface brec-division-inverse-labeling
-  `((t . (:inherit (bold brec-divider) :inverse-video t)))
-  "The face for inverse labeling and reverse video in a division label."
+  `((t . (:inherit (bold brec-divider) :inverse-video t))) "\
+The face for inverse labeling and reverse video in a division label."
   :group 'breccia)
 
 
 
 (defface brec-division-label
-  `((t . (:inherit brec-divider)))
-  "The face for a label in a divider."
+  `((t . (:inherit brec-divider))) "\
+The face for a label in a divider."
   :group 'breccia)
 
 
 
 (defface brec-division-titling
-  `((t . (:inherit (bold brec-division-label))))
-  "The face for a titling sequence in a division label."
+  `((t . (:inherit (bold brec-division-label)))) "\
+The face for a titling sequence in a division label."
   :group 'breccia)
 
 
 
-(defun brec-extend-search ()
-  "Ensures that the font-lock search region extends to cover the whole of its
+(defun brec-extend-search () "\
+Ensures that the font-lock search region extends to cover the whole of its
 fontification segments, bisecting none of them.  Returns nil if already it does,
 non-nil otherwise."
   (save-excursion
@@ -229,8 +229,8 @@ non-nil otherwise."
 
 
 
-(defun brec-extend-search-down ()
-  "Ensures that ‘font-lock-end’ bisects no fontification segment, moving it
+(defun brec-extend-search-down () "\
+Ensures that ‘font-lock-end’ bisects no fontification segment, moving it
 forward in the buffer as necessary.  Returns nil if no change was required,
 non-nil otherwise."
   (goto-char font-lock-end)
@@ -251,8 +251,8 @@ non-nil otherwise."
 
 
 
-(defun brec-extend-search-up ()
-  "Ensures that ‘font-lock-beg’ bisects no fontification segment, moving it
+(defun brec-extend-search-up () "\
+Ensures that ‘font-lock-beg’ bisects no fontification segment, moving it
 backward in the buffer as necessary.  Returns nil if no change was required,
 non-nil otherwise."
   (goto-char font-lock-beg)
@@ -273,8 +273,8 @@ non-nil otherwise."
 
 
 (defface brec-forbidden-whitespace
-  `((t . (:inherit font-lock-warning-face :inverse-video t)))
-  "The face for disallowed, horizontal whitespace characters."
+  `((t . (:inherit font-lock-warning-face :inverse-video t))) "\
+The face for disallowed, horizontal whitespace characters."
   :group 'breccia)
 
 
@@ -284,21 +284,21 @@ non-nil otherwise."
 
 
 (defface brec-generic-bullet
-  `((t . (:inherit (brec-bullet font-lock-keyword-face))))
-  "The face for the bullet of a generic point."
+  `((t . (:inherit (brec-bullet font-lock-keyword-face)))) "\
+The face for the bullet of a generic point."
   :group 'breccia)
 
 
 
 (defface brec-generic-bullet-punctuation
-  `((t . (:inherit brec-generic-bullet :weight normal)))
-  "The face for non-alphanumeric characters in the bullet of a generic point."
+  `((t . (:inherit brec-generic-bullet :weight normal))) "\
+The face for non-alphanumeric characters in the bullet of a generic point."
   :group 'breccia)
 
 
 
-(defun brec-keywords ()
-  "Returns the value of ‘font-lock-keywords’ to use for highlighting Breccian text."
+(defun brec-keywords () "\
+Returns the value of ‘font-lock-keywords’ to use for highlighting Breccian text."
   (list
 
    ;; ═══════════
@@ -536,8 +536,8 @@ non-nil otherwise."
 
 
 
-(defun brec-seg-end ()
-  "Returns the end position of the present fontification segment, provided that
+(defun brec-seg-end () "\
+Returns the end position of the present fontification segment, provided that
 point is *not* at the beginning of the segment.  If point is at the beginning,
 then the result is undefined."
   (save-excursion
@@ -552,14 +552,14 @@ then the result is undefined."
   "^ \\{4\\}*\\\\*[^[:space:]\\]"; zero or more backslashes (\⋯)
   ;; ┈──────┘└───┘└────────────┘ ; and a character (C) that is neither
   ;;    PI     \⋯       C        ; whitespace nor a backslash.
-
-  "The regexp pattern of the sequence marking the start of a fontification segment
+  "\
+The regexp pattern of the sequence marking the start of a fontification segment
 other than a document head.")
 
 
 
-(defun brec-set-for-buffer (variable value)
-  "Sets VARIABLE (a symbol) to VALUE.  Signals an error if the setting
+(defun brec-set-for-buffer (variable value) "\
+Sets VARIABLE (a symbol) to VALUE.  Signals an error if the setting
 is not buffer local."
   (set variable value)
   (cl-assert (local-variable-p variable)))
@@ -567,30 +567,30 @@ is not buffer local."
 
 
 (defface brec-task-bullet
-  `((t . (:inherit (brec-bullet font-lock-function-name-face))))
-  "The face for the bullet of a task point."
+  `((t . (:inherit (brec-bullet font-lock-function-name-face)))) "\
+The face for the bullet of a task point."
   :group 'breccia)
 
 
 
 (defface brec-task-bullet-punctuation
-  `((t . (:inherit brec-task-bullet :weight normal)))
-  "The face for any non-alphanumeric character of a task bullet other than
+  `((t . (:inherit brec-task-bullet :weight normal))) "\
+The face for any non-alphanumeric character of a task bullet other than
 those of ‘brec-task-bullet-singleton’ and ‘brec-task-bullet-terminator’."
   :group 'breccia)
 
 
 
 (defface brec-task-bullet-singleton
-  `((t . (:inherit brec-task-bullet)))
-  "The face for a task bullet that comprises ‘+’ alone."
+  `((t . (:inherit brec-task-bullet))) "\
+The face for a task bullet that comprises ‘+’ alone."
   :group 'breccia)
 
 
 
 (defface brec-task-bullet-terminator
-  `((t . (:inherit font-lock-comment-face)))
-  "The face for the bullet terminator ‘+’ of a task point.
+  `((t . (:inherit font-lock-comment-face))) "\
+The face for the bullet terminator ‘+’ of a task point.
 Cf. ‘brec-task-bullet-singleton’."
   :group 'breccia)
 
@@ -600,8 +600,8 @@ Cf. ‘brec-task-bullet-singleton’."
 
 
 (define-derived-mode breccia-mode text-mode
-  "Breccia"
-  "A major mode for editing Breccian text.
+  "Breccia" "\
+A major mode for editing Breccian text.
         Home page URL ‘http://reluk.ca/project/Breccia/Emacs/’
 User instructions URL ‘http://reluk.ca/project/Breccia/Emacs/breccia-mode.el’"
   :group 'breccia
