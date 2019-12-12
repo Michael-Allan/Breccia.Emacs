@@ -219,8 +219,8 @@ The face for a titling sequence in a division label."
 
 
 
-(defun brec-extend-search () "\
-Ensures that the font-lock search region extends to cover the whole of its
+(defun brec-extend-search ()
+  "Ensures that the font-lock search region extends to cover the whole of its
 fontification segments, bisecting none of them.  Returns nil if already it does,
 non-nil otherwise."
   (save-excursion
@@ -229,8 +229,8 @@ non-nil otherwise."
 
 
 
-(defun brec-extend-search-down () "\
-Ensures that ‘font-lock-end’ bisects no fontification segment, moving it
+(defun brec-extend-search-down ()
+  "Ensures that ‘font-lock-end’ bisects no fontification segment, moving it
 forward in the buffer as necessary.  Returns nil if no change was required,
 non-nil otherwise."
   (goto-char font-lock-end)
@@ -251,8 +251,8 @@ non-nil otherwise."
 
 
 
-(defun brec-extend-search-up () "\
-Ensures that ‘font-lock-beg’ bisects no fontification segment, moving it
+(defun brec-extend-search-up ()
+  "Ensures that ‘font-lock-beg’ bisects no fontification segment, moving it
 backward in the buffer as necessary.  Returns nil if no change was required,
 non-nil otherwise."
   (goto-char font-lock-beg)
@@ -297,8 +297,8 @@ The face for non-alphanumeric characters in the bullet of a generic point."
 
 
 
-(defun brec-keywords () "\
-Returns the value of ‘font-lock-keywords’ to use for highlighting Breccian text."
+(defun brec-keywords ()
+  "Returns the value of ‘font-lock-keywords’ to use for highlighting Breccian text."
   (list
 
    ;; ═══════════
@@ -536,8 +536,8 @@ Returns the value of ‘font-lock-keywords’ to use for highlighting Breccian t
 
 
 
-(defun brec-seg-end () "\
-Returns the end position of the present fontification segment, provided that
+(defun brec-seg-end ()
+  "Returns the end position of the present fontification segment, provided that
 point is *not* at the beginning of the segment.  If point is at the beginning,
 then the result is undefined."
   (save-excursion
@@ -558,8 +558,8 @@ other than a document head.")
 
 
 
-(defun brec-set-for-buffer (variable value) "\
-Sets VARIABLE (a symbol) to VALUE.  Signals an error if the setting
+(defun brec-set-for-buffer (variable value)
+  "Sets VARIABLE (a symbol) to VALUE.  Signals an error if the setting
 is not buffer local."
   (set variable value)
   (cl-assert (local-variable-p variable)))
