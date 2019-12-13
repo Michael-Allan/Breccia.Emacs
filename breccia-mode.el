@@ -332,10 +332,10 @@ The face for non-alphanumeric characters in the bullet of a generic point."
          (list; (anchored highlighter) Usually a descriptor follows the bullet,
           "\\(\\(?:.\\|\n\\)+\\)";     extending thence to the end of the point head.
           '(setq; (pre-form)
-            brec-f (point); Caching the start of search region.
-            brec-g (brec-seg-end)); Caching the limit of the present fontification segment and
+            brec-f (point); Saving the start of search region.
+            brec-g (brec-seg-end)); Saving the limit of the present fontification segment and
               ;;; returning it, so extending the search region over the whole descriptor. [PSE]
-          '(goto-char brec-f); (post-form) Clean-up for next anchored highlighter.
+          '(goto-char brec-f); (post-form) Repositioning for the next anchored highlighter, below.
           '(1 'brec-command-descriptor)); [QBF]
 
          ;; Command
