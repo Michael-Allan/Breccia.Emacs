@@ -59,7 +59,7 @@ The regexp pattern of a regexp pattern which is delimited by backquotes.")
 
 
 (defconst brec-gap-pattern "[ \n]+" "The regexp pattern of a gap in a descriptor.")
-   ;;; This is incomplete, it omits commentary and indentation blinds [D].
+  ;;; This is incomplete, it omits commentary and indentation blinds [D].
 
 
 
@@ -109,6 +109,16 @@ The face for the bullet of an aside point."
   `((t . (:inherit shadow))) "\
 The face for the descriptor of an aside point."
   :group 'breccia)
+
+
+
+(defun brec-backward-paragraph ()
+  "A Breccian variant of the ‘backward-paragraph’ command.  Moves backward
+to the previous paragraph, as defined by ‘brec-interparagraph-line-offset’."
+  (interactive "^")
+  (brec-move-by-lines
+   (brec-interparagraph-line-offset -1)
+   t "previous line"))
 
 
 
@@ -279,6 +289,16 @@ The face for disallowed, horizontal whitespace characters."
 
 
 
+(defun brec-forward-paragraph ()
+  "A Breccian variant of the ‘forward-paragraph’ command.  Moves forward
+to the next paragraph, as defined by ‘brec-interparagraph-line-offset’."
+  (interactive "^")
+  (brec-move-by-lines
+   (brec-interparagraph-line-offset 1)
+   t "next line"))
+
+
+
 (defvar brec-g); [GVF]
 
 
@@ -294,6 +314,18 @@ The face for the bullet of a generic point."
   `((t . (:inherit brec-generic-bullet :weight normal))) "\
 The face for non-alphanumeric characters in the bullet of a generic point."
   :group 'breccia)
+
+
+
+(defun brec-interparagraph-line-offset (direction)
+  "Returns the offset of the next line in DIRECTION (1 or -1) that has equal
+or less indentation, or nil if there is none.  If point is on a blank line,
+however, then this function simply gives the offset of the next non-empty line
+or terminal line of the buffer.  For this purpose a blank line is defined by
+‘brec-line-is-blank’, and an empty line has no characters at all."
+  (if (brec-line-is-blank)
+      (brec-line-count direction 'ignore 'brec-t)
+    (brec-line-count direction '> '<=)))
 
 
 
@@ -536,6 +568,47 @@ The face for non-alphanumeric characters in the bullet of a generic point."
 
 
 
+(defun brec-line-count (direction skip good)
+  "Returns the number of lines in DIRECTION (1 or -1) that either are empty
+or satisfy relation SKIP between their indentation and the original indentation,
+and end with a line whose indentation satisfies predicate GOOD."
+  ;; Modified from the original code posted by ShreevatsaR. [SR]
+  (let ((starting-indentation (current-indentation))
+         (lines-moved direction))
+    (save-excursion
+      (while (and (zerop (forward-line direction))
+               (or (eolp); Skipping empty lines and SKIP lines.
+                 (funcall skip (current-indentation) starting-indentation)))
+        (setq lines-moved (+ lines-moved direction)))
+      ;; Unable now to go further, which case is it?
+      (if (funcall good (current-indentation) starting-indentation)
+        lines-moved
+        nil))))
+
+
+
+(defun brec-line-is-blank ()
+  "Answers whether the line at point contains at most whitespace."
+  ;; Modified from the original code posted by PythonNut. https://emacs.stackexchange.com/a/16826/21090
+  (string-match-p "\\`\\s-*$" (thing-at-point 'line t)))
+
+
+
+(defun brec-move-by-lines (count to-preserve-column default-label)
+  "Go forward COUNT lines, or backward if COUNT is negative.  If COUNT is nil,
+then instead tell the user there is no DEFAULT-LABEL (string) to move to."
+  ;; Modified from the original code posted by ShreevatsaR. [SR]
+  (if (not count)
+      (message "No %s to move to." default-label)
+    (let ((saved-column (current-column)))
+      (forward-line count)
+      (move-to-column
+       (if to-preserve-column
+           saved-column
+         (current-indentation))))))
+
+
+
 (defun brec-seg-end ()
   "Returns the end position of the present fontification segment, provided that
 point is *not* at the beginning of the segment.  If point is at the beginning,
@@ -563,6 +636,13 @@ other than a document head.")
 is not buffer local."
   (set variable value)
   (cl-assert (local-variable-p variable)))
+
+
+
+(defun brec-t (&rest _args)
+  "Ignores any arguments and returns t.  In other words,
+the opposite of ‘ignore’."
+  t)
 
 
 
@@ -616,6 +696,12 @@ User instructions URL ‘http://reluk.ca/project/Breccia/Emacs/breccia-mode.el�
   (setq-local paragraph-start (concat brec-seg-start-pattern ".*$"))
   (setq-local paragraph-separate "^ *\\(?:\u00A0.*\\|\\\\+\\( +.*\\)?\\)?$")
     ;;; Blank lines, indentation blinds and block commentary, that is.
+
+  ;; Remap commands to their Breccian variants
+  ;; ──────────────
+  (let ((m breccia-mode-map))
+    (define-key m [remap backward-paragraph] 'brec-backward-paragraph)
+    (define-key m [remap  forward-paragraph]  'brec-forward-paragraph))
 
   ;; Set up Font Lock
   ;; ────────────────
@@ -684,6 +770,8 @@ User instructions URL ‘http://reluk.ca/project/Breccia/Emacs/breccia-mode.el�
 ;;
 ;;   SPC  Synchronized pattern of commentary.  Marking an instance of a pattern or anti-pattern,
 ;;        one of several that together are maintained in synchrony.
+;;
+;;   SR · https://emacs.stackexchange.com/a/27169/21090
 
 
                                        ;;; Copyright © 2019 Michael Allan and contributors.  Licence MIT.
