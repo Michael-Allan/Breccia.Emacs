@@ -2,10 +2,13 @@
 ;;
 ;; USAGE
 ;; ─────
-;;   In your initialization file:
+;;   1. Put a copy of this file on your load path.
+;;      https://www.gnu.org/software/emacs/manual/html_node/elisp/Library-Search.html
 ;;
-;;      (require 'breccia-mode)
-;;      (add-to-list 'auto-mode-alist '("\\.brec\\'" . breccia-mode))
+;;   2. Add the following to your initialization file.
+;;
+;;       (autoload 'breccia-mode "breccia-mode" nil t)
+;;       (set 'auto-mode-alist (cons (cons "\\.brec\\'" 'breccia-mode) auto-mode-alist))
 ;;
 ;;   Working example:
 ;;
@@ -774,4 +777,4 @@ User instructions URL ‘http://reluk.ca/project/Breccia/Emacs/breccia-mode.el�
 ;;   SR · https://emacs.stackexchange.com/a/27169/21090
 
 
-                                       ;;; Copyright © 2019 Michael Allan and contributors.  Licence MIT.
+                                  ;;; Copyright © 2019-2020 Michael Allan and contributors.  Licence MIT.
