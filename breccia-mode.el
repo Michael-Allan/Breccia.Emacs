@@ -21,7 +21,7 @@
 ;; ─────────────
 ;;   For the customizeable faces, see the `defface` declarations further below.
 ;;
-;;   If you are coding a derived mode, then see also `brec-command-highlighter-components`.
+;;   If you are coding a derived mode, then see also `brec-command-matcher-components`.
 ;;
 ;;
 ;; TERMS
@@ -44,11 +44,6 @@
 ;; ══════════════════════════════════════════════════════════════════════════════════════════════════════
 
 
-(defvar font-lock-beg); [FV]
-(defvar font-lock-end)
-
-
-
 (defconst brec-backquoted-pattern-pattern "`\\(?:\\\\.\\|[^\\`]\\)+`"
   ;;                                       ╵     └────┘  └────┘    ╵
   ;;                                       Q       BC      NQ      Q
@@ -63,6 +58,12 @@ The regexp pattern of a regexp pattern which is delimited by backquotes.")
 
 (defconst brec-gap-pattern "[ \n]+" "The regexp pattern of a gap in a descriptor.")
   ;;; This is incomplete, it omits commentary and indentation blinds [D].
+
+
+
+(defvar brec-seg-start-pattern); [FV]
+(defvar font-lock-beg)
+(defvar font-lock-end)
 
 
 
@@ -161,7 +162,7 @@ The face for the descriptor of a command point."
 
 
 
-(defvar brec-command-highlighter-components; Components of an anchored highlighter, that is.
+(defvar brec-command-matcher-components
   (let ((bq-pat brec-backquoted-pattern-pattern)
         (gap brec-gap-pattern)); Lack of commentary or indentation blinds in `brec-gap-pattern` (q.v.)
           ;;; may cause the highlighter to fail in some texts, leaving a command unhighlighted. [BUG]
@@ -177,23 +178,28 @@ The face for the descriptor of a command point."
 
       ;; Referent clause.  It determines the specific type of associative reference as either
       "\\(?2:join"  ; a jointer or
-      "\\|see\\)\\>"); a pointer.
+      "\\|see\\)\\>"; a pointer.
+      "\\(?3:" gap "privately\\>\\)?"); Addtionally it may mark the reference as a private fractum.
+
+     ;; Privatizer
+     ;; ──────────
+     "\\|\\(?1:private\\)\\>"
 
      ;; Other commands
      ;; ──────────────
-     ;; Components for new command patterns may be inserted here.  Each pattern must open with "\\|"
-     ;; and may capture up to two, explicitly numbered groups, e.g. `\(?1:foo\)` and `\(?2:bar\)`.
-     ;; The same fontification will be given to both groups.  For an example of component insertion,
+     ;; Components to match new commands may be inserted here.  Each must open with "\\|" and may capture
+     ;; up to three, explicitly numbered groups, e.g. `\(?1:first\)`, `\(?2:second\)` and `\(?3:third\)`.
+     ;; The same fontification will be given to each group.  For an example of component insertion,
      ;; see `http://reluk.ca/project/wayic/Waybrec/Emacs/waybrec-mode.el`.
 
      "\\)")); (final component)
   "\
-The list of components (each a string) that function ‘brec-keywords’
-will concatenate in order to form the anchored highlighter it uses to
-fontify the command portion of each command point.  Derived modes may modify
-the list before calling ‘brec-keywords’, e.g. by inserting components in order
-to fontify additional commands.  Developers should read the instructions
-in the source code of this variable before attempting to do that.")
+The list of string components that function ‘brec-keywords’ will concatenate
+in order to form the anchored matcher it uses to fontify the referential-command
+portion of each command point.  Derived modes may modify the list before calling
+‘brec-keywords’, e.g. by inserting components in order to fontify additional
+commands.  Developers should read the instructions in the source code of this
+variable before attempting to do that.")
 
 
 
@@ -340,15 +346,15 @@ or terminal line of the buffer.  For this purpose a blank line is defined by
    ;; Aside point
    ;; ═══════════
    ;; An aside point starts with a perfectly indented (PI) bullet comprising one slash (/).
-   (list "^ \\{4\\}*\\(/\\)\\(?: +\\|$\\)"
+   (list "^ \\{4\\}*\\(/\\)\\(?: +\\|$\\)"; (1) Anchoring on the bullet.
          ;; ┈──────┘
          ;;    PI
 
          '(1 'brec-aside-bullet); [QBF]
 
-         (list; (anchored highlighter) Usually a descriptor follows the bullet,
-          "\\(\\(?:.\\|\n\\)+\\)";     extending thence to the end of the point head.
-          '(brec-seg-end); (pre-form) Making the search region cover the whole of it. [PSE]
+         (list; (3, anchored highlighter) Usually a descriptor follows the bullet,
+          "\\(\\(?:.\\|\n\\)+\\)";        extending thence to the end of the point head.
+          '(brec-seg-end); (2, pre-form) Making the search region cover the whole of it. [PSE]
           nil '(1 'brec-aside-descriptor))); [QBF]
 
 
@@ -356,7 +362,7 @@ or terminal line of the buffer.  For this purpose a blank line is defined by
    ;; Command point
    ;; ═════════════
    ;; A command point starts with a perfectly indented (PI) bullet comprising one colon (:).
-   (list "^ \\{4\\}*\\(:\\)\\(?: +\\|$\\)"
+   (list "^ \\{4\\}*\\(:\\)\\(?: +\\|$\\)"; (1) Anchoring on the bullet.
          ;; ┈──────┘
          ;;    PI
 
@@ -364,30 +370,32 @@ or terminal line of the buffer.  For this purpose a blank line is defined by
 
          ;; Descriptor
          ;; ──────────
-         (list; (anchored highlighter) Usually a descriptor follows the bullet,
-          "\\(\\(?:.\\|\n\\)+\\)";     extending thence to the end of the point head.
-          '(setq; (pre-form)
+         (list; (3, anchored highlighter) Usually a descriptor follows the bullet,
+          "\\(\\(?:.\\|\n\\)+\\)";        extending thence to the end of the point head.
+          '(setq; (2, pre-form)
             brec-f (point); Saving the start of search region.
             brec-g (brec-seg-end)); Saving the limit of the present fontification segment and
               ;;; returning it, so extending the search region over the whole descriptor. [PSE]
-          '(goto-char brec-f); (post-form) Repositioning for the next anchored highlighter, below.
+          '(goto-char brec-f); (4, post-form) Repositioning for the next anchored highlighter, below.
           '(1 'brec-command-descriptor)); [QBF]
 
-         ;; Command
-         ;; ───────
-         (list; (anchored highlighter)
-          (mapconcat 'identity brec-command-highlighter-components ""); Concatenating all the
-          '(progn; (pre-form)                                           components to one string.
+         ;; Referential command
+         ;; ───────────────────
+         (list; (6, anchored highlighter)
+          (mapconcat 'identity brec-command-matcher-components ""); Concatenating all the
+          '(progn; (5, pre-form)                                    components to one string.
              (while (progn (backward-char)                     ; Bringing the bullet ‘:’
                            (not (char-equal ?: (char-after))))); into the search region
              brec-g); and (again) ensuring it extends over the whole descriptor.
-          nil '(1 'brec-command-keyword t t) '(2 'brec-command-keyword t t))); [QBF]
+          nil
+          '(1 'brec-command-keyword t t) '(2 'brec-command-keyword t t); [QBF]
+          '(3 'brec-command-keyword t t)))
 
 
    ;; ═══════
    ;; Divider
    ;; ═══════
-   ;; A divider starts with a perfectly indented (PI) sequence of drawing or inversion.
+   ;; A divider starts with a perfectly indented (PI) drawing or inversion sequence.
    (let* ((drawing-char "[\u2500-\u2587\u2589-\u258F\u2591-\u259F]")
           (drawing-i (concat "\\(" drawing-char "+\\(?: +" drawing-char "+\\)*\\)"))
             ;;; Capturing (i) a sequence of `drawing-char` inclusive of embedded spaces,
@@ -406,7 +414,7 @@ or terminal line of the buffer.  For this purpose a blank line is defined by
            ;; any space characters around it, and (iii) any full block character.
            (concat "\\(" inversion-mark "\\)\\( *\\(?:" labeling " *\\)?\\)\\(\u2588\\)?")))
      (list
-      (concat "^ \\{4\\}*\\(?:" drawing-i "\\|" inversion-iii "\\)")
+      (concat "^ \\{4\\}*\\(?:" drawing-i "\\|" inversion-iii "\\)"); (1) Anchoring on the PI sequence.
       ;;       └────────┘
       ;;            PI
 
@@ -415,9 +423,9 @@ or terminal line of the buffer.  For this purpose a blank line is defined by
       '(3 'brec-division-inverse-labeling nil t); ii and
       '(4 'brec-divider nil t)                  ; iii of `inversion-iii`. [QBF]
 
-      ;; (anchored highlighter) Thence it may include any mix of drawing, titling, labeling and in-
+      ;; (3, anchored highlighter) Thence it may include any mix of drawing, titling, labeling and in-
       (list (concat drawing-i "\\|" titling-i "\\|" labeling-i "\\|" inversion-iii); version sequences.
-            '(brec-seg-end); (pre-form) Making the search region cover a whole segment of it. [PSE]
+            '(brec-seg-end); (2, pre-form) Making the search region cover a whole segment of it. [PSE]
             nil; (post-form)
             '(1 'brec-divider nil t);          `drawing-i`
             '(2 'brec-division-titling nil t); `titling-i`
