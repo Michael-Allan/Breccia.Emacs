@@ -61,8 +61,17 @@ The regexp pattern of a regexp pattern which is delimited by backquotes.")
 
 
 
-(defvar brec-seg-start-pattern); [FV]
-(defvar font-lock-beg)
+(defconst brec-seg-start-pattern ; Perfect indentation (PI),          [SPC]
+  "^ \\{4\\}*\\\\*[^[:space:]\\]"; zero or more backslashes (\⋯)
+  ;; ┈──────┘└───┘└────────────┘ ; and a character (C) that is neither
+  ;;    PI     \⋯       C        ; whitespace nor a backslash.
+  "\
+The regexp pattern of the sequence marking the start of a fontification segment
+other than a document head.")
+
+
+
+(defvar font-lock-beg); [FV]
 (defvar font-lock-end)
 
 
@@ -629,16 +638,6 @@ then the result is undefined."
         (end-of-line 0); Moving to the end of the previous line.
       (goto-char (point-max)))
     (point)))
-
-
-
-(defconst brec-seg-start-pattern ; Perfect indentation (PI),          [SPC]
-  "^ \\{4\\}*\\\\*[^[:space:]\\]"; zero or more backslashes (\⋯)
-  ;; ┈──────┘└───┘└────────────┘ ; and a character (C) that is neither
-  ;;    PI     \⋯       C        ; whitespace nor a backslash.
-  "\
-The regexp pattern of the sequence marking the start of a fontification segment
-other than a document head.")
 
 
 
