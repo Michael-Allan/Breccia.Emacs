@@ -1,27 +1,13 @@
 ;; The definition of Breccia mode, a major mode for editing Breccian text.  -*- lexical-binding: t; -*-
 ;;
-;; USAGE
-;; ─────
-;;   1. Put a copy of this file on your load path.
-;;      https://www.gnu.org/software/emacs/manual/html_node/elisp/Library-Search.html
-;;
-;;   2. Add the following to your initialization file.
-;;
-;;       (autoload 'breccia-mode "breccia-mode" nil t)
-;;       (set 'auto-mode-alist (cons (cons "\\.brec\\'" 'breccia-mode) auto-mode-alist))
-;;
-;;   Working example:
-;;
-;;       http://reluk.ca/.emacs.d/lisp/initialization.el
-;;       http://reluk.ca/.Xresources
-;;       http://reluk.ca/project/Breccia/Emacs/screen_shot.png
+;; USER INSTRUCTIONS
+;; ─────────────────
+;;   See `./user_instructions.brec`, or `http://reluk.ca/project/Breccia/Emacs/user_instructions.brec`.
 ;;
 ;;
-;; CUSTOMIZATION
-;; ─────────────
-;;   For the customizeable faces, see the `defface` declarations further below.
-;;
-;;   If you are coding a derived mode, then see also `brec-command-matcher-components`.
+;; DEVELOPMENT
+;; ───────────
+;;   If you are coding a derived mode, then see `brec-command-matcher-components`.
 ;;
 ;;
 ;; TERMS
@@ -693,7 +679,7 @@ Cf. ‘brec-task-bullet-singleton’."
   "Breccia" "\
 A major mode for editing Breccian text.
         Home page URL ‘http://reluk.ca/project/Breccia/Emacs/’
-User instructions URL ‘http://reluk.ca/project/Breccia/Emacs/breccia-mode.el’"
+User instructions URL ‘http://reluk.ca/project/Breccia/Emacs/user_instructions.brec’"
   :group 'breccia
   (modify-syntax-entry ?\u00A0 " " breccia-mode-syntax-table); Giving to no-break spaces (Unicode A0)
   (setq-local nobreak-char-display t); whitespace syntax, and a distinct look as defined by the Emacs
