@@ -19,8 +19,6 @@ Using Breccia mode
 
         working example
             : see http://reluk.ca/.emacs.d/lisp/initialization.el
-            : see http://reluk.ca/.Xresources
-            : see http://reluk.ca/project/Breccia/Emacs/screen_shot.png
 
 
 
@@ -30,6 +28,10 @@ Using Breccia mode
         - For a list of faces that may be customized, use `M-x customize-group <RET> breccia <RET>`.
         - Or search through the `defface` definitions of `breccia-mode.el`.
             : re `breccia-mode.el` see ./breccia-mode.el
+
+        working example
+            : see http://reluk.ca/.Xresources
+            : see http://reluk.ca/project/Breccia/Emacs/screen_shot.png
 
 
 

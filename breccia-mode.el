@@ -1,8 +1,11 @@
-;; The definition of Breccia mode, a major mode for editing Breccian text.  -*- lexical-binding: t; -*-
+;; Breccia mode  │ -*- lexical-binding: t; -*-
+;;
+;; This is the definition of Breccia mode, a major mode for editing Breccian text.
+;;
 ;;
 ;; USER INSTRUCTIONS
 ;; ─────────────────
-;;   See `./user_instructions.brec`, or `http://reluk.ca/project/Breccia/Emacs/user_instructions.brec`.
+;;   See `./user_instructions.brec` or `http://reluk.ca/project/Breccia/Emacs/user_instructions.brec`.
 ;;
 ;;
 ;; DEVELOPMENT
