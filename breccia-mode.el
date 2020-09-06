@@ -1,30 +1,45 @@
-;; Breccia mode  │ -*- lexical-binding: t; -*-
+;;; breccia-mode.el --- A major mode for editing Breccian text  -*- lexical-binding: t; -*-
+
+;; Copyright © 2019-2020 Michael Allan.
+
+;; Author: Michael Allan <mike@reluk.ca>
+;; Version: 0-snapshot
+;; Package-Requires: (cl-lib)
+;; Keywords: wp, outlines
+;; URL: http://reluk.ca/project/Breccia/Emacs/
+
+;; This file is not part of GNU Emacs.
+
+;;; Commentary:
+
+;; This package introduces a major mode for editing Breccian text.  For more information,
+;; see `http://reluk.ca/project/Breccia/Emacs/`.
 ;;
-;; This is the definition of Breccia mode, a major mode for editing Breccian text.
+;; If you install this package using a package manager, then already Breccia Mode should activate
+;; for any `.brec` file you load.  Alternatively you may want to install it manually:
 ;;
+;;   1. Put a copy of the present file on your load path.
+;;      https://www.gnu.org/software/emacs/manual/html_node/elisp/Library-Search.html
 ;;
-;; USER INSTRUCTIONS
-;; ─────────────────
-;;   See `./user_instructions.brec` or `http://reluk.ca/project/Breccia/Emacs/user_instructions.brec`.
+;;   2. Optionally compile that copy.  E.g. load it into an Emacs buffer and type
+;;      `M-x emacs-lisp-byte-compile`.
 ;;
+;;   3. Add the following code to your initialization file.
+;;      https://www.gnu.org/software/emacs/manual/html_node/emacs/Init-File.html
 ;;
-;; DEVELOPMENT
-;; ───────────
-;;   If you are coding a derived mode, then see `brec-command-matcher-components`.
+;;         (autoload 'breccia-mode "breccia-mode" nil t)
+;;         (set 'auto-mode-alist (cons (cons "\\.brec\\'" 'breccia-mode) auto-mode-alist))
 ;;
-;;
-;; TERMS
-;; ─────
-;;   fontification segment
-;;       One of a document head, point head or divider segment.
-;;
-;;
-;; NOTES  (see at bottom)
-;; ─────
+;; For a working example of manual installation, see the relevant lines
+;; of `http://reluk.ca/.emacs.d/lisp/initialization.el`, and follow the reference there.
 
 
-(eval-when-compile
-  (require 'cl-lib))
+;;; Code:
+
+;; For anyone coding a derivation of Breccia Mode, see `brec-command-matcher-components`.
+
+
+(eval-when-compile (require 'cl-lib)); For macro `cl-assert`.
 
 
 
@@ -56,11 +71,12 @@ The regexp pattern of a regexp pattern which is delimited by backquotes.")
   ;;    PI     \⋯       C        ; whitespace nor a backslash.
   "\
 The regexp pattern of the sequence marking the start of a fontification segment
-other than a document head.")
+other than a document head.  See also ‘brec-seg-end’.")
+;; For the definition of ‘fontification segment’, see `brec-seg-end`.
 
 
 
-(defvar font-lock-beg); [FV]
+(defvar font-lock-beg); Because Font Lock omits to export these definitions. [FV]
 (defvar font-lock-end)
 
 
@@ -617,11 +633,13 @@ then instead tell the user there is no DEFAULT-LABEL (string) to move to."
          (current-indentation))))))
 
 
-
 (defun brec-seg-end ()
   "Returns the end position of the present fontification segment, provided that
 point is *not* at the beginning of the segment.  If point is at the beginning,
-then the result is undefined."
+then the result is undefined.  A fontification segment is one of the following:
+a document head, point head or divider segment.
+
+See also ‘brec-seg-start-pattern’."
   (save-excursion
     (if (re-search-forward brec-seg-start-pattern nil t); Cf. `brec-extend-search-down`.
         (end-of-line 0); Moving to the end of the previous line.
@@ -678,11 +696,19 @@ Cf. ‘brec-task-bullet-singleton’."
 ;; ══════════════════════════════════════════════════════════════════════════════════════════════════════
 
 
+(set 'brec-f nil); Ensuring it is bound for sake of the following guard.
+;;;###autoload
+(unless (boundp 'brec-f); To execute once only on `package-initialize`, not again on file load. [GDA]
+  ;; Here appending versus consing in order not to override any pattern previously added by the user:
+  (add-to-list 'auto-mode-alist (cons "\\.brec\\'" 'breccia-mode) t))
+
+
+
+;;;###autoload
 (define-derived-mode breccia-mode text-mode
   "Breccia" "\
-A major mode for editing Breccian text.
-        Home page URL ‘http://reluk.ca/project/Breccia/Emacs/’
-User instructions URL ‘http://reluk.ca/project/Breccia/Emacs/user_instructions.brec’"
+A major mode for editing Breccian text.  For more information,
+see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
   :group 'breccia
   (modify-syntax-entry ?\u00A0 " " breccia-mode-syntax-table); Giving to no-break spaces (Unicode A0)
   (setq-local nobreak-char-display t); whitespace syntax, and a distinct look as defined by the Emacs
@@ -729,6 +755,9 @@ User instructions URL ‘http://reluk.ca/project/Breccia/Emacs/user_instructions
 ;;   FV · Suppressing sporadic compiler warnings ‘reference to free variable’
 ;;        or ‘assignment to free variable’.
 ;;
+;;   GDA  Guarded definition of autoloads.  It would be simpler to move the autoload definitions to
+;;        a separate file, except that multi-file packages are more difficult to maintain.
+;;
 ;;   GVF  A global variable for the use of fontifiers, e.g. from within forms they quote and pass
 ;;        to Font Lock to be evaluated outside of their lexical scope.
 ;;
@@ -773,4 +802,5 @@ User instructions URL ‘http://reluk.ca/project/Breccia/Emacs/user_instructions
 ;;   SR · https://emacs.stackexchange.com/a/27169/21090
 
 
-                                  ;;; Copyright © 2019-2020 Michael Allan and contributors.  Licence MIT.
+;; - - - - - - - - - -
+;;; breccia-mode.el ends here
