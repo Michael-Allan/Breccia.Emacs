@@ -694,13 +694,15 @@ Cf. ‘brec-task-bullet-singleton’."
 
 
 ;; ══════════════════════════════════════════════════════════════════════════════════════════════════════
+;;  P a c k a g e   p r o v i s i o n
+;; ══════════════════════════════════════════════════════════════════════════════════════════════════════
 
 
 (defvar brec--autoload-guard); Bound from here to end of file load, void at all other times.
 
 ;;;###autoload
 (unless (boundp 'brec--autoload-guard); To execute only on `package-initialize`, not on file load. [GDA]
-  ;; Here one wishes to *append* versus consing not to override any pattern previously added by the user.
+  ;; Here one wishes to *append* versus cons not to override any pattern previously added by the user.
   ;; One does not, however, expect a package to demur in installing itself.  Rather let the package
   ;; *manager* mend its own bugs, and the user meantime find recourse in the means that Emacs provides.
   ;; https://stackoverflow.com/a/35949889/2402790
