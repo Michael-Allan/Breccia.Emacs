@@ -696,9 +696,10 @@ Cf. ‘brec-task-bullet-singleton’."
 ;; ══════════════════════════════════════════════════════════════════════════════════════════════════════
 
 
-(set 'brec-f nil); Ensuring it is bound for sake of the following guard.
+(defvar brec--autoload-guard); Bound from here to end of file load, void at all other times.
+
 ;;;###autoload
-(unless (boundp 'brec-f); To execute once only on `package-initialize`, not again on file load. [GDA]
+(unless (boundp 'brec--autoload-guard); To execute only on `package-initialize`, not on file load. [GDA]
   ;; Here one wishes to *append* versus consing not to override any pattern previously added by the user.
   ;; One does not, however, expect a package to demur in installing itself.  Rather let the package
   ;; *manager* mend its own bugs, and the user meantime find recourse in the means that Emacs provides.
@@ -759,7 +760,7 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;;        or ‘assignment to free variable’.
 ;;
 ;;   GDA  Guarded definition of autoloads.  It would be simpler to move the autoload definitions to
-;;        a separate file, except that multi-file packages are more difficult to maintain.
+;;        a separate, non-executing file, except that multi-file packages are difficult to maintain.
 ;;
 ;;   GVF  A global variable for the use of fontifiers, e.g. from within forms they quote and pass
 ;;        to Font Lock to be evaluated outside of their lexical scope.
