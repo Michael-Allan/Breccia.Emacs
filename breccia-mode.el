@@ -12,11 +12,11 @@
 
 ;;; Commentary:
 
-;; This package introduces a major mode for editing Breccian text.  For more information,
-;; see `http://reluk.ca/project/Breccia/Emacs/`.
+;; This package introduces a major mode for editing Breccian text (`breccia-mode`).
+;; For more information, see `http://reluk.ca/project/Breccia/Emacs/`.
 ;;
-;; If you install this package using a package manager, then already Breccia Mode should activate
-;; for any `.brec` file you load.  Alternatively you may want to install it manually:
+;; If you install this package using a package manager, then already `breccia-mode` should activate
+;; for any `.brec` file you load.  Alternatively you may want to install the mode manually:
 ;;
 ;;   1. Put a copy of the present file on your load path.
 ;;      https://www.gnu.org/software/emacs/manual/html_node/elisp/Library-Search.html
