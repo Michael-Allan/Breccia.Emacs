@@ -687,7 +687,7 @@ The face for a task bullet that comprises ‘+’ alone."
 
 (defface brec-task-bullet-terminator
   `((t . (:inherit font-lock-comment-face))) "\
-The face for the bullet terminator ‘+’ of a task point.
+The face for the bullet terminator ‘+’ of a non-singleton task point.
 Cf. ‘brec-task-bullet-singleton’."
   :group 'breccia)
 
