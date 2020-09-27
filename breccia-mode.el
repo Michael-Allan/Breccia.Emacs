@@ -364,12 +364,12 @@ or terminal line of the buffer.  For this purpose a blank line is defined by
          ;; ┈──────┘
          ;;    PI
 
-         '(1 'brec-aside-bullet); [QBF]
+         '(1 'brec-aside-bullet)
 
          (list; (3, anchored highlighter) Usually a descriptor follows the bullet,
           "\\(\\(?:.\\|\n\\)+\\)";        extending thence to the end of the point head.
           '(brec-seg-end); (2, pre-form) Making the search region cover the whole of it. [PSE]
-          nil '(1 'brec-aside-descriptor))); [QBF]
+          nil '(1 'brec-aside-descriptor)))
 
 
    ;; ═════════════
@@ -380,7 +380,7 @@ or terminal line of the buffer.  For this purpose a blank line is defined by
          ;; ┈──────┘
          ;;    PI
 
-         '(1 'brec-command-bullet); [QBF]
+         '(1 'brec-command-bullet)
 
          ;; Descriptor
          ;; ──────────
@@ -391,7 +391,7 @@ or terminal line of the buffer.  For this purpose a blank line is defined by
             brec-g (brec-seg-end)); Saving the limit of the present fontification segment and
               ;;; returning it, so extending the search region over the whole descriptor. [PSE]
           '(goto-char brec-f); (4, post-form) Repositioning for the next anchored highlighter, below.
-          '(1 'brec-command-descriptor)); [QBF]
+          '(1 'brec-command-descriptor))
 
          ;; Referential command
          ;; ───────────────────
@@ -402,7 +402,7 @@ or terminal line of the buffer.  For this purpose a blank line is defined by
                            (not (char-equal ?: (char-after))))); into the search region
              brec-g); and (again) ensuring it extends over the whole descriptor.
           nil
-          '(1 'brec-command-keyword t t) '(2 'brec-command-keyword t t); [QBF]
+          '(1 'brec-command-keyword t t) '(2 'brec-command-keyword t t)
           '(3 'brec-command-keyword t t)))
 
 
@@ -435,7 +435,7 @@ or terminal line of the buffer.  For this purpose a blank line is defined by
       '(1 'brec-divider nil t); `drawing-i`
       '(2 'brec-divider nil t)                  ; i,
       '(3 'brec-division-inverse-labeling nil t); ii and
-      '(4 'brec-divider nil t)                  ; iii of `inversion-iii`. [QBF]
+      '(4 'brec-divider nil t)                  ; iii of `inversion-iii`.
 
       ;; (3, anchored highlighter) Thence it may include any mix of drawing, titling, labeling and in-
       (list (concat drawing-i "\\|" titling-i "\\|" labeling-i "\\|" inversion-iii); version sequences.
@@ -446,7 +446,7 @@ or terminal line of the buffer.  For this purpose a blank line is defined by
             '(3 'brec-division-label nil t);  `labeling-i`
             '(4 'brec-divider nil t)                  ; i,
             '(5 'brec-division-inverse-labeling nil t); ii and
-            '(6 'brec-divider nil t))))               ; iii of `inversion-iii`. [QBF]
+            '(6 'brec-divider nil t))))               ; iii of `inversion-iii`.
 
 
    ;; ════════════════
@@ -576,7 +576,7 @@ or terminal line of the buffer.  For this purpose a blank line is defined by
 
    ;; Moreover where a line of pure commentary is delimited by two or more backslashes (\\⋯),
    ;; any content is taken to be a block label (L).
-   (cons "^ *\\\\\\{2,\\}\\( +.+\\)$" '(1 'brec-comment-block-label t)); [OCF, QBF, RWC, SPC]
+   (cons "^ *\\\\\\{2,\\}\\( +.+\\)$" '(1 'brec-comment-block-label t)); [OCF RWC, SPC]
      ;;;     └──────────┘  └──────┘
      ;;;         \\⋯           L
 
@@ -584,7 +584,7 @@ or terminal line of the buffer.  For this purpose a blank line is defined by
    ;; ════════════════════
    ;; Forbidden whitespace
    ;; ════════════════════
-   (cons "[\t\u2000-\u200A\u202F\u205F\u3000]" '(0 'brec-forbidden-whitespace t)))); [QBF]
+   (cons "[\t\u2000-\u200A\u202F\u205F\u3000]" '(0 'brec-forbidden-whitespace t))))
      ;;;    9, 2000 - 200A, 202F, 205F, 3000
      ;;;
      ;;; No attempt is made here to reface any no-break space (Unicode A0) that appears
@@ -780,18 +780,6 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;;        anchoring.  The manual warns, ‘It is generally a bad idea to return a position greater than
 ;;        the end of the line’ [SBF].  But this appears to be a bug in the manual.
 ;;        https://stackoverflow.com/a/9456757/2402790
-;;
-;;   QBF  Quoting of Breccian face references.  Their quoting is required for passage to evaluators,
-;;        e.g. in the case of a Font Lock *facespec*. [QFS]
-;;
-;;        That might seem obvious, but many packages define a namesake variable for each face symbol.
-;;        ‘In the vast majority of cases, this is not necessary’,
-;;        `https://www.gnu.org/software/emacs/manual/html_node/elisp/Defining-Faces.html`.
-;;        ‘Simply using faces directly is enough’,
-;;        `http://git.savannah.gnu.org/cgit/emacs.git/tree/lisp/font-lock.el`.
-;;
-;;   QFS  Quote each *facespec* formed as either a face symbol or a list, because Font lock evaluates it.
-;;        https://www.gnu.org/software/emacs/manual/html_node/elisp/Search_002dbased-Fontification.html
 ;;
 ;;   RWC  Refontifying whitespace in comments.  It too must be refontified in order to override [OCF]
 ;;        any improper fontification arising from inverse labeling or user customization of faces.
