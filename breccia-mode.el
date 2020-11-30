@@ -56,12 +56,29 @@
   ;; or “\`”, or a single character that is neither a backslash, nor a backquote (NQ).
   ;; See also `https://stackoverflow.com/q/249791/2402790`.
   "\
-The regexp pattern of a regexp pattern which is delimited by backquotes.")
+The regular-expression pattern of a regular-expression pattern complete with delimiters.")
 
 
 
-(defconst brec-gap-pattern "[ \n]+" "The regexp pattern of a gap in a descriptor.")
-  ;;; This is incomplete, it omits commentary and indentation blinds [D].
+(defconst brec-gap-pattern
+  (concat; The gap comprises one or more of the following. [D]
+   "\\(?:^ *[ \\].*$"; Indentation blind or comment block.
+   "\\| \\\\.*$"; Comment appender.
+   "\\| "; Space.
+   "\\|\n"; Newline character.
+   "\\)+") "\
+The regular-expression pattern of a gap in a descriptor.")
+
+
+
+(defconst brec-gap-start-pattern "[ \n]" "\
+The regular-expression pattern of the leading character of a descriptor gap."); [D]
+
+
+
+(defconst brec-partial-gap-pattern; Deprecated in favour of `brec-gap-pattern`.
+  "[ \n]+" "\
+A partial, regular-expression pattern of a gap in a descriptor.")
 
 
 
@@ -70,7 +87,7 @@ The regexp pattern of a regexp pattern which is delimited by backquotes.")
   ;; ┈──────┘└───┘└────────────┘ ; and a character (C) that is neither
   ;;    PI     \⋯       C        ; whitespace nor a backslash.
   "\
-The regexp pattern of the sequence marking the start of a fontification segment
+The regular-expression pattern of the sequence marking the start of a fontification segment
 other than a document head.  See also ‘brec-seg-end’.")
 ;; For the definition of ‘fontification segment’, see `brec-seg-end`.
 
@@ -178,42 +195,60 @@ The face for the descriptor of a command point."
 
 (defvar brec-command-matcher-components
   (let ((bq-pat brec-backquoted-pattern-pattern)
-        (gap brec-gap-pattern)); Lack of commentary or indentation blinds in `brec-gap-pattern` (q.v.)
-          ;;; may cause the highlighter to fail in some texts, leaving a command unhighlighted. [BUG]
-          ;;; An obvious workaround for a user editing the text is to pull commentary and indentation
-          ;;; blinds out of the command and put them instead at the end of the descriptor.
+        (gap brec-gap-pattern))
     (list
-     (concat ":" gap "\\(?:"); (initial component)
+
+     ;; Initial component
+     ;; ─────────────────
+     (concat
+      ":" gap "\\(?:\\(?1:private\\)\\(?:" gap "\\)?$"; Parental privatizer.
+      "\\|\\(?:privately" gap "\\)?\\(?:"); Optional autoprivatizer to carry the regular command (below).
 
      ;; Associative reference
      ;; ─────────────────────
      (concat
       "\\(?:\\(?1:re\\)" gap bq-pat gap "\\)?"; Referrer clause.
 
-      ;; Referent clause.  It determines the specific type of associative reference as either
-      "\\(?2:join"  ; a jointer or
-      "\\|see\\)\\>"; a pointer.
-      "\\(?3:" gap "privately\\>\\)?"); Addtionally it may mark the reference as a private fractum.
+      ;; imperative clause, one of cases A and B
+      ;; ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
+      ;; A. It may start with a referential command that *cannot* infer a referent.
+      "\\(?:\\(?2:cf\\.\\|e\\.g\\.\\|i\\.e\\.\\|NB\\|N\\.B\\.\\|see" gap "also\\|viz\\.\\)" gap
+      "\\(?:\\(?4:@\\)"; That means it must be followed *not* by an ‘@’ (error faced),
+                     ;;; *nor* by any of the terms below (likewise error faced),
+      "\\|\\(?4:same\\|similar\\|head\\|term\\)\\(?:" brec-gap-start-pattern "\\|$\\)"
+      "\\|[^ \n \\]\\)"; but by an explicit referent indicator, the leading character of which (left)
+        ;;; is sought on the pattern of a gap boundary, namely a character adjacent to a gap.
+        ;;; The no-break space ‘ ’ (A0) would be redundant in this pattern if the `gap` quantifier
+        ;;; were possessive (consuming indentation blinds even where it caused the match to fail).
+        ;;; But Emacs does not support possessive quantifiers.
 
-     ;; Privatizer
-     ;; ──────────
-     "\\|\\(?1:private\\)\\>"
+      ;; B. Alternatively it starts with a referential command that *can* infer a referent.
+      "\\|\\(?2:join\\|see\\)\\>"
 
-     ;; Other commands
-     ;; ──────────────
-     ;; Components to match new commands may be inserted here.  Each must open with "\\|" and may capture
-     ;; up to three, explicitly numbered groups, e.g. `\(?1:first\)`, `\(?2:second\)` and `\(?3:third\)`.
-     ;; The same fontification will be given to each group.  For an example of component insertion,
+      ;; Order matters above: for `see also` of A to match, it must have priority over `see` of B.
+      "\\)")
+
+     ;; Parental privatizer
+     ;; ───────────────────
+ ;;; "\\|\\(?1:private\\)\\>"
+ ;;;; But it cannot follow `privately`, and therefore comes before it (above) in the initial component.
+
+     ;; Other command matchers, each a component
+     ;; ──────────────────────
+     ;; Additional matchers may be inserted here.  Open each with `\\|`.  Capture up to three,
+     ;; explicitly numbered groups, e.g. `\(?1:foo\)`, `\(?2:bar\)` and `\(?3:etc\)`.
+     ;; The same fontification will be given to each group.  For a working example,
      ;; see `http://reluk.ca/project/wayic/Waybrec/Emacs/waybrec-mode.el`.
 
-     "\\)")); (final component)
+     ;; Final component
+     ;; ───────────────
+     "\\)\\)"))
   "\
-The list of string components that function ‘brec-keywords’ will concatenate
-in order to form the anchored matcher it uses to fontify the referential-command
-portion of each command point.  Derived modes may modify the list before calling
-‘brec-keywords’, e.g. by inserting components in order to fontify additional
-commands.  Developers should read the instructions in the source code of this
-variable before attempting to do that.")
+The command matcher for the command-point fontifier of ‘brec-keywords’.
+Formally this is a list of string components to be concatenated in order to
+form the matcher.  Derived modes may modify it before calling ‘brec-keywords’,
+e.g. by inserting components that match additional commands.  Read the source
+code and comments of the variable definition before attempting to do that.")
 
 
 
@@ -241,13 +276,6 @@ The face for inverse labeling and reverse video in a division label."
 (defface brec-division-label
   `((t . (:inherit brec-divider))) "\
 The face for a label in a divider."
-  :group 'breccia)
-
-
-
-(defface brec-division-titling
-  `((t . (:inherit (bold brec-division-label)))) "\
-The face for a titling sequence in a division label."
   :group 'breccia)
 
 
@@ -393,17 +421,17 @@ or terminal line of the buffer.  For this purpose a blank line is defined by
           '(goto-char brec-f); (4, post-form) Repositioning for the next anchored highlighter, below.
           '(1 'brec-command-descriptor))
 
-         ;; Referential command
-         ;; ───────────────────
+         ;; Command keywords
+         ;; ────────────────
          (list; (6, anchored highlighter)
           (mapconcat 'identity brec-command-matcher-components ""); Concatenating all the
           '(progn; (5, pre-form)                                    components to one string.
              (while (progn (backward-char)                     ; Bringing the bullet ‘:’
                            (not (char-equal ?: (char-after))))); into the search region
-             brec-g); and (again) ensuring it extends over the whole descriptor.
+             brec-g); and (again) ensuring the search region extends over the whole descriptor.
           nil
           '(1 'brec-command-keyword t t) '(2 'brec-command-keyword t t)
-          '(3 'brec-command-keyword t t)))
+          '(3 'brec-command-keyword t t) '(4 'error t t)))
 
 
    ;; ═══════
@@ -442,7 +470,7 @@ or terminal line of the buffer.  For this purpose a blank line is defined by
             '(brec-seg-end); (2, pre-form) Making the search region cover a whole segment of it. [PSE]
             nil; (post-form)
             '(1 'brec-divider nil t);          `drawing-i`
-            '(2 'brec-division-titling nil t); `titling-i`
+            '(2 'brec-titling-label nil t);    `titling-i`
             '(3 'brec-division-label nil t);  `labeling-i`
             '(4 'brec-divider nil t)                  ; i,
             '(5 'brec-division-inverse-labeling nil t); ii and
@@ -453,7 +481,7 @@ or terminal line of the buffer.  For this purpose a blank line is defined by
    ;; Free form bullet of an alarm, task or generic point
    ;; ════════════════
    (list
-    (let ((rough-bullet-pattern; The best a regexp can do here, allowing some false matches.
+    (let ((rough-bullet-pattern; The best a regular expression can do here, allowing some false matches.
            (concat
             "^ \\{4\\}*\\(\\\\*"; Perfectly indented (PI), the bullet starts with
             ;; ┈──────┘   └───┘   zero or more backslashes (\⋯) and a character
@@ -475,8 +503,9 @@ or terminal line of the buffer.  For this purpose a blank line is defined by
                   m2-beg nil m2-end nil is-match-changed nil)
 
             (let ((end m1-end)); Trim from the match any unwanted end boundary missed above.
-               ;;; It is either a delimiter of inline commentary (regexp pattern ‘ +\\+’)
-               ;;; or a sequence of trailing space at the line end (‘ +$’).  Trim it thus:
+               ;;; It is either the start of a descriptor that starts with a comment appender
+               ;;; (regular-expression pattern ‘ +\\+’) or a sequence of trailing space
+               ;;; at end of the line (‘ +$’).  Trim it thus:
               (while (char-equal (char-before end) ?\\); For any trailing backslashes captured,
                 (setq end (1- end)))                   ; scan backward past them.
               (while (char-equal (char-before end) ?\s); For any trailing space characters,
@@ -524,7 +553,7 @@ or terminal line of the buffer.  For this purpose a blank line is defined by
                              (or (char-equal ?/ char-first)  ; is captured, abandon the match
                                  (char-equal ?: char-first))); and continue seeking.
                     (throw 'is-free-form-bullet nil))
-                  (when (and (>= char-first ?\u2500) ; When a divider mark leads the match,
+                  (when (and (>= char-first ?\u2500) ; When a drawing character leads the match,
                              (<= char-first ?\u259F)); abandon the match and continue seeking.
                     (throw 'is-free-form-bullet nil))
 
@@ -563,20 +592,20 @@ or terminal line of the buffer.  For this purpose a blank line is defined by
 
  ;;; ──  D e f e r r e d   f o n t i f i c a t i o n  ───────────────────────────────────────────────────
 
-   ;; ══════════
-   ;; Commentary
-   ;; ══════════
-   ;; Commentary is delimited per line by one or more backslashes (\⋯) together isolated
-   ;; in whitespace.  Usually the delimiter is followed by commentary content (C) too.
+   ;; ═══════════════
+   ;; Comment carrier
+   ;; ═══════════════
+   ;; A comment carrier is delimited per line by one or more backslashes (\⋯) together isolated
+   ;; in whitespace.  Usually the delimiter is followed by whitespace and commentary (WC) too.
    (list "\\(?:^\\| \\)\\(\\\\+\\)\\( +.*\\)?$"; [RWC, SPC]
          ;;              └───────┘  └──────┘
-         ;;                  \⋯         C
+         ;;                  \⋯        WC
 
          '(1 'font-lock-comment-delimiter-face t) '(2 'font-lock-comment-face t t)); [OCF]
 
-   ;; Moreover where a line of pure commentary is delimited by two or more backslashes (\\⋯),
-   ;; any content is taken to be a block label (L).
-   (cons "^ *\\\\\\{2,\\}\\( +.+\\)$" '(1 'brec-comment-block-label t)); [OCF RWC, SPC]
+   ;; Moreover, where a carrier formed as a comment block is delimited by two or more backslashes (\\⋯),
+   ;; any WC should be faced as a comment block label (L).
+   (cons "^ *\\\\\\{2,\\}\\( +.+\\)$" '(1 'brec-comment-block-label t)); [OCF, RWC, SPC]
      ;;;     └──────────┘  └──────┘
      ;;;         \\⋯           L
 
@@ -636,7 +665,7 @@ then instead tell the user there is no DEFAULT-LABEL (string) to move to."
 (defun brec-seg-end ()
   "Returns the end position of the present fontification segment, provided that
 point is *not* at the beginning of the segment.  If point is at the beginning,
-then the result is undefined.  A fontification segment is one of the following:
+then the result is undefined.  A fontification segment is any of the following:
 a document head, point head or divider segment.
 
 See also ‘brec-seg-start-pattern’."
@@ -693,6 +722,13 @@ Cf. ‘brec-task-bullet-singleton’."
 
 
 
+(defface brec-titling-label
+  `((t . (:inherit (bold brec-division-label)))) "\
+The face for a division label that contributes to the division title, or titles."
+  :group 'breccia)
+
+
+
 ;; ══════════════════════════════════════════════════════════════════════════════════════════════════════
 ;;  P a c k a g e   p r o v i s i o n
 ;; ══════════════════════════════════════════════════════════════════════════════════════════════════════
@@ -726,7 +762,7 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;;;;; Unexpectedly that wrecks rather than helps the following.
   (setq-local paragraph-start (concat brec-seg-start-pattern ".*$"))
   (setq-local paragraph-separate "^ *\\(?:\u00A0.*\\|\\\\+\\( +.*\\)?\\)?$")
-    ;;; Blank lines, indentation blinds and block commentary, that is.
+    ;;; Blank lines, indentation blinds and comment blocks, that is.
 
   ;; Remap commands to their Breccian variants
   ;; ──────────────
@@ -767,21 +803,20 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;;   GVF  A global variable for the use of fontifiers, e.g. from within forms they quote and pass
 ;;        to Font Lock to be evaluated outside of their lexical scope.
 ;;
-;;   OCF  Overrides in comment fontification.  The fontification of a comment must override (t)
-;;        any fontification of its containing head, and must therefore follow it in `brec-keywords`.
-;;
-;;        We might have tried fontifying the commentary using the syntax system, which runs earlier.
-;;        Not by mere syntax tabulation, which is unable to grasp the form of Breccian commentary;
+;;   OCF  Overrides in comment-carrier fontification.  The fontifier must override (t) any fontifier
+;;        of the carrier’s containing head, and must therefore follow it in `brec-keywords`.
+;;            We might have tried fontifying the carrier using the syntax system, which runs earlier.
+;;        Not by mere syntax tabulation, which is unable to grasp the form of Breccian comment carriers;
 ;;        rather we would probably have used the macro `syntax-propertize-rules` to set syntax properties
-;;        on the comment delimiters.  But then could the `subexp-highlighters` for the containing fractum
-;;        have worked around the comments, e.g. with `override` at nil?  [SBF]
+;;        on the carrier delimiters.  But then could the `subexp-highlighters` for the containing fractum
+;;        have worked around the carriers, e.g. with `override` at nil?  [SBF]
 ;;
 ;;   PSE  Pre-form search extension: extending the end boundary of the search region for multi-line
 ;;        anchoring.  The manual warns, ‘It is generally a bad idea to return a position greater than
 ;;        the end of the line’ [SBF].  But this appears to be a bug in the manual.
 ;;        https://stackoverflow.com/a/9456757/2402790
 ;;
-;;   RWC  Refontifying whitespace in comments.  It too must be refontified in order to override [OCF]
+;;   RWC  Refontifying whitespace in comment carriers.  It too must be refontified to override [OCF]
 ;;        any improper fontification arising from inverse labeling or user customization of faces.
 ;;
 ;;   SBF  Search-based fontification.
@@ -790,7 +825,7 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;;   SF · Standard faces: `https://www.gnu.org/software/emacs/manual/html_node/emacs/Standard-Faces.html`
 ;;        and § Standard faces at `http://git.savannah.gnu.org/cgit/emacs.git/tree/lisp/faces.el`.
 ;;
-;;   SPC  Synchronized pattern of commentary.  Marking an instance of a pattern or anti-pattern,
+;;   SPC  Synchronized pattern of comment carriage.  Marking an instance of a pattern or anti-pattern,
 ;;        one of several that together are maintained in synchrony.
 ;;
 ;;   SR · https://emacs.stackexchange.com/a/27169/21090
