@@ -48,18 +48,6 @@
 ;; ══════════════════════════════════════════════════════════════════════════════════════════════════════
 
 
-(defconst brec-backquoted-pattern-pattern "`\\(?:\\\\.\\|[^\\`]\\)+`"
-  ;;                                       ╵     └────┘  └────┘    ╵
-  ;;                                       Q       BC      NQ      Q
-  ;;
-  ;; Each element between the backquotes (Q) is either a blackslashed character pair (BC) such as “\n”
-  ;; or “\`”, or a single character that is neither a backslash, nor a backquote (NQ).
-  ;; See also `https://stackoverflow.com/q/249791/2402790`.
-  "\
-The regular-expression pattern of a regular-expression pattern complete with delimiters.")
-
-
-
 (defconst brec-gap-pattern
   (concat; The gap comprises one or more of the following. [D]
    "\\(?:^ *[ \\].*$"; Indentation blind or comment block.
@@ -82,14 +70,12 @@ A partial, regular-expression pattern of a gap in a descriptor.")
 
 
 
-(defconst brec-seg-start-pattern ; Perfect indentation (PI),          [SPC]
-  "^ \\{4\\}*\\\\*[^[:space:]\\]"; zero or more backslashes (\⋯)
-  ;; ┈──────┘└───┘└────────────┘ ; and a character (C) that is neither
-  ;;    PI     \⋯       C        ; whitespace nor a backslash.
-  "\
-The regular-expression pattern of the sequence marking the start of a fontification segment
-other than a document head.  See also ‘brec-seg-end’.")
-;; For the definition of ‘fontification segment’, see `brec-seg-end`.
+(defconst brec-seg-start-pattern
+  (concat "^ \\{4\\}*\\(?:"; Perfectly indented, the start of the segment comprises [SPC]
+    ;; any sequence outside the delimiter of either a comment block or an indentation blind.
+    "\\\\+[^ \n\\]\\|[^[:space:]\\]\\)") "\
+The pattern of the start of a fontification segment other than a document head.
+See also ‘brec-seg-end’."); For the definition of ‘fontification segment’, see `brec-seg-end`.
 
 
 
@@ -147,6 +133,18 @@ The face for the descriptor of an aside point."
 
 
 
+(defconst brec-backquoted-pattern-pattern "`\\(?:\\\\.\\|[^\\`]\\)+`"
+  ;;                                       ╵     └────┘  └────┘    ╵
+  ;;                                       Q       BC      NQ      Q
+  ;;
+  ;; Each element between the backquotes (Q) is either a blackslashed character pair (BC) such as “\n”
+  ;; or “\`”, or a single character that is neither a backslash, nor a backquote (NQ).
+  ;; See also `https://stackoverflow.com/q/249791/2402790`.
+  "\
+The regular-expression pattern of a regular-expression pattern complete with delimiters.")
+
+
+
 (defun brec-backward-paragraph ()
   "A Breccian variant of the ‘backward-paragraph’ command.  Moves backward
 to the previous paragraph, as defined by ‘brec-interparagraph-line-offset’."
@@ -172,13 +170,6 @@ A major mode for editing Breccian text"
 
 
 
-(defface brec-command-keyword
-  `((t . (:inherit brec-command-descriptor))) "\
-The face for a keyword in the descriptor of a command point."
-  :group 'breccia)
-
-
-
 (defface brec-command-bullet
   `((t . (:inherit (brec-bullet brec-command-descriptor)))) "\
 The face for the bullet of a command point."
@@ -189,6 +180,13 @@ The face for the bullet of a command point."
 (defface brec-command-descriptor
   `((t . (:inherit font-lock-builtin-face))) "\
 The face for the descriptor of a command point."
+  :group 'breccia)
+
+
+
+(defface brec-command-keyword
+  `((t . (:inherit brec-command-descriptor))) "\
+The face for a keyword in the descriptor of a command point."
   :group 'breccia)
 
 
@@ -249,6 +247,13 @@ Formally this is a list of string components to be concatenated in order to
 form the matcher.  Derived modes may modify it before calling ‘brec-keywords’,
 e.g. by inserting components that match additional commands.  Read the source
 code and comments of the variable definition before attempting to do that.")
+
+
+
+(defface brec-command-operator
+  `((t . (:inherit brec-command-descriptor))) "\
+The face for an operator in the descriptor of a command point."
+  :group 'breccia)
 
 
 
@@ -415,7 +420,7 @@ or terminal line of the buffer.  For this purpose a blank line is defined by
          (list; (3, anchored highlighter) Usually a descriptor follows the bullet,
           "\\(\\(?:.\\|\n\\)+\\)";        extending thence to the end of the point head.
           '(setq; (2, pre-form)
-            brec-f (point); Saving the start of search region.
+            brec-f (point); Saving the end-bound of the anchor.
             brec-g (brec-seg-end)); Saving the limit of the present fontification segment and
               ;;; returning it, so extending the search region over the whole descriptor. [PSE]
           '(goto-char brec-f); (4, post-form) Repositioning for the next anchored highlighter, below.
@@ -429,9 +434,57 @@ or terminal line of the buffer.  For this purpose a blank line is defined by
              (while (progn (backward-char)                     ; Bringing the bullet ‘:’
                            (not (char-equal ?: (char-after))))); into the search region
              brec-g); and (again) ensuring the search region extends over the whole descriptor.
-          nil
+          '(goto-char brec-f); (7, post-form) Repositioning for the next anchored highlighter, below.
           '(1 'brec-command-keyword t t) '(2 'brec-command-keyword t t)
-          '(3 'brec-command-keyword t t) '(4 'error t t)))
+          '(3 'brec-command-keyword t t) '(4 'error t t))
+
+         ;; Fractum indicator, components of
+         ;; ─────────────────
+         (let ((gap brec-gap-pattern))
+           (list; (9, anchored highlighter)
+            (concat
+             gap "\\(?:\\(@\\)\\|\\(`\\)\\(\\(?:\\\\.\\|[^\\`]\\)+\\)\\(`\\)\\)")
+               ;;         ╵     ╻   ╵           └────┘  └────┘          ╵
+               ;;         CO    ┃   Q             BC      NQ            Q
+               ;;               ╹
+               ;; Each component is either a containment operator (CO) or a pattern, for which
+               ;; the subcomponents (Q, BC, NQ ) are explained at `brec-backquoted-pattern-pattern`.
+            '(progn; (8, pre-form)
+               (while (progn (backward-char)                     ; Again bringing the bullet ‘:’
+                             (not (char-equal ?: (char-after))))); into the search region
+               brec-g); and ensuring the search region extends over the whole descriptor.
+            nil
+            '(1 'brec-command-operator t t) '(2 'brec-pattern-delimiter t t)
+            '(3 'brec-pattern t t) '(4 'brec-pattern-delimiter t t))))
+
+   ;; Regular-expression pattern, formal elements of
+   ;; ──────────────────────────
+   (cons; (1) Anchoring on face `brec-pattern`.
+    (let (match-beg match-end)
+      (lambda (limit)
+        (setq match-beg (point)); Presumptively.
+        (catch 'to-anchor
+          (while (< match-beg limit)
+            (setq match-end (next-single-property-change match-beg 'face (current-buffer) limit))
+            (when (eq 'brec-pattern (get-text-property match-beg 'face))
+              (set-match-data (list match-beg (goto-char match-end) (current-buffer)))
+              (set 'brec-f match-beg); Saving the anchor’s bounds.
+              (set 'brec-g match-end)
+              (throw 'to-anchor t))
+            (setq match-beg match-end))
+          nil)))
+    (list; (3, anchored highlighter)
+     (concat
+      "\\(?:\\(\\\\\\(?:[bdRt]";     \b  \d  \R  \t
+         "\\|N{\\(?:[A-Z0-9 -]+";            \N{⋯}    (by name) [UCN]
+            "\\|U\\+[0-9a-fA-F]+\\)}\\)\\)"; \N{U+⋯}  (by number)
+      "\\|\\(\\\\\\).";                      \·  (backslash-literal pair)
+      "\\|\\(\\(?:(\\(?:\\?:\\)?";   (  (?:
+         "\\|[.$|)*+?^]+\\)\\)\\)"); ^^  ^  .  $  |  )  *  +  ?
+     '(progn; (2, pre-form)
+        (goto-char brec-f); To `match-beg` of the anchor effectively.
+        brec-g); Limiting the search region (∵ return value is > point) effectively to `match-end`.
+     nil '(1 'brec-pattern-element t t) '(2 'brec-pattern-element t t) '(3 'brec-pattern-element t t)))
 
 
    ;; ═══════
@@ -483,13 +536,12 @@ or terminal line of the buffer.  For this purpose a blank line is defined by
    (list
     (let ((rough-bullet-pattern; The best a regular expression can do here, allowing some false matches.
            (concat
-            "^ \\{4\\}*\\(\\\\*"; Perfectly indented (PI), the bullet starts with
-            ;; ┈──────┘   └───┘   zero or more backslashes (\⋯) and a character
-            ;;    PI        \⋯    that is neither whitespace nor a backslash:
-            ;;
-            "\\(?:[[:alnum:]]+ *\\|[^[:alnum:][:space:]\\][\u00A0]*\\)"
+            "^ \\{4\\}*\\("; Perfectly indented, the start of the bullet roughly comprises [SPC]
+            "\\(?:\\\\+[\u00A0]+"; either (←) a backslash sequence preceding a no-break-space sequence,
+              ;;; or (↓) zero or more backslashes preceding a character neither whitespace nor backslash.
+            "\\|\\\\*\\(?:[[:alnum:]]+ *\\|[^[:alnum:][:space:]\\][\u00A0]*\\)\\)"
 
-            ;; It ends just before either a) a space that directly after a non-alphanumeric, non-space
+            ;; It ends just before either a) a space directly after a non-alphanumeric, non-space
             ;; character, or b) a newline.  Note that a no-break space (Unicode A0) will not end it.
             "\\(?:[[:alnum:]]+ *\\|[^[:alnum:][:space:]]+[\u00A0]*\\)*\\)"))
           char-first char-last is-match-changed length m1-beg m1-end m2-beg m2-end
@@ -546,7 +598,7 @@ or terminal line of the buffer.  For this purpose a blank line is defined by
                       (set 'brec-g 'brec-alarm-bullet-terminator))
                     (throw 'is-free-form-bullet t))
 
-                  ;; Miscapture of non-bullet (divider) | tightly constrained (aside|command) bullet
+                  ;; Miscapture of non-bullet (divider) or non-free-form (aside|command) bullet
                   ;; ──────────
                   (setq char-first (char-after m1-beg))
                   (when (and (= 1 length)                    ; When an aside or command bullet
@@ -662,6 +714,28 @@ then instead tell the user there is no DEFAULT-LABEL (string) to move to."
          (current-indentation))))))
 
 
+
+(defface brec-pattern
+  `((t . (:inherit brec-command-descriptor))) "\
+The face for a regular-expression pattern in the descriptor of a command point."
+  :group 'breccia)
+
+
+
+(defface brec-pattern-delimiter
+  `((t . (:inherit brec-command-descriptor))) "\
+The face for each of the delimiters of a regular-expression pattern."
+  :group 'breccia)
+
+
+
+(defface brec-pattern-element
+  `((t . (:inherit brec-pattern))) "\
+The face for a formal element of a regular-expression pattern."
+  :group 'breccia)
+
+
+
 (defun brec-seg-end ()
   "Returns the end position of the present fontification segment, provided that
 point is *not* at the beginning of the segment.  If point is at the beginning,
@@ -761,7 +835,7 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;;; (set 'use-hard-newlines t); It says, ‘Automatically becomes permanently buffer-local when set.’
 ;;;;; Unexpectedly that wrecks rather than helps the following.
   (setq-local paragraph-start (concat brec-seg-start-pattern ".*$"))
-  (setq-local paragraph-separate "^ *\\(?:\u00A0.*\\|\\\\+\\( +.*\\)?\\)?$")
+  (setq-local paragraph-separate "^ *\\(?:\u00A0.*\\|\\\\+\\( +.*\\)?\\)?$"); [SPC]
     ;;; Blank lines, indentation blinds and comment blocks, that is.
 
   ;; Remap commands to their Breccian variants
@@ -813,7 +887,7 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;;
 ;;   PSE  Pre-form search extension: extending the end boundary of the search region for multi-line
 ;;        anchoring.  The manual warns, ‘It is generally a bad idea to return a position greater than
-;;        the end of the line’ [SBF].  But this appears to be a bug in the manual.
+;;        the end of the line’ [SBF].  But here the manual appears to be wrong.
 ;;        https://stackoverflow.com/a/9456757/2402790
 ;;
 ;;   RWC  Refontifying whitespace in comment carriers.  It too must be refontified to override [OCF]
@@ -829,6 +903,8 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;;        one of several that together are maintained in synchrony.
 ;;
 ;;   SR · https://emacs.stackexchange.com/a/27169/21090
+;;
+;;   UCN  Unicode character name. https://en.wikipedia.org/wiki/Unicode_character_property#Name
 
 
 ;; - - - - - - - - - -
