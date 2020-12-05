@@ -33,7 +33,6 @@
 ;; For a working example of manual installation, see the relevant lines
 ;; of `http://reluk.ca/.emacs.d/lisp/initialization.el`, and follow the reference there.
 
-
 ;;; Code:
 
 ;; For anyone coding a derivation of Breccia Mode, see `brec-command-matcher-components`.
@@ -907,5 +906,4 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;;   UCN  Unicode character name. https://en.wikipedia.org/wiki/Unicode_character_property#Name
 
 
-;; - - - - - - - - - -
 ;;; breccia-mode.el ends here
