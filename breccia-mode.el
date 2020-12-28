@@ -49,7 +49,7 @@
 
 
 (defconst brec-gap-pattern
-  (concat; The gap comprises one or more of the following. [D]
+  (concat; The gap comprises one or more of the following.
    "\\(?:^ *[ \\].*$"; Indentation blind or comment block.
    "\\| \\\\.*$"; Comment appender.
    "\\| "; Space.
@@ -60,13 +60,7 @@ The regular-expression pattern of a gap in a descriptor.")
 
 
 (defconst brec-gap-start-pattern "[ \n]" "\
-The regular-expression pattern of the leading character of a descriptor gap."); [D]
-
-
-
-(defconst brec-partial-gap-pattern; Deprecated in favour of `brec-gap-pattern`.
-  "[ \n]+" "\
-A partial, regular-expression pattern of a gap in a descriptor.")
+The regular-expression pattern of the leading character of a descriptor gap.");
 
 
 
@@ -861,8 +855,6 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;; NOTES
 ;; ─────
 ;;   BUG  This code is incorrect.
-;;
-;;   D ·· Descriptor.  http://reluk.ca/project/Breccia/language_definition.brec § Descriptor
 ;;
 ;;   FLE  Font Lock extension.  The alternative to `font-lock-extend-region-functions`, namely the
 ;;        little used `font-lock-extend-after-change-region-function`, appears to be a design error.
