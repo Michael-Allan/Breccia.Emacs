@@ -56,7 +56,15 @@
    "\\|\n"; Newline character.
    "\\)+") "\
 The regular-expression pattern of a gap in a descriptor.
-See also the much simpler ‘brec-succeeding-gap-character-pattern’")
+See also the simpler ‘brec-preceding-gap-character-pattern’
+and ‘brec-succeeding-gap-character-pattern’"); Use of `brec-gap-pattern` where the simpler
+;; `brec-preceding-gap-character-pattern` would suffice has been known to hang Emacs in a loop. [BUG]
+
+
+
+(defconst brec-preceding-gap-character-pattern "[ \n]" "\
+The regular-expression pattern of a descriptor gap character that could
+directly precede a non-gap character.  See also ‘brec-gap-pattern’.");
 
 
 
@@ -436,22 +444,22 @@ or terminal line of the buffer.  For this purpose a blank line is defined by
 
          ;; Fractum indicator, components of
          ;; ─────────────────
-         (let ((gap brec-gap-pattern))
-           (list; (9, anchored highlighter)
-            (concat
-             gap "\\(?:\\(@\\)\\|\\(`\\)\\(\\(?:\\\\.\\|[^\\`]\\)+\\)\\(`\\)\\)")
-               ;;         ╵     ╻   ╵           └────┘  └────┘          ╵
-               ;;         CO    ┃   Q             BC      NQ            Q
-               ;;               ╹
-               ;; Each component is either a containment operator (CO) or a pattern, for which
-               ;; the subcomponents (Q, BC, NQ ) are explained at `brec-backquoted-pattern-pattern`.
-            '(progn; (8, pre-form)
-               (while (progn (backward-char)                     ; Again bringing the bullet ‘:’
-                             (not (char-equal ?: (char-after))))); into the search region
-               brec-g); and ensuring the search region extends over the whole descriptor.
-            nil
-            '(1 'brec-command-operator t t) '(2 'brec-pattern-delimiter t t)
-            '(3 'brec-pattern t t) '(4 'brec-pattern-delimiter t t))))
+         (list; (9, anchored highlighter)
+          (concat
+           brec-preceding-gap-character-pattern
+           "\\(?:\\(@\\)\\|\\(`\\)\\(\\(?:\\\\.\\|[^\\`]\\)+\\)\\(`\\)\\)")
+          ;;        ╵     ╻   ╵           └────┘  └────┘          ╵
+          ;;        CO    ┃   Q             BC      NQ            Q
+          ;;              ╹
+          ;; Each component is either a containment operator (CO) or a pattern, for which
+          ;; the subcomponents (Q, BC, NQ ) are explained at `brec-backquoted-pattern-pattern`.
+          '(progn; (8, pre-form)
+             (while (progn (backward-char)                     ; Again bringing the bullet ‘:’
+                           (not (char-equal ?: (char-after))))); into the search region
+             brec-g); and ensuring the search region extends over the whole descriptor.
+          nil
+          '(1 'brec-command-operator t t) '(2 'brec-pattern-delimiter t t)
+          '(3 'brec-pattern t t) '(4 'brec-pattern-delimiter t t)))
 
    ;; Regular-expression pattern, formal elements of
    ;; ──────────────────────────
