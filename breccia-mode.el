@@ -55,12 +55,8 @@
    "\\| "; Space.
    "\\|\n"; Newline character.
    "\\)+") "\
-The regular-expression pattern of a gap in a descriptor.")
-
-
-
-(defconst brec-gap-start-pattern "[ \n]" "\
-The regular-expression pattern of the leading character of a descriptor gap.");
+The regular-expression pattern of a gap in a descriptor.
+See also the much simpler ‘brec-succeeding-gap-character-pattern’")
 
 
 
@@ -70,6 +66,12 @@ The regular-expression pattern of the leading character of a descriptor gap.");
     "\\\\+[^ \n\\]\\|[^[:space:]\\]\\)") "\
 The pattern of the start of a fontification segment other than a document head.
 See also ‘brec-seg-end’."); For the definition of ‘fontification segment’, see `brec-seg-end`.
+
+
+
+(defconst brec-succeeding-gap-character-pattern "[ \n]" "\
+The regular-expression pattern of a descriptor gap character that could
+directly follow a non-gap character.  See also ‘brec-gap-pattern’.");
 
 
 
@@ -207,10 +209,10 @@ The face for a keyword in the descriptor of a command point."
       "\\(?:\\(?2:cf\\.\\|e\\.g\\.\\|i\\.e\\.\\|NB\\|N\\.B\\.\\|see" gap "also\\|viz\\.\\)" gap
       "\\(?:\\(?4:@\\)"; That means it must be followed *not* by an ‘@’ (error faced),
                      ;;; *nor* by any of the terms below (likewise error faced),
-      "\\|\\(?4:same\\|similar\\|head\\|term\\)\\(?:" brec-gap-start-pattern "\\|$\\)"
+      "\\|\\(?4:same\\|similar\\|head\\|term\\)\\(?:" brec-succeeding-gap-character-pattern "\\|$\\)"
       "\\|[^ \n \\]\\)"; but by an explicit referent indicator, the leading character of which (left)
         ;;; is sought on the pattern of a gap boundary, namely a character adjacent to a gap.
-        ;;; The no-break space ‘ ’ (A0) would be redundant in this pattern if the `gap` quantifier
+        ;;; The no-break space ‘ ’ (A0) would be redundant in this pattern if the quantifier of `gap`
         ;;; were possessive (consuming indentation blinds even where it caused the match to fail).
         ;;; But Emacs does not support possessive quantifiers.
 
