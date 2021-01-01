@@ -548,6 +548,8 @@ or terminal line of the buffer.  For this purpose a blank line is defined by
             ;; It ends just before either a) a space directly after a non-alphanumeric, non-space
             ;; character, or b) a newline.  Note that a no-break space (Unicode A0) will not end it.
             "\\(?:[[:alnum:]]+ *\\|[^[:alnum:][:space:]]+[\u00A0]*\\)*\\)"))
+              ;;; The repetition nest here could fail catastrophically.  Overall a regular expression
+              ;;; is inapt for seeking bullet boundaries.  It should be replaced by a function.
           char-first char-last is-match-changed length m1-beg m1-end m2-beg m2-end
           match-last match-end)
       (lambda (limit); Seek the next such bullet.
