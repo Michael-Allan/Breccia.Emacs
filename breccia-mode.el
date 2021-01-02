@@ -700,7 +700,7 @@ and end with a line whose indentation satisfies predicate GOOD."
 
 
 (defun brec-line-is-blank ()
-  "Answers whether the line at point contains at most whitespace."
+  "Tells whether the line at point contains at most whitespace."
   ;; Modified from the original code posted by PythonNut. https://emacs.stackexchange.com/a/16826/21090
   (string-match-p "\\`\\s-*$" (thing-at-point 'line t)))
 
