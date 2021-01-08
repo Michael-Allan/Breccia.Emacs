@@ -50,15 +50,15 @@
 
 (defconst brec-gap-pattern
   (concat; The gap comprises one or more of the following.
-   "\\(?:^ *[ \\].*$"; Indentation blind or comment block.
-   "\\| \\\\.*$"; Comment appender.
+   "\\(?:^ *[ \\].*\n?"; Indentation blind, comment block
+   "\\| \\\\.*\n?"     ; or comment appender, each together with any bounding newline character.
    "\\| "; Space.
    "\\|\n"; Newline character.
    "\\)+") "\
 The regular-expression pattern of a gap in a descriptor.
 See also the simpler ‘brec-preceding-gap-character-pattern’
-and ‘brec-succeeding-gap-character-pattern’"); Use of `brec-gap-pattern` where the simpler
-;; `brec-preceding-gap-character-pattern` would suffice has been known to hang Emacs in a loop. [BUG]
+and ‘brec-succeeding-gap-character-pattern’; for use in detecting the presence
+of a gap without having to matching the whole of it, which could be lengthy.")
 
 
 
