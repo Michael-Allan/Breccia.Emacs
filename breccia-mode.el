@@ -1,6 +1,6 @@
 ;;; breccia-mode.el --- A major mode for editing Breccian text  -*- lexical-binding: t; -*-
 
-;; Copyright © 2019-2020 Michael Allan.
+;; Copyright © 2019-2021 Michael Allan.
 
 ;; Author: Michael Allan <mike@reluk.ca>
 ;; Version: 0-snapshot
