@@ -432,22 +432,23 @@ or terminal line of the buffer.  For this purpose a blank line is defined by
 
          ;; Containment operators and backquoted patterns
          ;; ─────────────────────────────────────────────
-         (list; (6, anchored highlighter)
-          (concat
-           brec-preceding-gap-character-pattern
-           "\\(?:\\(@\\)\\|\\(`\\)\\(\\(?:\\\\.\\|[^\\`]\\)+\\)\\(`\\)\\)")
-          ;;        ╵     ╻   ╵           └────┘  └────┘          ╵
-          ;;        CO    ┃   Q             BC      NQ            Q
-          ;;              ╹
-          ;; Matching either a containment operator (CO) or backquoted pattern, the latter comprising
-          ;; subcomponents (Q, BC, NQ ) which are explained at `brec-backquoted-pattern-pattern`.
-          '(progn; (5, pre-form)
-             (while (progn (backward-char)                     ; Bringing the bullet ‘:’
-                           (not (char-equal ?: (char-after))))); into the search region
-             brec-g); and (again) ensuring the search region extends over the whole descriptor.
-          '(goto-char brec-f); (7, post-form) Repositioning for the next anchored highlighter, below.
-          '(1 'brec-command-operator t t) '(2 'brec-pattern-delimiter t t)
-          '(3 'brec-pattern t t) '(4 'brec-pattern-delimiter t t))
+         (let ((pre-gap brec-preceding-gap-character-pattern)
+               (post-gap brec-succeeding-gap-character-pattern))
+           (list; (6, anchored highlighter)
+            (concat
+             pre-gap "\\(?:\\(@\\)" post-gap "\\|\\(`\\)\\(\\(?:\\\\.\\|[^\\`]\\)+\\)\\(`\\)\\)")
+            ;;                ╵                 ╻   ╵           └────┘  └────┘          ╵
+            ;;                CO                ┃   Q             BC      NQ            Q
+            ;;                                  ╹
+            ;; Matching either a containment operator CO or backquoted pattern, the latter comprising
+            ;; subcomponents Q, BC and NQ which are explained at `brec-backquoted-pattern-pattern`.
+            '(progn; (5, pre-form)
+               (while (progn (backward-char)                     ; Bringing the bullet ‘:’
+                             (not (char-equal ?: (char-after))))); into the search region
+               brec-g); and (again) ensuring the search region extends over the whole descriptor.
+            '(goto-char brec-f); (7, post-form) Repositioning for the next anchored highlighter, below.
+            '(1 'brec-command-operator t t) '(2 'brec-pattern-delimiter t t)
+            '(3 'brec-pattern t t) '(4 'brec-pattern-delimiter t t)))
 
          ;; Command keywords (last that any `error` face it applies might override the foregoing)
          ;; ────────────────
