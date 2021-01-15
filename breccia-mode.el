@@ -393,74 +393,79 @@ or terminal line of the buffer.  For this purpose a blank line is defined by
   "Returns the value of ‘font-lock-keywords’ to use for highlighting Breccian text."
   (list
 
+
    ;; ═══════════
    ;; Aside point
    ;; ═══════════
-   ;; An aside point starts with a perfectly indented (PI) bullet comprising one slash (/).
-   (list "^ \\{4\\}*\\(/\\)\\(?: +\\|$\\)"; (1) Anchoring on the bullet.
-         ;; ┈──────┘
-         ;;    PI
 
-         '(1 'brec-aside-bullet)
+   (list; An aside point starts with a perfectly indented (PI) bullet comprising one slash (/).
+    "^ \\{4\\}*\\(/\\)\\(?: +\\|$\\)"; (1) Anchoring on the bullet.
+    ;; ┈──────┘
+    ;;    PI
 
-         (list; (3, anchored highlighter) Usually a descriptor follows the bullet,
-          "\\(\\(?:.\\|\n\\)+\\)";        extending thence to the end of the point head.
-          '(brec-seg-end); (2, pre-form) Making the search region cover the whole of it. [PSE]
-          nil '(1 'brec-aside-descriptor)))
+    '(1 'brec-aside-bullet)
+
+    (list; (3, anchored highlighter) Usually a descriptor follows the bullet,
+     "\\(\\(?:.\\|\n\\)+\\)";        extending thence to the end of the point head.
+     '(brec-seg-end); (2, pre-form) Making the search region cover the whole of it. [PSE]
+     nil '(1 'brec-aside-descriptor)))
+
 
 
    ;; ═════════════
    ;; Command point
    ;; ═════════════
-   ;; A command point starts with a perfectly indented (PI) bullet comprising one colon (:).
-   (list "^ \\{4\\}*\\(:\\)\\(?: +\\|$\\)"; (1) Anchoring on the bullet.
-         ;; ┈──────┘
-         ;;    PI
 
-         '(1 'brec-command-bullet)
+   (list; A command point starts with a perfectly indented (PI) bullet comprising one colon (:).
+    "^ \\{4\\}*\\(:\\)\\(?: +\\|$\\)"; (1) Anchoring on the bullet.
+    ;; ┈──────┘
+    ;;    PI
 
-         ;; Descriptor
-         ;; ──────────
-         (list; (3, anchored highlighter) Usually a descriptor follows the bullet,
-          "\\(\\(?:.\\|\n\\)+\\)";        extending thence to the end of the point head.
-          '(setq; (2, pre-form)
-            brec-f (point); Saving the end-bound of the anchor.
-            brec-g (brec-seg-end)); Saving the limit of the present fontification segment and
+    '(1 'brec-command-bullet)
+
+    ;; Descriptor
+    ;; ──────────
+    (list; (3, anchored highlighter) Usually a descriptor follows the bullet,
+     "\\(\\(?:.\\|\n\\)+\\)";        extending thence to the end of the point head.
+     '(setq; (2, pre-form)
+       brec-f (point); Saving the end-bound of the anchor.
+       brec-g (brec-seg-end)); Saving the limit of the present fontification segment and
               ;;; returning it, so extending the search region over the whole descriptor. [PSE]
-          '(goto-char brec-f); (4, post-form) Repositioning for the next anchored highlighter, below.
-          '(1 'brec-command-descriptor))
+     '(goto-char brec-f); (4, post-form) Repositioning for the next anchored highlighter, below.
+     '(1 'brec-command-descriptor))
 
-         ;; Containment operators and backquoted patterns
-         ;; ─────────────────────────────────────────────
-         (let ((pre-gap brec-preceding-gap-character-pattern)
-               (post-gap brec-succeeding-gap-character-pattern))
-           (list; (6, anchored highlighter)
-            (concat
-             pre-gap "\\(?:\\(@\\)" post-gap "\\|\\(`\\)\\(\\(?:\\\\.\\|[^\\`]\\)+\\)\\(`\\)\\)")
-            ;;                ╵                 ╻   ╵           └────┘  └────┘          ╵
-            ;;                CO                ┃   Q             BC      NQ            Q
-            ;;                                  ╹
-            ;; Matching either a containment operator CO or backquoted pattern, the latter comprising
-            ;; subcomponents Q, BC and NQ which are explained at `brec-backquoted-pattern-pattern`.
-            '(progn; (5, pre-form)
-               (while (progn (backward-char)                     ; Bringing the bullet ‘:’
-                             (not (char-equal ?: (char-after))))); into the search region
-               brec-g); and (again) ensuring the search region extends over the whole descriptor.
-            '(goto-char brec-f); (7, post-form) Repositioning for the next anchored highlighter, below.
-            '(1 'brec-command-operator t t) '(2 'brec-pattern-delimiter t t)
-            '(3 'brec-pattern t t) '(4 'brec-pattern-delimiter t t)))
+    ;; Containment operators and backquoted patterns
+    ;; ─────────────────────────────────────────────
+    (let ((pre-gap brec-preceding-gap-character-pattern)
+          (post-gap brec-succeeding-gap-character-pattern))
+      (list; (6, anchored highlighter)
+       (concat
+        pre-gap "\\(?:\\(@\\)" post-gap "\\|\\(`\\)\\(\\(?:\\\\.\\|[^\\`]\\)+\\)\\(`\\)\\)")
+       ;;                ╵                 ╻   ╵           └────┘  └────┘          ╵
+       ;;                CO                ┃   Q             BC      NQ            Q
+       ;;                                  ╹
+       ;; Matching either a containment operator CO or backquoted pattern, the latter comprising
+       ;; subcomponents Q, BC and NQ which are explained at `brec-backquoted-pattern-pattern`.
+       '(progn; (5, pre-form)
+          (while (progn (backward-char)                     ; Bringing the bullet ‘:’
+                        (not (char-equal ?: (char-after))))); into the search region
+          brec-g); and (again) ensuring the search region extends over the whole descriptor.
+       '(goto-char brec-f); (7, post-form) Repositioning for the next anchored highlighter, below.
+       '(1 'brec-command-operator t t) '(2 'brec-pattern-delimiter t t)
+       '(3 'brec-pattern t t) '(4 'brec-pattern-delimiter t t)))
 
-         ;; Command keywords (last that any `error` face it applies might override the foregoing)
-         ;; ────────────────
-         (list; (9, anchored highlighter)
-          (mapconcat 'identity brec-command-matcher-components ""); Concatenating all the
-          '(progn; (8, pre-form)                                    components to one string.
-             (while (progn (backward-char)                     ; Again bringing the bullet ‘:’
-                           (not (char-equal ?: (char-after))))); into the search region
-             brec-g); and ensuring the search region extends over the whole descriptor.
-          nil
-          '(1 'brec-command-keyword t t) '(2 'brec-command-keyword t t)
-          '(3 'brec-command-keyword t t) '(4 'error t t)))
+    ;; Command keywords (last that any `error` face it applies might override the foregoing)
+    ;; ────────────────
+    (list; (9, anchored highlighter)
+     (mapconcat 'identity brec-command-matcher-components ""); Concatenating all the
+     '(progn; (8, pre-form)                                    components to one string.
+        (while (progn (backward-char)                     ; Again bringing the bullet ‘:’
+                      (not (char-equal ?: (char-after))))); into the search region
+        brec-g); and ensuring the search region extends over the whole descriptor.
+     nil
+     '(1 'brec-command-keyword t t) '(2 'brec-command-keyword t t)
+     '(3 'brec-command-keyword t t) '(4 'error t t)))
+
 
    ;; Regular-expression pattern, formal elements of
    ;; ──────────────────────────
@@ -492,28 +497,31 @@ or terminal line of the buffer.  For this purpose a blank line is defined by
      nil '(1 'brec-pattern-element t t) '(2 'brec-pattern-element t t) '(3 'brec-pattern-element t t)))
 
 
+
    ;; ═══════
    ;; Divider
    ;; ═══════
-   ;; A divider starts with a perfectly indented (PI) drawing or inversion sequence.
-   (let* ((drawing-char "[\u2500-\u2587\u2589-\u258F\u2591-\u259F]")
-          (drawing-i (concat "\\(" drawing-char "+\\(?: +" drawing-char "+\\)*\\)"))
-            ;;; Capturing (i) a sequence of `drawing-char` inclusive of embedded spaces,
-            ;;; yet exclusive of embedded newlines.
 
-          (labeling-char "[^[:space:]\u2500-\u259F]")
-            ;;; A division labeling character exclusive of whitespace.
-          (labeling (concat labeling-char "+\\(?: +" labeling-char "+\\)*"))
-            ;;; A sequence of `labeling-char` inclusive of embedded spaces,
-            ;;; yet exclusive of embedded newlines.
-          (labeling-i (concat "\\(" labeling "\\)"))   ; Capturing (i) an instance of labeling.
-          (titling-i (concat "\n +\\(" labeling "\\)")); Capturing (i) an instance of titling.
+   (let*
+       ((drawing-char "[\u2500-\u2587\u2589-\u258F\u2591-\u259F]")
+        (drawing-i (concat "\\(" drawing-char "+\\(?: +" drawing-char "+\\)*\\)"))
+          ;;; Capturing (i) a sequence of `drawing-char` inclusive of embedded spaces,
+          ;;; yet exclusive of embedded newlines.
 
-          (inversion-mark "[\u2588\u2590]")
-          (inversion-iii; Capturing (i) an inversion mark, (ii) any `labeling` together with
-           ;; any space characters around it, and (iii) any full block character.
-           (concat "\\(" inversion-mark "\\)\\( *\\(?:" labeling " *\\)?\\)\\(\u2588\\)?")))
-     (list
+        (labeling-char "[^[:space:]\u2500-\u259F]")
+          ;;; A division labeling character exclusive of whitespace.
+        (labeling (concat labeling-char "+\\(?: +" labeling-char "+\\)*"))
+          ;;; A sequence of `labeling-char` inclusive of embedded spaces,
+          ;;; yet exclusive of embedded newlines.
+        (labeling-i (concat "\\(" labeling "\\)"))   ; Capturing (i) an instance of labeling.
+        (titling-i (concat "\n +\\(" labeling "\\)")); Capturing (i) an instance of titling.
+
+        (inversion-mark "[\u2588\u2590]")
+        (inversion-iii; Capturing (i) an inversion mark, (ii) any `labeling` together with
+         ;; any space characters around it, and (iii) any full block character.
+         (concat "\\(" inversion-mark "\\)\\( *\\(?:" labeling " *\\)?\\)\\(\u2588\\)?")))
+
+     (list; A divider starts with a perfectly indented (PI) drawing or inversion sequence.
       (concat "^ \\{4\\}*\\(?:" drawing-i "\\|" inversion-iii "\\)"); (1) Anchoring on the PI sequence.
       ;;       └────────┘
       ;;            PI
@@ -535,10 +543,12 @@ or terminal line of the buffer.  For this purpose a blank line is defined by
             '(6 'brec-divider nil t))))               ; iii of `inversion-iii`.
 
 
+
    ;; ════════════════
-   ;; Free form bullet of an alarm, task or generic point
+   ;; Free form bullet
    ;; ════════════════
-   (list
+
+   (list; Face each free form bullet of an alarm, task or generic point.
     (let ((rough-bullet-pattern; The best a regular expression can do here, allowing some false matches.
            (concat
             "^ \\{4\\}*\\("; Perfectly indented, the start of the bullet roughly comprises [SPC]
@@ -628,6 +638,7 @@ or terminal line of the buffer.  For this purpose a blank line is defined by
           nil)))
     '(1 brec-f) '(2 brec-g nil t))
 
+
    (cons; Reface the non-alphanumeric characters of free-form bullets.
     (let (face match-beg match-end)
       (lambda (limit)
@@ -649,29 +660,32 @@ or terminal line of the buffer.  For this purpose a blank line is defined by
     '(0 brec-f t))
 
 
- ;;; ──  D e f e r r e d   f o n t i f i c a t i o n  ───────────────────────────────────────────────────
 
    ;; ═══════════════
    ;; Comment carrier
    ;; ═══════════════
-   ;; A comment carrier is delimited per line by one or more backslashes (\⋯) together isolated
-   ;; in whitespace.  Usually the delimiter is followed by whitespace and commentary (WC) too.
-   (list "\\(?:^\\| \\)\\(\\\\+\\)\\( +.*\\)?$"; [RWC, SPC]
-         ;;              └───────┘  └──────┘
-         ;;                  \⋯        WC
 
-         '(1 'font-lock-comment-delimiter-face t) '(2 'font-lock-comment-face t t)); [OCF]
+   (list; A comment carrier is delimited per line by one or more backslashes (\⋯) together isolated
+      ;;; in whitespace.  Usually the delimiter is followed by whitespace and commentary (WC) too.
+    "\\(?:^\\| \\)\\(\\\\+\\)\\( +.*\\)?$"; [RWC, SPC]
+      ;;;           └───────┘  └──────┘
+      ;;;               \⋯        WC
 
-   ;; Moreover, where a carrier formed as a comment block is delimited by two or more backslashes (\\⋯),
-   ;; any WC should be faced as a comment block label (L).
-   (cons "^ *\\\\\\{2,\\}\\( +.+\\)$" '(1 'brec-comment-block-label t)); [OCF, RWC, SPC]
-     ;;;     └──────────┘  └──────┘
-     ;;;         \\⋯           L
+    '(1 'font-lock-comment-delimiter-face t) '(2 'font-lock-comment-face t t)); [OCF]
+
+
+   (cons; Moreover, where a carrier formed as a comment block is delimited by two or more
+      ;;; backslashes (\\⋯), any WC should be faced as a comment block label (L).
+    "^ *\\\\\\{2,\\}\\( +.+\\)$" '(1 'brec-comment-block-label t)); [OCF, RWC, SPC]
+    ;;; └──────────┘  └──────┘
+    ;;;     \\⋯           L
+
 
 
    ;; ════════════════════
    ;; Forbidden whitespace
    ;; ════════════════════
+
    (cons "[\t\u2000-\u200A\u202F\u205F\u3000]" '(0 'brec-forbidden-whitespace t))))
      ;;;    9, 2000 - 200A, 202F, 205F, 3000
      ;;;
