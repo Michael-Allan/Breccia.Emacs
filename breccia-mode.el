@@ -217,7 +217,7 @@ The face for a keyword in the descriptor of a command point."
       "\\(?:\\(?2:cf\\.\\|e\\.g\\.\\|i\\.e\\.\\|NB\\|N\\.B\\.\\|see" gap "also\\|viz\\.\\)" gap
       "\\(?:\\(?4:@\\)"; That means it must be followed *not* by an ‘@’ (error faced),
                      ;;; *nor* by any of the terms below (likewise error faced),
-      "\\|\\(?4:same\\|similar\\|head\\|term\\)\\(?:" brec-succeeding-gap-character-pattern "\\|$\\)"
+      "\\|\\(?4:same\\|similar\\|head\\|term\\)\\(?:" brec-succeeding-gap-character-pattern "\\|\\'\\)"
       "\\|[^ \n \\]\\)"; but by an explicit referent indicator, the leading character of which (left)
         ;;; is sought on the pattern of a gap boundary, namely a character adjacent to a gap.
         ;;; The no-break space ‘ ’ (A0) would be redundant in this pattern if the quantifier of `gap`
