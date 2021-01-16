@@ -851,24 +851,19 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
   (setq-local nobreak-char-display t); whitespace syntax, and a distinct look as defined by the Emacs
      ;;; standard face `nobreak-space`. [SF]
 
-  ;; Define paragraph bounds, e.g. for sake of the `fill-paragraph` command
-  ;; ───────────────────────
-;;; (set 'use-hard-newlines t); It says, ‘Automatically becomes permanently buffer-local when set.’
-;;;;; Unexpectedly that wrecks rather than helps the following.
+  ;; Set up paragraph handling
+  ;; ─────────────────────────
   (let ((s brec-seg-start-pattern))
     (cl-assert (string-prefix-p "^" s))
     (setq-local paragraph-start (substring-no-properties s 1))); [PBD]
   (setq-local paragraph-separate " *\\(?:\u00A0.*\\|\\\\+\\( +.*\\)?\\)?$"); [PBD, SPC]
     ;;; Indentation blinds, comment blocks and blank lines, that is.
-
-  ;; Remap commands to their Breccian variants
-  ;; ──────────────
   (let ((m breccia-mode-map))
     (define-key m [remap backward-paragraph] 'brec-backward-paragraph)
     (define-key m [remap  forward-paragraph]  'brec-forward-paragraph))
 
-  ;; Set up Font Lock
-  ;; ────────────────
+  ;; Hook into Font Lock
+  ;; ───────────────────
 ;;; (brec-set-for-buffer 'font-lock-multiline t)
 ;;;;; This setting does not, however, seem necessary; nor does the documentation imply that it would be.
 ;;;;; Should fontification ever depend on *subsequent* lines, there I think this setting would at least
@@ -908,6 +903,8 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;;
 ;;   PBD  Paragraph boundary definition.  It “should not use ‘^’ to anchor the match.”
 ;;        https://www.gnu.org/software/emacs/manual/html_node/elisp/Standard-Regexps.html
+;;            This definition is used by the command `fill-paragraph` for instance.  It is not,
+;;        however, used by the commands `brec-backward-paragraph` and `brec-forward-paragraph`.
 ;;
 ;;   PSE  Pre-form search extension: extending the end boundary of the search region for multi-line
 ;;        anchoring.  The manual warns, ‘It is generally a bad idea to return a position greater than
