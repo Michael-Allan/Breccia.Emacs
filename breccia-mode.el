@@ -855,8 +855,10 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
   ;; ───────────────────────
 ;;; (set 'use-hard-newlines t); It says, ‘Automatically becomes permanently buffer-local when set.’
 ;;;;; Unexpectedly that wrecks rather than helps the following.
-  (setq-local paragraph-start (concat brec-seg-start-pattern ".*$"))
-  (setq-local paragraph-separate "^ *\\(?:\u00A0.*\\|\\\\+\\( +.*\\)?\\)?$"); [SPC]
+  (let ((s brec-seg-start-pattern))
+    (cl-assert (string-prefix-p "^" s))
+    (setq-local paragraph-start (substring-no-properties s 1))); [PBD]
+  (setq-local paragraph-separate " *\\(?:\u00A0.*\\|\\\\+\\( +.*\\)?\\)?$"); [PBD, SPC]
     ;;; Indentation blinds, comment blocks and blank lines, that is.
 
   ;; Remap commands to their Breccian variants
@@ -903,6 +905,9 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;;        rather we would probably have used the macro `syntax-propertize-rules` to set syntax properties
 ;;        on the carrier delimiters.  But then could the `subexp-highlighters` for the containing fractum
 ;;        have worked around the carriers, e.g. with `override` at nil?  [SBF]
+;;
+;;   PBD  Paragraph boundary definition.  It “should not use ‘^’ to anchor the match.”
+;;        https://www.gnu.org/software/emacs/manual/html_node/elisp/Standard-Regexps.html
 ;;
 ;;   PSE  Pre-form search extension: extending the end boundary of the search region for multi-line
 ;;        anchoring.  The manual warns, ‘It is generally a bad idea to return a position greater than
