@@ -545,10 +545,10 @@ or terminal line of the buffer.  For this purpose a blank line is defined by
 
 
    ;; ════════════════
-   ;; Free form bullet
+   ;; Free-form bullet
    ;; ════════════════
 
-   (list; Face each free form bullet of an alarm, task or generic point.
+   (list; Face each bullet of an alarm, task or generic point.
     (let ((rough-bullet-pattern; The best a regular expression can do here, allowing some false matches.
            (concat
             "^ \\{4\\}*\\("; Perfectly indented, the start of the bullet roughly comprises [SPC]
@@ -857,7 +857,7 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;;;;; Unexpectedly that wrecks rather than helps the following.
   (setq-local paragraph-start (concat brec-seg-start-pattern ".*$"))
   (setq-local paragraph-separate "^ *\\(?:\u00A0.*\\|\\\\+\\( +.*\\)?\\)?$"); [SPC]
-    ;;; Blank lines, indentation blinds and comment blocks, that is.
+    ;;; Indentation blinds, comment blocks and blank lines, that is.
 
   ;; Remap commands to their Breccian variants
   ;; ──────────────
