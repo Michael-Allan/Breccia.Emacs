@@ -853,10 +853,8 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 
   ;; Set up paragraph handling
   ;; ─────────────────────────
-  (let ((s brec-seg-start-pattern))
-    (cl-assert (string-prefix-p "^" s))
-    (setq-local paragraph-start (substring-no-properties s 1))); [PBD]
-  (setq-local paragraph-separate " *\\(?:\u00A0.*\\|\\\\+\\( +.*\\)?\\)?$"); [PBD, SPC]
+  (setq-local paragraph-start brec-seg-start-pattern); [PBD]
+  (setq-local paragraph-separate "^ *\\(?:\u00A0.*\\|\\\\+\\( +.*\\)?\\)?$"); [PBD, SPC]
     ;;; Indentation blinds, comment blocks and blank lines, that is.
   (let ((m breccia-mode-map))
     (define-key m [remap backward-paragraph] 'brec-backward-paragraph)
@@ -901,10 +899,11 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;;        on the carrier delimiters.  But then could the `subexp-highlighters` for the containing fractum
 ;;        have worked around the carriers, e.g. with `override` at nil?  [SBF]
 ;;
-;;   PBD  Paragraph boundary definition.  It “should not use ‘^’ to anchor the match.”
+;;   PBD  Paragraph boundary definition.  It is used by the command `fill-paragraph`, for instance,
+;;        not however by the commands `brec-backward-paragraph` and `brec-forward-paragraph`.
+;;            The manual says it “should not use ‘^’ to anchor the match”; yet without that anchor,
+;;        `fill-paragraph` fails to work, instead collapsing the fractal head to a single line.
 ;;        https://www.gnu.org/software/emacs/manual/html_node/elisp/Standard-Regexps.html
-;;            This definition is used by the command `fill-paragraph` for instance.  It is not,
-;;        however, used by the commands `brec-backward-paragraph` and `brec-forward-paragraph`.
 ;;
 ;;   PSE  Pre-form search extension: extending the end boundary of the search region for multi-line
 ;;        anchoring.  The manual warns, ‘It is generally a bad idea to return a position greater than
