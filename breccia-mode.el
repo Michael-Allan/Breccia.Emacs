@@ -275,13 +275,6 @@ The face for a divider."
 
 
 
-(defface brec-division-inverse-labeling
-  `((t . (:inherit (bold brec-divider) :inverse-video t))) "\
-The face for inverse labeling and reverse video in a division label."
-  :group 'breccia)
-
-
-
 (defface brec-division-label
   `((t . (:inherit brec-divider))) "\
 The face for a label in a divider."
@@ -503,9 +496,9 @@ or terminal line of the buffer.  For this purpose a blank line is defined by
    ;; ═══════
 
    (let*
-       ((drawing-char "[\u2500-\u2587\u2589-\u258F\u2591-\u259F]")
-        (drawing-i (concat "\\(" drawing-char "+\\(?: +" drawing-char "+\\)*\\)"))
-          ;;; Capturing (i) a sequence of `drawing-char` inclusive of embedded spaces,
+       ((drawing-char "[\u2500-\u259F]")
+        (drawing-cap (concat "\\(" drawing-char "+\\(?: +" drawing-char "+\\)*\\)"))
+          ;;; Capturing a sequence of `drawing-char` inclusive of embedded spaces,
           ;;; yet exclusive of embedded newlines.
 
         (labeling-char "[^[:space:]\u2500-\u259F]")
@@ -513,34 +506,23 @@ or terminal line of the buffer.  For this purpose a blank line is defined by
         (labeling (concat labeling-char "+\\(?: +" labeling-char "+\\)*"))
           ;;; A sequence of `labeling-char` inclusive of embedded spaces,
           ;;; yet exclusive of embedded newlines.
-        (labeling-i (concat "\\(" labeling "\\)"))   ; Capturing (i) an instance of labeling.
-        (titling-i (concat "\n +\\(" labeling "\\)")); Capturing (i) an instance of titling.
+        (labeling-cap (concat "\\(" labeling "\\)"))    ; Capturing an instance of non-title labeling.
+        (titling-cap (concat "\n +\\(" labeling "\\)"))); Capturing an instance of titling.
 
-        (inversion-mark "[\u2588\u2590]")
-        (inversion-iii; Capturing (i) an inversion mark, (ii) any `labeling` together with
-         ;; any space characters around it, and (iii) any full block character.
-         (concat "\\(" inversion-mark "\\)\\( *\\(?:" labeling " *\\)?\\)\\(\u2588\\)?")))
-
-     (list; A divider starts with a perfectly indented (PI) drawing or inversion sequence.
-      (concat "^ \\{4\\}*\\(?:" drawing-i "\\|" inversion-iii "\\)"); (1) Anchoring on the PI sequence.
+     (list; A divider starts with a perfectly indented (PI) drawing sequence.
+      (concat "^ \\{4\\}*" drawing-cap); (1) Anchoring on that sequence.
       ;;       └────────┘
       ;;            PI
 
-      '(1 'brec-divider nil t); `drawing-i`
-      '(2 'brec-divider nil t)                  ; i,
-      '(3 'brec-division-inverse-labeling nil t); ii and
-      '(4 'brec-divider nil t)                  ; iii of `inversion-iii`.
+      '(1 'brec-divider nil t)
 
-      ;; (3, anchored highlighter) Thence it may include any mix of drawing, titling, labeling and in-
-      (list (concat drawing-i "\\|" titling-i "\\|" labeling-i "\\|" inversion-iii); version sequences.
+      ;; (3, anchored highlighter) Thence it may include any mix of drawing, titling and labeling.
+      (list (concat drawing-cap "\\|" titling-cap "\\|" labeling-cap)
             '(brec-seg-end); (2, pre-form) Making the search region cover a whole segment of it. [PSE]
             nil; (post-form)
-            '(1 'brec-divider nil t);          `drawing-i`
-            '(2 'brec-titling-label nil t);    `titling-i`
-            '(3 'brec-division-label nil t);  `labeling-i`
-            '(4 'brec-divider nil t)                  ; i,
-            '(5 'brec-division-inverse-labeling nil t); ii and
-            '(6 'brec-divider nil t))))               ; iii of `inversion-iii`.
+            '(1 'brec-divider nil t);           `drawing-cap`
+            '(2 'brec-titling-label nil t);     `titling-cap`
+            '(3 'brec-division-label nil t)))); `labeling-cap`
 
 
 
@@ -667,7 +649,7 @@ or terminal line of the buffer.  For this purpose a blank line is defined by
 
    (list; A comment carrier is delimited per line by one or more backslashes (\⋯) together isolated
       ;;; in whitespace.  Usually the delimiter is followed by whitespace and commentary (WC) too.
-    "\\(?:^\\| \\)\\(\\\\+\\)\\( +.*\\)?$"; [RWC, SPC]
+    "\\(?:^\\| \\)\\(\\\\+\\)\\( +.*\\)?$"; [SPC]
       ;;;           └───────┘  └──────┘
       ;;;               \⋯        WC
 
@@ -676,7 +658,7 @@ or terminal line of the buffer.  For this purpose a blank line is defined by
 
    (cons; Moreover, where a carrier formed as a comment block is delimited by two or more
       ;;; backslashes (\\⋯), any WC should be faced as a comment block label (L).
-    "^ *\\\\\\{2,\\}\\( +.+\\)$" '(1 'brec-comment-block-label t)); [OCF, RWC, SPC]
+    "^ *\\\\\\{2,\\}\\( +.+\\)$" '(1 'brec-comment-block-label t)); [OCF, SPC]
     ;;; └──────────┘  └──────┘
     ;;;     \\⋯           L
 
@@ -909,9 +891,6 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;;        anchoring.  The manual warns, ‘It is generally a bad idea to return a position greater than
 ;;        the end of the line’ [SBF].  But here the manual appears to be wrong.
 ;;        https://stackoverflow.com/a/9456757/2402790
-;;
-;;   RWC  Refontifying whitespace in comment carriers.  It too must be refontified to override [OCF]
-;;        any improper fontification arising from inverse labeling or user customization of faces.
 ;;
 ;;   SBF  Search-based fontification.
 ;;        https://www.gnu.org/software/emacs/manual/html_node/elisp/Search_002dbased-Fontification.html
