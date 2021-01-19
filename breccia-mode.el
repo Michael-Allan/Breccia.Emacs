@@ -48,6 +48,23 @@
 ;; ══════════════════════════════════════════════════════════════════════════════════════════════════════
 
 
+(defconst brec-body-segment-start-pattern
+  (concat
+   "^\\( \\{4\\}*\\)\\("; Perfectly indented, the start of the segment comprises [SPC]
+     ;;; any sequence outside the delimiter of either a comment block or an indentation blind.
+   "\\\\+[^ \n\\]\\|[^[:space:]\\]\\)") "\
+The pattern of the start of a body segment up to its first non-space character.
+It captures groups (1) the indentation and (2) the first non-space character.
+See also ‘brec-body-segment-start-pattern-unanchored’ and ‘brec-segment-eol’.")
+
+
+
+(defconst brec-body-segment-start-pattern-unanchored
+  (substring-no-properties brec-body-segment-start-pattern 1) "\
+Pattern ‘brec-body-segment-start-pattern’ without the leading anchor ‘^’.")
+
+
+
 (defconst brec-gap-pattern
   (concat; The gap comprises one or more of the following.
    "\\(?:^ *[ \\].*\n?"; Indentation blind, comment block
@@ -68,15 +85,6 @@ directly precede a non-gap character.  See also ‘brec-gap-pattern’.");
 
 
 
-(defconst brec-seg-start-pattern
-  (concat "^ \\{4\\}*\\(?:"; Perfectly indented, the start of the segment comprises [SPC]
-    ;; any sequence outside the delimiter of either a comment block or an indentation blind.
-    "\\\\+[^ \n\\]\\|[^[:space:]\\]\\)") "\
-The pattern of the start of a fontification segment other than a document head.
-See also ‘brec-seg-end’."); For the definition of ‘fontification segment’, see `brec-seg-end`.
-
-
-
 (defconst brec-succeeding-gap-character-pattern "[ \n]" "\
 The regular-expression pattern of a descriptor gap character that could
 directly follow a non-gap character.  See also ‘brec-gap-pattern’.");
@@ -93,47 +101,71 @@ directly follow a non-gap character.  See also ‘brec-gap-pattern’.");
 ;; ══════════════════════════════════════════════════════════════════════════════════════════════════════
 
 
-(defface brec-alarm-bullet
-  `((t . (:inherit (brec-bullet font-lock-warning-face)))) "\
+(defface brec-alarm-bullet `((t . (:inherit (brec-bullet font-lock-warning-face)))) "\
 The face for the bullet of an alarm point."
   :group 'breccia)
 
 
 
-(defface brec-alarm-bullet-punctuation
-  `((t . (:inherit brec-alarm-bullet :weight normal))) "\
+(defface brec-alarm-bullet-punctuation `((t . (:inherit brec-alarm-bullet :weight normal))) "\
 The face for any non-alphanumeric character of an alarm bullet other than
 those of ‘brec-alarm-bullet-singleton’ and ‘brec-alarm-bullet-terminator’."
   :group 'breccia)
 
 
 
-(defface brec-alarm-bullet-singleton
-  `((t . (:inherit brec-alarm-bullet))) "\
+(defface brec-alarm-bullet-singleton `((t . (:inherit brec-alarm-bullet))) "\
 The face for an alarm bullet that comprises ‘!!’ alone."
   :group 'breccia)
 
 
 
-(defface brec-alarm-bullet-terminator
-  `((t . (:inherit brec-alarm-bullet-punctuation))) "\
+(defface brec-alarm-bullet-terminator `((t . (:inherit brec-alarm-bullet-punctuation))) "\
 The face for the bullet terminator ‘!!’ of an alarm point.
 Cf. ‘brec-alarm-bullet-singleton’."
   :group 'breccia)
 
 
 
-(defface brec-aside-bullet
-  `((t . (:inherit (brec-bullet brec-aside-descriptor)))) "\
+(defface brec-aside-bullet `((t . (:inherit (brec-bullet brec-aside-descriptor)))) "\
 The face for the bullet of an aside point."
   :group 'breccia)
 
 
 
-(defface brec-aside-descriptor
-  `((t . (:inherit shadow))) "\
+(defface brec-aside-descriptor `((t . (:inherit shadow))) "\
 The face for the descriptor of an aside point."
   :group 'breccia)
+
+
+
+(defun brec-at-body-fractum-start ()
+  "Tells whether point is at the start of a body fractum.
+Returns the fractum’s first non-space position if so, nil otherwise.
+See also ‘brec-body-fractum-start’."
+  (let ((start (brec-at-body-segment-start)))
+    (when (and start (brec-is-divider-segment-successor start))
+      ;; Then point starts a divider segment that directly succeeds another.
+      (setq start nil)); This divider segment does not, therefore, start the division.
+    start))
+
+
+
+(defun brec-at-body-segment-start ()
+  "Tells whether point is at the start of a body segment.
+Returns the segment’s first non-space position if so, nil otherwise.
+See also ‘brec-body-segment-start’."
+  (when (and (bolp) (looking-at brec-body-segment-start-pattern-unanchored))
+    (match-beginning 2)))
+
+
+
+(defun brec-at-fractum-start ()
+  "Tells whether point is at the start of a fractum.
+See also ‘brec-fractum-start’."
+  (when (not (eobp)); Being neither in an empty buffer, nor at the end of the buffer where nothing starts,
+    ;; Moreover being at the start of either the buffer or a body fractum.
+    (or (bobp) (brec-at-body-fractum-start))))
 
 
 
@@ -149,18 +181,68 @@ The regular-expression pattern of a regular-expression pattern complete with del
 
 
 
-(defun brec-backward-paragraph ()
-  "A Breccian variant of the ‘backward-paragraph’ command.  Moves backward
-to the previous paragraph, as defined by ‘brec-interparagraph-line-offset’."
+(defun brec-backward ()
+  "Moves point to the fractal start line, previous sibling, fractum or line.
+If point is below the start line of the fractum, then it moves to the start
+line.  Otherwise it moves to the first applicable, if any, of the previous
+sibling, linear-order predecessor or preceding line.  This command preserves
+the column as far as possible."
   (interactive "^")
-  (brec-move-by-lines
-   (brec-interparagraph-line-offset -1)
-   t "previous line"))
+  (let (column previous start)
+    (unless (brec-in-fractum-start)
+      (setq previous (brec-fractum-start)))
+    (unless previous
+      (setq start (brec-body-fractum-start)
+            previous (brec-previous-sibling start)))
+    (unless previous
+      (setq previous (brec-previous-head start)))
+    (unless previous
+      (setq previous (line-end-position 0)); End of previous line.
+      (unless (eq (char-after previous) ?\n); [NCE]
+        (setq previous nil))); No previous line exists.
+    (when previous
+      (setq column (current-column))
+      (goto-char previous)
+      (move-to-column column))))
 
 
 
-(defface brec-bullet
-  `((t . (:inherit bold))) "\
+(defun brec-body-fractum-start ()
+  "The indented start position of any body fractum whose head is located at point.
+Returns the fractum’s first non-space position, or nil if point is outside
+of a body fractum.  See also ‘brec-at-body-fractum-start’ and
+‘brec-in-body-fractum-start’.  For body segments, see ‘brec-body-segment-start’.
+For fracta in general, see ‘brec-fractum-start’."
+  (let ((start (brec-body-segment-start))
+        dsp); Divider segment predecessor.
+    (when (and start (setq dsp (brec-is-divider-segment-successor start)))
+      (setq start dsp)
+      (while (setq dsp (brec-divider-segment-predecessor dsp))
+        (setq start dsp)))
+    start))
+
+
+
+(defun brec-body-segment-start ()
+  "The indented start position of any body segment at point.
+Returns the segment’s first non-space position, or nil if point is outside
+of a body segment.  See also ‘brec-at-body-segment-start’ and
+‘brec-in-body-segment-start’.  For body fracta, see ‘brec-body-fractum-start’.
+For fracta in general, see ‘brec-fractum-start’."
+  (let (start)
+    (unless (setq start (brec-at-body-segment-start))
+      (save-excursion
+        (unless (bolp)
+          (beginning-of-line)
+          (setq start (brec-at-body-segment-start)))
+        (while (not (or start (bobp)))
+          (forward-line -1)
+          (setq start (brec-at-body-segment-start)))))
+    start))
+
+
+
+(defface brec-bullet `((t . (:inherit bold))) "\
 The face for a bullet."
   :group 'breccia)
 
@@ -174,22 +256,19 @@ A major mode for editing Breccian text"
 
 
 
-(defface brec-command-bullet
-  `((t . (:inherit (brec-bullet brec-command-descriptor)))) "\
+(defface brec-command-bullet `((t . (:inherit (brec-bullet brec-command-descriptor)))) "\
 The face for the bullet of a command point."
   :group 'breccia)
 
 
 
-(defface brec-command-descriptor
-  `((t . (:inherit font-lock-builtin-face))) "\
+(defface brec-command-descriptor `((t . (:inherit font-lock-builtin-face))) "\
 The face for the descriptor of a command point."
   :group 'breccia)
 
 
 
-(defface brec-command-keyword
-  `((t . (:inherit brec-command-descriptor))) "\
+(defface brec-command-keyword `((t . (:inherit brec-command-descriptor))) "\
 The face for a keyword in the descriptor of a command point."
   :group 'breccia)
 
@@ -254,29 +333,48 @@ code and comments of the variable definition before attempting to do that.")
 
 
 
-(defface brec-command-operator
-  `((t . (:inherit brec-command-descriptor))) "\
+(defface brec-command-operator `((t . (:inherit brec-command-descriptor))) "\
 The face for an operator in the descriptor of a command point."
   :group 'breccia)
 
 
 
-(defface brec-comment-block-label
-  `((t . (:inherit font-lock-doc-face))) "\
+(defface brec-comment-block-label `((t . (:inherit font-lock-doc-face))) "\
 The face for a comment block label."
   :group 'breccia)
 
 
 
-(defface brec-divider
-  `((t . (:inherit font-lock-doc-face))) "\
+(defun brec-depth-in-line (position)
+  "The number of characters between POSITION and the beginning of the line.
+See also ‘current-column’."
+  (let ((count 0))
+    (while (and (> position 1) (not (char-equal ?\n (char-before position))))
+      (setq count (1+ count))
+      (setq position (1- position)))
+    count))
+
+
+
+(defface brec-divider `((t . (:inherit font-lock-doc-face))) "\
 The face for a divider."
   :group 'breccia)
 
 
 
-(defface brec-division-label
-  `((t . (:inherit brec-divider))) "\
+(defun brec-divider-segment-predecessor (position)
+  "Locates any linear-order divider-segment predecessor of a fractal segment.
+POSITION is any position within the segment.  If the segment has a predecessor
+that is a divider segment, then the return value is its first non-space
+character, otherwise it is nil.  See also ‘brec-previous-body-segment’
+and ‘brec-is-divider-segment-successor’."
+  (setq position (brec-previous-body-segment position))
+  (when (and position (brec-is-divider-segment position))
+    position))
+
+
+
+(defface brec-division-label `((t . (:inherit brec-divider))) "\
 The face for a label in a divider."
   :group 'breccia)
 
@@ -284,7 +382,7 @@ The face for a label in a divider."
 
 (defun brec-extend-search ()
   "Ensures that the font-lock search region extends to cover the whole of its
-fontification segments, bisecting none of them.  Returns nil if already it does,
+fractal segments, bisecting none of them.  Returns nil if already it does,
 non-nil otherwise."
   (save-excursion
     (let ((is-changed (brec-extend-search-up)))
@@ -293,18 +391,18 @@ non-nil otherwise."
 
 
 (defun brec-extend-search-down ()
-  "Ensures that ‘font-lock-end’ bisects no fontification segment, moving it
+  "Ensures that ‘font-lock-end’ bisects no fractal segment, moving it
 forward in the buffer as necessary.  Returns nil if no change was required,
 non-nil otherwise."
   (goto-char font-lock-end)
   (unless (or (bolp)(eolp)); When the prior extenders such as `font-lock-extend-region-wholelines`
     ;; do not leave `font-lock-end` at a line terminus, as usually they do, then the search
-    ;; region bisects the text of the line, which means the text of a fontification segment
+    ;; region bisects the text of the line, which means the text of a fractal segment
     ;; (a Breccian document contains nothing else), and each segment covers the whole of its lines.
     (end-of-line)); Thus far at least the present segment must extend; extend it now,
                 ;;; that `re-search-forward` (below) must miss its leader.
   (let (is-changed)
-    (if (re-search-forward brec-seg-start-pattern nil t); Cf. `brec-seg-end`.
+    (if (re-search-forward brec-body-segment-start-pattern nil t); Cf. `brec-segment-eol`.
         (end-of-line 0); Moving to the end of the previous line.
       (goto-char (point-max)))
     (when (< font-lock-end (point))
@@ -315,13 +413,13 @@ non-nil otherwise."
 
 
 (defun brec-extend-search-up ()
-  "Ensures that ‘font-lock-beg’ bisects no fontification segment, moving it
+  "Ensures that ‘font-lock-beg’ bisects no fractal segment, moving it
 backward in the buffer as necessary.  Returns nil if no change was required,
 non-nil otherwise."
   (goto-char font-lock-beg)
   (end-of-line); That `re-search-backward` (below) finds any leader on the present line.
   (let (is-changed)
-    (if (re-search-backward brec-seg-start-pattern nil t)
+    (if (re-search-backward brec-body-segment-start-pattern nil t)
         (beginning-of-line)
       (goto-char (point-min)))
     (when (> font-lock-beg (point))
@@ -335,20 +433,44 @@ non-nil otherwise."
 
 
 
-(defface brec-forbidden-whitespace
-  `((t . (:inherit font-lock-warning-face :inverse-video t))) "\
+(defface brec-forbidden-whitespace `((t . (:inherit font-lock-warning-face :inverse-video t))) "\
 The face for disallowed, horizontal whitespace characters."
   :group 'breccia)
 
 
 
-(defun brec-forward-paragraph ()
-  "A Breccian variant of the ‘forward-paragraph’ command.  Moves forward
-to the next paragraph, as defined by ‘brec-interparagraph-line-offset’."
+(defun brec-forward ()
+  "Moves point to the next sibling, fractum or line.
+If point is on the start line of a fractum that is followed by a sibling,
+then it moves to the sibling.  Otherwise it moves to the fractal head’s
+linear-order successor, if any.  Failing that, it moves to the next line,
+if any.  This command preserves the column as far as possible."
   (interactive "^")
-  (brec-move-by-lines
-   (brec-interparagraph-line-offset 1)
-   t "next line"))
+  (let (column next)
+    (setq next (brec-next-sibling (brec-in-body-fractum-start)))
+    (unless next
+      (setq next (brec-next-head (brec-body-fractum-start))))
+    (unless next
+      (setq next (line-beginning-position 2)); Beginning of next line.
+      (unless (eq (char-before next) ?\n); [NCE]
+        (setq next nil))); No next line exists.
+    (when next
+      (setq column (current-column))
+      (goto-char next)
+      (move-to-column column))))
+
+
+
+(defun brec-fractum-start ()
+  "The start position of any fractum whose head is located at point.
+Returns the fractum’s first position, or nil if the buffer is empty.
+See also ‘brec-at-fractum-start’ and ‘brec-in-fractum-start’.  For body
+fracta and segments, see ‘brec-body-fractum-start’ and ‘brec-body-segment-start’."
+  (let ((start (brec-body-fractum-start)))
+    (unless (or start (= (point-min) (point-max)))
+      ;; If point is not in the head of a body fractum, and the buffer is not empty,
+      (setq start (point-min))); then point must be in the document head at its start.
+    start))
 
 
 
@@ -356,29 +478,76 @@ to the next paragraph, as defined by ‘brec-interparagraph-line-offset’."
 
 
 
-(defface brec-generic-bullet
-  `((t . (:inherit (brec-bullet font-lock-keyword-face)))) "\
+(defface brec-generic-bullet `((t . (:inherit (brec-bullet font-lock-keyword-face)))) "\
 The face for the bullet of a generic point."
   :group 'breccia)
 
 
 
-(defface brec-generic-bullet-punctuation
-  `((t . (:inherit brec-generic-bullet :weight normal))) "\
+(defface brec-generic-bullet-punctuation `((t . (:inherit brec-generic-bullet :weight normal))) "\
 The face for non-alphanumeric characters in the bullet of a generic point."
   :group 'breccia)
 
 
 
-(defun brec-interparagraph-line-offset (direction)
-  "Returns the offset of the next line in DIRECTION (1 or -1) that has equal
-or less indentation, or nil if there is none.  If point is on a blank line,
-however, then this function simply gives the offset of the next non-empty line
-or terminal line of the buffer.  For this purpose a blank line is defined by
-‘brec-line-is-blank’, and an empty line has no characters at all."
-  (if (brec-line-is-blank)
-      (brec-line-count direction 'ignore 'brec-t)
-    (brec-line-count direction '> '<=)))
+(defun brec-in-body-fractum-start ()
+  "Tells whether point is on the start line of a body fractum.
+Returns the fractum’s first non-space position, or nil if point is not
+on the start line of a body fractum.  See also ‘brec-body-fractum-start’."
+  (if (bolp)
+      (brec-at-body-fractum-start)
+    (save-excursion
+      (beginning-of-line)
+      (brec-at-body-fractum-start))))
+
+
+
+(defun brec-in-body-segment-start ()
+  "Tells whether point is on the start line of a body segment.
+Returns the segment’s first non-space position, or nil if point is not
+on the start line of a body segment.  See also ‘brec-body-segment-start’."
+  (if (bolp)
+      (brec-at-body-segment-start)
+    (save-excursion
+      (beginning-of-line)
+      (brec-at-body-segment-start))))
+
+
+
+(defun brec-in-fractum-start ()
+  "Tells whether point is on the start line of a fractum.
+See also ‘brec-fractum-start’."
+  (if (bolp)
+      (brec-at-fractum-start)
+    (save-excursion
+      (beginning-of-line)
+      (brec-at-fractum-start))))
+
+
+
+(defun brec-is-divider-drawing (char)
+  "Tells whether CHAR is a divider drawing character."
+ (and (>= char ?\u2500) (<= char ?\u259F)))
+
+
+
+(defun brec-is-divider-segment (segment-start)
+  "Tells whether a body segment is a divider segment.
+SEGMENT-START is the position of the segment’s first non-space character.
+The return value is t if the body segment is a divider segment, nil otherwise."
+  (brec-is-divider-drawing (char-after segment-start)))
+
+
+
+(defun brec-is-divider-segment-successor (segment-start)
+  "Tells whether a body segment is a divider segment that directly succeeds another.
+SEGMENT-START is the position of the segment’s first non-space character.
+The return value is the correponding position in the preceding divider segment,
+or nil if the body segment is not a divider segment or has no divider-segment
+predecessor.  See also ‘brec-is-divider-segment’ and
+‘brec-divider-segment-predecessor’."
+  (and (brec-is-divider-segment segment-start)           ; The segment is a divider segment
+       (brec-divider-segment-predecessor segment-start))); and it directly succeeds another.
 
 
 
@@ -400,7 +569,7 @@ or terminal line of the buffer.  For this purpose a blank line is defined by
 
     (list; (3, anchored highlighter) Usually a descriptor follows the bullet,
      "\\(\\(?:.\\|\n\\)+\\)";        extending thence to the end of the point head.
-     '(brec-seg-end); (2, pre-form) Making the search region cover the whole of it. [PSE]
+     '(brec-segment-eol); (2, pre-form) Making the search region cover the whole of it. [PSE]
      nil '(1 'brec-aside-descriptor)))
 
 
@@ -422,8 +591,8 @@ or terminal line of the buffer.  For this purpose a blank line is defined by
      "\\(\\(?:.\\|\n\\)+\\)";        extending thence to the end of the point head.
      '(setq; (2, pre-form)
        brec-f (point); Saving the end-bound of the anchor.
-       brec-g (brec-seg-end)); Saving the limit of the present fontification segment and
-              ;;; returning it, so extending the search region over the whole descriptor. [PSE]
+       brec-g (brec-segment-eol)); Saving the limit of the present fractal segment
+         ;;; and returning it, so extending the search region over the whole descriptor. [PSE]
      '(goto-char brec-f); (4, post-form) Repositioning for the next anchored highlighter, below.
      '(1 'brec-command-descriptor))
 
@@ -518,7 +687,7 @@ or terminal line of the buffer.  For this purpose a blank line is defined by
 
       ;; (3, anchored highlighter) Thence it may include any mix of drawing, titling and labeling.
       (list (concat drawing-cap "\\|" titling-cap "\\|" labeling-cap)
-            '(brec-seg-end); (2, pre-form) Making the search region cover a whole segment of it. [PSE]
+            '(brec-segment-eol); (2, pre-form) Extending the search region over the whole segment. [PSE]
             nil; (post-form)
             '(1 'brec-divider nil t);           `drawing-cap`
             '(2 'brec-titling-label nil t);     `titling-cap`
@@ -604,9 +773,8 @@ or terminal line of the buffer.  For this purpose a blank line is defined by
                              (or (char-equal ?/ char-first)  ; is captured, abandon the match
                                  (char-equal ?: char-first))); and continue seeking.
                     (throw 'is-free-form-bullet nil))
-                  (when (and (>= char-first ?\u2500) ; When a drawing character leads the match,
-                             (<= char-first ?\u259F)); abandon the match and continue seeking.
-                    (throw 'is-free-form-bullet nil))
+                  (when (brec-is-divider-drawing char-first); When a drawing character leads the match,
+                    (throw 'is-free-form-bullet nil))       ; abandon the match and continue seeking.
 
                   ;; Generic bullet
                   ;; ──────────────
@@ -677,77 +845,127 @@ or terminal line of the buffer.  For this purpose a blank line is defined by
 
 
 
-(defun brec-line-count (direction skip good)
-  "Returns the number of lines in DIRECTION (1 or -1) that either are empty
-or satisfy relation SKIP between their indentation and the original indentation,
-and end with a line whose indentation satisfies predicate GOOD."
-  ;; Modified from the original code posted by ShreevatsaR. [SR]
-  (let ((starting-indentation (current-indentation))
-         (lines-moved direction))
+(defun brec-next-head (body-segment-start)
+  "Locates the linear-order successor of a fractal head.
+BODY-SEGMENT-START is the position of the first non-space character of
+any body segment in the head, or nil for a document head.  The return value
+is the correponding position in the next head, or nil if no next head exists."
+  (when body-segment-start
+    (let ((next (brec-next-segment body-segment-start)))
+      (when (and next (brec-is-divider-segment body-segment-start))
+        (while (and next (brec-is-divider-segment next))
+          (setq next (brec-next-segment next))))
+      next)))
+
+
+
+(defun brec-next-segment (position)
+  "Locates the linear-order successor of a fractal segment.
+POSITION is any position within the segment.  The return value is the first
+non-space character in the next segment, or nil if no next segment exists."
+  (let (next)
     (save-excursion
-      (while (and (zerop (forward-line direction))
-               (or (eolp); Skipping empty lines and SKIP lines.
-                 (funcall skip (current-indentation) starting-indentation)))
-        (setq lines-moved (+ lines-moved direction)))
-      ;; Unable now to go further, which case is it?
-      (if (funcall good (current-indentation) starting-indentation)
-        lines-moved
-        nil))))
+      (goto-char position)
+      (while (and (= 0 (forward-line))
+                  (not (setq next (brec-at-body-segment-start))))))
+    next))
 
 
 
-(defun brec-line-is-blank ()
-  "Tells whether the line at point contains at most whitespace."
-  ;; Modified from the original code posted by PythonNut. https://emacs.stackexchange.com/a/16826/21090
-  (string-match-p "\\`\\s-*$" (thing-at-point 'line t)))
+(defun brec-next-sibling (body-segment-start)
+  "Locates the next sibling of a fractum.
+BODY-SEGMENT-START is the position of the first non-space character of
+any body segment in the head, or nil for a document head.  The return value is
+the correponding position in the next sibling, or nil if no next sibling exists."
+  (when body-segment-start
+    (let ((indention (brec-depth-in-line body-segment-start))
+          (next-head body-segment-start)
+          i next-sibling)
+      (while (and (setq next-head (brec-next-head next-head))
+                  (not (or (< (setq i (brec-depth-in-line next-head)) indention); Outside of parent.
+                           (when (= i indention); Found the sibling.
+                             (setq next-sibling next-head))))))
+      next-sibling)))
 
 
 
-(defun brec-move-by-lines (count to-preserve-column default-label)
-  "Go forward COUNT lines, or backward if COUNT is negative.  If COUNT is nil,
-then instead tell the user there is no DEFAULT-LABEL (string) to move to."
-  ;; Modified from the original code posted by ShreevatsaR. [SR]
-  (if (not count)
-      (message "No %s to move to." default-label)
-    (let ((saved-column (current-column)))
-      (forward-line count)
-      (move-to-column
-       (if to-preserve-column
-           saved-column
-         (current-indentation))))))
-
-
-
-(defface brec-pattern
-  `((t . (:inherit brec-command-descriptor))) "\
+(defface brec-pattern `((t . (:inherit brec-command-descriptor))) "\
 The face for a regular-expression pattern in the descriptor of a command point."
   :group 'breccia)
 
 
 
-(defface brec-pattern-delimiter
-  `((t . (:inherit brec-command-descriptor))) "\
+(defface brec-pattern-delimiter `((t . (:inherit brec-command-descriptor))) "\
 The face for each of the delimiters of a regular-expression pattern."
   :group 'breccia)
 
 
 
-(defface brec-pattern-element
-  `((t . (:inherit brec-pattern))) "\
+(defface brec-pattern-element `((t . (:inherit brec-pattern))) "\
 The face for a formal element of a regular-expression pattern."
   :group 'breccia)
 
 
 
-(defun brec-seg-end ()
-  "Returns the end position of the present fontification segment, provided that
-point is *not* at the beginning of the segment.  If point is at the beginning,
-then the result is undefined.  A fontification segment is any of the following:
-a document head, point head or divider segment.
+(defun brec-previous-body-segment (position)
+  "Locates the linear-order body-segment predecessor of a fractal segment.
+POSITION is any position within the fractal segment.  The return value
+is the position of the first non-space character in the preceding
+body segment, or nil if no preceding body segment exists.
+See also ‘brec-divider-segment-predecessor’."
+  (let (previous)
+    (save-excursion
+      (goto-char position)
+      (when (setq position (brec-body-segment-start))
+        (goto-char position)
+        (beginning-of-line)
+        (unless (bobp)
+          (forward-line -1)
+          (setq previous (brec-body-segment-start)))))
+    previous))
 
-See also ‘brec-seg-start-pattern’."
+
+
+(defun brec-previous-head (start-segment-position)
+  "Locates the linear-order predecessor of a fractal head.
+START-SEGMENT-POSITION is any position in the first body segment of the head,
+or nil for a document head.  The return value is the position of the first
+non-space character in the previous head, or nil if no previous head exists."
+  (when start-segment-position
+    (let ((previous (brec-previous-body-segment start-segment-position))
+          p)
+      (when previous
+        (while (setq p (brec-is-divider-segment-successor previous))
+          (setq previous p)))
+      previous)))
+
+
+
+(defun brec-previous-sibling (body-fractum-start)
+  "Locates the previous sibling of a fractum.
+BODY-FRACTUM-START is the position of the fractum’s first non-space character,
+or nil for the document fractum.  The return value is the correponding position
+in the previous sibling, or nil if no previous sibling exists."
+  (when body-fractum-start
+    (let ((indention (brec-depth-in-line body-fractum-start))
+          (previous-head body-fractum-start)
+          i previous-sibling)
+      (while (and (setq previous-head (brec-previous-head previous-head))
+                  (not (or (< (setq i (brec-depth-in-line previous-head)) indention); Outside of parent.
+                           (when (= i indention); Found the sibling.
+                             (setq previous-sibling previous-head))))))
+      previous-sibling)))
+
+
+
+(defun brec-segment-eol ()
+  "The position at the end of the last line of the present fractal segment,
+provided point is not at the beginning of the segment; otherwise the result
+is undefined.
+
+See also ‘brec-body-segment-start-pattern’."
   (save-excursion
-    (if (re-search-forward brec-seg-start-pattern nil t); Cf. `brec-extend-search-down`.
+    (if (re-search-forward brec-body-segment-start-pattern nil t); Cf. `brec-extend-search-down`.
         (end-of-line 0); Moving to the end of the previous line.
       (goto-char (point-max)))
     (point)))
@@ -769,38 +987,33 @@ the opposite of ‘ignore’."
 
 
 
-(defface brec-task-bullet
-  `((t . (:inherit (brec-bullet font-lock-function-name-face)))) "\
+(defface brec-task-bullet `((t . (:inherit (brec-bullet font-lock-function-name-face)))) "\
 The face for the bullet of a task point."
   :group 'breccia)
 
 
 
-(defface brec-task-bullet-punctuation
-  `((t . (:inherit brec-task-bullet :weight normal))) "\
+(defface brec-task-bullet-punctuation `((t . (:inherit brec-task-bullet :weight normal))) "\
 The face for any non-alphanumeric character of a task bullet other than
 those of ‘brec-task-bullet-singleton’ and ‘brec-task-bullet-terminator’."
   :group 'breccia)
 
 
 
-(defface brec-task-bullet-singleton
-  `((t . (:inherit brec-task-bullet))) "\
+(defface brec-task-bullet-singleton `((t . (:inherit brec-task-bullet))) "\
 The face for a task bullet that comprises ‘+’ alone."
   :group 'breccia)
 
 
 
-(defface brec-task-bullet-terminator
-  `((t . (:inherit font-lock-comment-face))) "\
+(defface brec-task-bullet-terminator `((t . (:inherit font-lock-comment-face))) "\
 The face for the bullet terminator ‘+’ of a non-singleton task point.
 Cf. ‘brec-task-bullet-singleton’."
   :group 'breccia)
 
 
 
-(defface brec-titling-label
-  `((t . (:inherit (bold brec-division-label)))) "\
+(defface brec-titling-label `((t . (:inherit (bold brec-division-label)))) "\
 The face for a division label that contributes to the division title, or titles."
   :group 'breccia)
 
@@ -835,12 +1048,12 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 
   ;; Set up paragraph handling
   ;; ─────────────────────────
-  (setq-local paragraph-start brec-seg-start-pattern); [PBD]
+  (setq-local paragraph-start brec-body-segment-start-pattern); [PBD]
   (setq-local paragraph-separate "^ *\\(?:\u00A0.*\\|\\\\+\\( +.*\\)?\\)?$"); [PBD, SPC]
     ;;; Indentation blinds, comment blocks and blank lines, that is.
   (let ((m breccia-mode-map))
-    (define-key m [remap backward-paragraph] 'brec-backward-paragraph)
-    (define-key m [remap  forward-paragraph]  'brec-forward-paragraph))
+    (define-key m [remap backward-paragraph] #'brec-backward)
+    (define-key m [remap forward-paragraph] #'brec-forward))
 
   ;; Hook into Font Lock
   ;; ───────────────────
@@ -848,7 +1061,7 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;;;;; This setting does not, however, seem necessary; nor does the documentation imply that it would be.
 ;;;;; Should fontification ever depend on *subsequent* lines, there I think this setting would at least
 ;;;;; speed the response to changes.  Meantime, it seems that `brec-extend-search` alone will suffice:
-  (add-hook 'font-lock-extend-region-functions 'brec-extend-search t t) ; [FLE]
+  (add-hook 'font-lock-extend-region-functions #'brec-extend-search t t) ; [FLE]
   (brec-set-for-buffer 'font-lock-defaults '(brec-keywords)))
 
 
@@ -872,6 +1085,9 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;;
 ;;   GVF  A global variable for the use of fontifiers, e.g. from within forms they quote and pass
 ;;        to Font Lock to be evaluated outside of their lexical scope.
+;;
+;;   NCE  Not `char-equal`; it fails if the position is out of bounds.  Rather `eq`, which instead
+;;        gives nil in that case.
 ;;
 ;;   OCF  Overrides in comment-carrier fontification.  The fontifier must override (t) any fontifier
 ;;        of the carrier’s containing head, and must therefore follow it in `brec-keywords`.
@@ -900,8 +1116,6 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;;
 ;;   SPC  Synchronized pattern of comment carriage.  Marking an instance of a pattern or anti-pattern,
 ;;        one of several that together are maintained in synchrony.
-;;
-;;   SR · https://emacs.stackexchange.com/a/27169/21090
 ;;
 ;;   UCN  Unicode character name. https://en.wikipedia.org/wiki/Unicode_character_property#Name
 
