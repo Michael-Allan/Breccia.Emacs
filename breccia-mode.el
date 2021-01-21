@@ -248,6 +248,13 @@ The face for a bullet."
 
 
 
+(defface brec-bullet-nobreak-space `((t . (:inherit brec-nobreak-space))) "\
+The face for a no-break space in a free-form bullet.
+This applies to alarm, task and generic bullets."
+  :group 'breccia)
+
+
+
 (defgroup breccia nil "\
 A major mode for editing Breccian text"
   :group 'text :group 'faces
@@ -339,20 +346,15 @@ The face for an operator in the descriptor of a command point."
 
 
 
-(defface brec-comment-block-label `((t . (:inherit font-lock-doc-face))) "\
-The face for a comment block label."
+(defface brec-commentary-nobreak-space `((t . (:inherit (font-lock-comment-face brec-nobreak-space)))) "\
+The face for a no-break space in a comment carrier."
   :group 'breccia)
 
 
 
-(defun brec-depth-in-line (position)
-  "The number of characters between POSITION and the beginning of the line.
-See also ‘current-column’."
-  (let ((count 0))
-    (while (and (> position 1) (not (char-equal ?\n (char-before position))))
-      (setq count (1+ count))
-      (setq position (1- position)))
-    count))
+(defface brec-comment-block-label `((t . (:inherit font-lock-doc-face))) "\
+The face for a comment block label."
+  :group 'breccia)
 
 
 
@@ -433,8 +435,15 @@ non-nil otherwise."
 
 
 
-(defface brec-forbidden-whitespace `((t . (:inherit font-lock-warning-face :inverse-video t))) "\
-The face for disallowed, horizontal whitespace characters."
+(defface brec-forbidden-whitespace `((t . (:inherit (font-lock-warning-face nobreak-space))))
+  ;; This inheritance list aims to add the attributes of warning face to those of `nobreak-space`,
+  ;; so treating the latter as the common attributes for whitespace that should be made visible.
+  ;; The addition of the warning attributes can fail with certain user customizations, though it tends
+  ;; to fail gracefully.  E.g. if the user removes the underline from `nobreak-space` and instead sets
+  ;; a background colour — as opposed to the nicer way of setting inverse video — then any misplaced
+  ;; no-break space might appear without its warning colour, which by default is a foreground color.
+  ;; Other forbidden whitespace, however, would at least be made visible.
+  "The face for a misplaced no-break space or disallowed whitespace character."
   :group 'breccia)
 
 
@@ -511,6 +520,36 @@ on the start line of a body segment.  See also ‘brec-body-segment-start’."
     (save-excursion
       (beginning-of-line)
       (brec-at-body-segment-start))))
+
+
+
+(defun brec-indentation-before (position)
+  "The width of space from the beginning of the line to POSITION.
+Returns the difference between those two positions, or nil if any character
+other than a plain space (Unicode 20) lies between them, or nil if POSITION
+is out of bounds.  See also ‘current-column’ and ‘current-indentation’."
+  (let (char (width 0))
+    (while
+        (cond
+
+         ;; At the beginning of the line.
+         ((or (= position 1)
+              (eq (setq  char (char-before position)) ?\n)); [NCE]
+          nil); Break the loop and return the tallied indentation.
+
+         ;; At a space.
+         ((eq char ?\s); [NCE]
+          (setq width (1+ width) position (1- position))); Continue the loop.
+
+         ;; At anything else, or out of bounds (nil `char`, that is).
+         (t (setq width nil)))); Break the loop and return nil.
+    width))
+
+
+
+(defface brec-indentation-blind-delimiter `((t . (:inherit brec-nobreak-space))) "\
+The face for the no-break spaces that delimit an indentation blind."
+  :group 'breccia)
 
 
 
@@ -703,13 +742,13 @@ predecessor.  See also ‘brec-is-divider-segment’ and
     (let ((rough-bullet-pattern; The best a regular expression can do here, allowing some false matches.
            (concat
             "^ \\{4\\}*\\("; Perfectly indented, the start of the bullet roughly comprises [SPC]
-            "\\(?:\\\\+[\u00A0]+"; either (←) a backslash sequence preceding a no-break-space sequence,
+            "\\(?:\\\\+[\u00A0]"; either (←) a backslash sequence preceding a no-break-space,
               ;;; or (↓) zero or more backslashes preceding a character neither whitespace nor backslash.
-            "\\|\\\\*\\(?:[[:alnum:]]+ *\\|[^[:alnum:][:space:]\\][\u00A0]*\\)\\)"
+            "\\|\\\\*\\(?:[[:alnum:]]+ *\\|[^[:alnum:][:space:]\\][\u00A0]?\\)\\)"
 
             ;; It ends just before either a) a space directly after a non-alphanumeric, non-space
             ;; character, or b) a newline.  Note that a no-break space (Unicode A0) will not end it.
-            "\\(?:[[:alnum:]]+ *\\|[^[:alnum:][:space:]]+[\u00A0]*\\)*\\)"))
+            "\\(?:[[:alnum:]]+ *\\|[^[:alnum:][:space:]]+[\u00A0]?\\)*\\)"))
               ;;; The repetition nest here could fail catastrophically.  Overall a regular expression
               ;;; is inapt for seeking bullet boundaries.  It should be replaced by a function.
           char-first char-last is-match-changed length m1-beg m1-end m2-beg m2-end
@@ -832,16 +871,49 @@ predecessor.  See also ‘brec-is-divider-segment’ and
 
 
 
-   ;; ════════════════════
-   ;; Forbidden whitespace
-   ;; ════════════════════
+   ;; ══════════
+   ;; Whitespace
+   ;; ══════════
+   (cons
+    (lambda (limit)
+      (let ((p (point))
+            c face found)
+        (while (and (not found) (< p limit))
+          (setq c (char-after p)
+                face (get-text-property p 'face))
+          (cond
 
-   (cons "[\t\u2000-\u200A\u202F\u205F\u3000]" '(0 'brec-forbidden-whitespace t))))
-     ;;;    9, 2000 - 200A, 202F, 205F, 3000
-     ;;;
-     ;;; No attempt is made here to reface any no-break space (Unicode A0) that appears
-     ;;; in a forbidden context.  It will already have a distinct appearance, however,
-     ;;; owing to the setting herein of `nobreak-char-display`, q.v.
+           ;; No-break space
+           ;; ──────────────
+           ((= c ?\u00A0)
+            (cond
+
+             ;; In commentary.
+             ((and face (memq face '(font-lock-comment-face brec-comment-block-label)))
+              (setq found t brec-f 'brec-commentary-nobreak-space))
+
+             ;; In a free-form bullet.
+             ((and face (memq face '(brec-alarm-bullet brec-generic-bullet brec-task-bullet)))
+              (setq found t brec-f 'brec-bullet-nobreak-space))
+
+             ;; Delimiting an indentation blind.
+             ((brec-indentation-before p)
+              (setq found t brec-f 'brec-indentation-blind-delimiter))
+
+             ;; Misplaced no-break space.
+             (t (setq found t brec-f 'brec-forbidden-whitespace))))
+
+           ;; Forbidden character
+           ;; ───────────────────
+           ((or (memq c '(?\t ?\u202F ?\u205F ?\u3000))
+                (and (>= c ?\u2000) (<= c ?\u200A)))
+            (setq found t brec-f 'brec-forbidden-whitespace))
+
+           (t (setq p (1+ p)))))
+        (when found
+          (set-match-data (list p (goto-char (1+ p)) (current-buffer)))
+          t))); Then return t to Font Lock, else nil.
+    '(0 brec-f prepend)))); Prepended only in case the original face is ever wanted.
 
 
 
@@ -878,14 +950,20 @@ BODY-SEGMENT-START is the position of the first non-space character of
 any body segment in the head, or nil for a document head.  The return value is
 the correponding position in the next sibling, or nil if no next sibling exists."
   (when body-segment-start
-    (let ((indention (brec-depth-in-line body-segment-start))
-          (next-head body-segment-start)
+    (let ((next-head body-segment-start)
+          (sib-i (brec-indentation-before body-segment-start))
           i next-sibling)
       (while (and (setq next-head (brec-next-head next-head))
-                  (not (or (< (setq i (brec-depth-in-line next-head)) indention); Outside of parent.
-                           (when (= i indention); Found the sibling.
+                  (not (or (< (setq i (brec-indentation-before next-head)) sib-i); Ran out of parent.
+                           (when (= i sib-i); Found the sibling.
                              (setq next-sibling next-head))))))
       next-sibling)))
+
+
+
+(defface brec-nobreak-space `((t . (:inherit nobreak-space))) "\
+The face for a no-break space (Unicode A0) in Breccia."
+  :group 'breccia)
 
 
 
@@ -947,12 +1025,12 @@ BODY-FRACTUM-START is the position of the fractum’s first non-space character,
 or nil for the document fractum.  The return value is the correponding position
 in the previous sibling, or nil if no previous sibling exists."
   (when body-fractum-start
-    (let ((indention (brec-depth-in-line body-fractum-start))
-          (previous-head body-fractum-start)
+    (let ((previous-head body-fractum-start)
+          (sib-i (brec-indentation-before body-fractum-start))
           i previous-sibling)
       (while (and (setq previous-head (brec-previous-head previous-head))
-                  (not (or (< (setq i (brec-depth-in-line previous-head)) indention); Outside of parent.
-                           (when (= i indention); Found the sibling.
+                  (not (or (< (setq i (brec-indentation-before previous-head)) sib-i); Ran out of parent.
+                           (when (= i sib-i); Found the sibling.
                              (setq previous-sibling previous-head))))))
       previous-sibling)))
 
@@ -1042,9 +1120,13 @@ The face for a division label that contributes to the division title, or titles.
 A major mode for editing Breccian text.  For more information,
 see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
   :group 'breccia
-  (modify-syntax-entry ?\u00A0 " " breccia-mode-syntax-table); Giving to no-break spaces (Unicode A0)
-  (setq-local nobreak-char-display t); whitespace syntax, and a distinct look as defined by the Emacs
-     ;;; standard face `nobreak-space`. [SF]
+
+  ;; Set up no-break-space handling (Unicode A0)
+  ;; ──────────────────────────────
+  (modify-syntax-entry ?\u00A0 " " breccia-mode-syntax-table); Assigning whitespace syntax.
+  (setq-local nobreak-char-display nil); Default application of standard face `nobreak-space`. [SF]
+     ;;; Defeat it, because it applies the face by a method unamenable to override in `brec-keywords`.
+     ;;; Instead let Breccia Mode face these characters using standard, Font Lock methods.
 
   ;; Set up paragraph handling
   ;; ─────────────────────────
@@ -1086,8 +1168,8 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;;   GVF  A global variable for the use of fontifiers, e.g. from within forms they quote and pass
 ;;        to Font Lock to be evaluated outside of their lexical scope.
 ;;
-;;   NCE  Not `char-equal`; it fails if the position is out of bounds.  Rather `eq`, which instead
-;;        gives nil in that case.
+;;   NCE  Not `char-equal` or `=`, which fail if the position is out of bounds.
+;;        Rather `eq` which instead gives nil in that case.
 ;;
 ;;   OCF  Overrides in comment-carrier fontification.  The fontifier must override (t) any fontifier
 ;;        of the carrier’s containing head, and must therefore follow it in `brec-keywords`.
