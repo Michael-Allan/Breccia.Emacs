@@ -51,10 +51,10 @@
 (defconst brec-body-segment-start-pattern
   (concat
    "^\\( \\{4\\}*\\)\\("; Perfectly indented, the start of the segment comprises [SPC]
-     ;;; any sequence outside the delimiter of either a comment block or an indentation blind.
+     ;;; any sequence outside the delimiter of either a comment block or an indent blind.
    "\\\\+[^ \n\\]\\|[^[:space:]\\]\\)") "\
 The pattern of the start of a body segment up to its first non-space character.
-It captures groups (1) the indentation and (2) the first non-space character.
+It captures groups (1) the indent and (2) the first non-space character.
 See also ‘brec-body-segment-start-pattern-unanchored’ and ‘brec-segment-eol’.")
 
 
@@ -67,7 +67,7 @@ Pattern ‘brec-body-segment-start-pattern’ without the leading anchor ‘^’
 
 (defconst brec-gap-pattern
   (concat; The gap comprises one or more of the following.
-   "\\(?:^ *[ \\].*\n?"; Indentation blind, comment block
+   "\\(?:^ *[ \\].*\n?"; Indent blind, comment block
    "\\| \\\\.*\n?"     ; or comment appender, each together with any bounding newline character.
    "\\| "; Space.
    "\\|\n"; Newline character.
@@ -307,7 +307,7 @@ The face for a keyword in the descriptor of a command point."
       "\\|[^ \n \\]\\)"; but by an explicit referent indicator, the leading character of which (left)
         ;;; is sought on the pattern of a gap boundary, namely a character adjacent to a gap.
         ;;; The no-break space ‘ ’ (A0) would be redundant in this pattern if the quantifier of `gap`
-        ;;; were possessive (consuming indentation blinds even where it caused the match to fail).
+        ;;; were possessive (consuming indent blinds even where it caused the match to fail).
         ;;; But Emacs does not support possessive quantifiers.
 
       ;; B. Alternatively it starts with a referential command that *can* infer a referent.
@@ -523,7 +523,7 @@ on the start line of a body segment.  See also ‘brec-body-segment-start’."
 
 
 
-(defun brec-indentation-before (position)
+(defun brec-indent-before (position)
   "The width of space from the beginning of the line to POSITION.
 Returns the difference between those two positions, or nil if any character
 other than a plain space (Unicode 20) lies between them, or nil if POSITION
@@ -535,7 +535,7 @@ is out of bounds.  See also ‘current-column’ and ‘current-indentation’."
          ;; At the beginning of the line.
          ((or (= position 1)
               (eq (setq  char (char-before position)) ?\n)); [NCE]
-          nil); Break the loop and return the tallied indentation.
+          nil); Break the loop and return the tallied indent.
 
          ;; At a space.
          ((eq char ?\s); [NCE]
@@ -547,8 +547,8 @@ is out of bounds.  See also ‘current-column’ and ‘current-indentation’."
 
 
 
-(defface brec-indentation-blind-delimiter `((t . (:inherit brec-nobreak-space))) "\
-The face for the no-break spaces that delimit an indentation blind."
+(defface brec-indent-blind-delimiter `((t . (:inherit brec-nobreak-space))) "\
+The face for the no-break spaces that delimit an indent blind."
   :group 'breccia)
 
 
@@ -896,9 +896,9 @@ predecessor.  See also ‘brec-is-divider-segment’ and
              ((and face (memq face '(brec-alarm-bullet brec-generic-bullet brec-task-bullet)))
               (setq found t brec-f 'brec-bullet-nobreak-space))
 
-             ;; Delimiting an indentation blind.
-             ((brec-indentation-before p)
-              (setq found t brec-f 'brec-indentation-blind-delimiter))
+             ;; Delimiting an indent blind.
+             ((brec-indent-before p)
+              (setq found t brec-f 'brec-indent-blind-delimiter))
 
              ;; Misplaced no-break space.
              (t (setq found t brec-f 'brec-forbidden-whitespace))))
@@ -951,10 +951,10 @@ any body segment in the head, or nil for a document head.  The return value is
 the correponding position in the next sibling, or nil if no next sibling exists."
   (when body-segment-start
     (let ((next-head body-segment-start)
-          (sib-i (brec-indentation-before body-segment-start))
+          (sib-i (brec-indent-before body-segment-start))
           i next-sibling)
       (while (and (setq next-head (brec-next-head next-head))
-                  (not (or (< (setq i (brec-indentation-before next-head)) sib-i); Ran out of parent.
+                  (not (or (< (setq i (brec-indent-before next-head)) sib-i); Fell out of parent.
                            (when (= i sib-i); Found the sibling.
                              (setq next-sibling next-head))))))
       next-sibling)))
@@ -1026,10 +1026,10 @@ or nil for the document fractum.  The return value is the correponding position
 in the previous sibling, or nil if no previous sibling exists."
   (when body-fractum-start
     (let ((previous-head body-fractum-start)
-          (sib-i (brec-indentation-before body-fractum-start))
+          (sib-i (brec-indent-before body-fractum-start))
           i previous-sibling)
       (while (and (setq previous-head (brec-previous-head previous-head))
-                  (not (or (< (setq i (brec-indentation-before previous-head)) sib-i); Ran out of parent.
+                  (not (or (< (setq i (brec-indent-before previous-head)) sib-i); Fell out of parent.
                            (when (= i sib-i); Found the sibling.
                              (setq previous-sibling previous-head))))))
       previous-sibling)))
@@ -1132,7 +1132,7 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
   ;; ─────────────────────────
   (setq-local paragraph-start brec-body-segment-start-pattern); [PBD]
   (setq-local paragraph-separate "^ *\\(?:\u00A0.*\\|\\\\+\\( +.*\\)?\\)?$"); [PBD, SPC]
-    ;;; Indentation blinds, comment blocks and blank lines, that is.
+    ;;; Indent blinds, comment blocks and blank lines, that is.
   (let ((m breccia-mode-map))
     (define-key m [remap backward-paragraph] #'brec-backward)
     (define-key m [remap forward-paragraph] #'brec-forward))
