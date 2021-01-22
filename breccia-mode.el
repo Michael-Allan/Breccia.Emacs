@@ -711,9 +711,8 @@ predecessor.  See also ‘brec-is-divider-segment’ and
 
         (labeling-char "[^[:space:]\u2500-\u259F]")
           ;;; A division labeling character exclusive of whitespace.
-        (labeling (concat labeling-char "+\\(?: +" labeling-char "+\\)*"))
-          ;;; A sequence of `labeling-char` inclusive of embedded spaces,
-          ;;; yet exclusive of embedded newlines.
+        (labeling (concat labeling-char "+\\(?:[[:blank:]]+" labeling-char "+\\)*"))
+          ;;; A sequence of `labeling-char` inclusive of horizontal whitespace. [PSA]
         (labeling-cap (concat "\\(" labeling "\\)"))    ; Capturing an instance of non-title labeling.
         (titling-cap (concat "\n +\\(" labeling "\\)"))); Capturing an instance of titling.
 
@@ -1184,6 +1183,10 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;;            The manual says it “should not use ‘^’ to anchor the match”; yet without that anchor,
 ;;        `fill-paragraph` fails to work, instead collapsing the fractal head to a single line.
 ;;        https://www.gnu.org/software/emacs/manual/html_node/elisp/Standard-Regexps.html
+;;
+;;   PSA  Plain spaces alone are valid separators here, yet the pattern should not be broken
+;;        merely on account of forbidden whitespace.  Forbidden whitespace is the separate
+;;        concern of a dedicated fontifier.  See code § Whitespace.
 ;;
 ;;   PSE  Pre-form search extension: extending the end boundary of the search region for multi-line
 ;;        anchoring.  The manual warns, ‘It is generally a bad idea to return a position greater than
