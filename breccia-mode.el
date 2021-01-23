@@ -32,7 +32,7 @@
 ;;         (set 'auto-mode-alist (cons (cons "\\.brec\\'" 'breccia-mode) auto-mode-alist))
 ;;
 ;; For a working example of manual installation, see the relevant lines
-;; of `http://reluk.ca/.emacs.d/lisp/initialization.el`, and follow the reference there.
+;; of `http://reluk.ca/.config/emacs/lisp/initialization.el`, and follow the reference there.
 
 ;;; Code:
 
@@ -648,9 +648,9 @@ predecessor.  See also ‘brec-is-divider-segment’ and
        ;; Matching either a containment operator CO or backquoted pattern, the latter comprising
        ;; subcomponents Q, BC and NQ which are explained at `brec-backquoted-pattern-pattern`.
        '(progn; (5, pre-form)
-          (while (progn (backward-char)                     ; Bringing the bullet ‘:’
-                        (not (char-equal ?: (char-after))))); into the search region
-          brec-g); and (again) ensuring the search region extends over the whole descriptor.
+          (while (progn (backward-char)       ; Bringing the bullet ‘:’
+                        (/= ?: (char-after)))); into the search region
+          brec-g); and (again) ensuring it extends over the whole descriptor.
        '(goto-char brec-f); (7, post-form) Repositioning for the next anchored highlighter, below.
        '(1 'brec-command-operator t t) '(2 'brec-pattern-delimiter t t)
        '(3 'brec-pattern t t) '(4 'brec-pattern-delimiter t t)))
@@ -660,9 +660,9 @@ predecessor.  See also ‘brec-is-divider-segment’ and
     (list; (9, anchored highlighter)
      (mapconcat 'identity brec-command-matcher-components ""); Concatenating all the
      '(progn; (8, pre-form)                                    components to one string.
-        (while (progn (backward-char)                     ; Again bringing the bullet ‘:’
-                      (not (char-equal ?: (char-after))))); into the search region
-        brec-g); and ensuring the search region extends over the whole descriptor.
+        (while (progn (backward-char)       ; Again bringing the bullet ‘:’
+                      (/= ?: (char-after)))); into the search region
+        brec-g); and ensuring it extends over the whole descriptor.
      nil
      '(1 'brec-command-keyword t t) '(2 'brec-command-keyword t t)
      '(3 'brec-command-keyword t t) '(4 'error t t)))
@@ -764,11 +764,11 @@ predecessor.  See also ‘brec-is-divider-segment’ and
                ;;; It is either the start of a descriptor that starts with a comment appender
                ;;; (regular-expression pattern ‘ +\\+’) or a sequence of trailing space
                ;;; at end of the line (‘ +$’).  Trim it thus:
-              (while (char-equal (char-before end) ?\\); For any trailing backslashes captured,
-                (setq end (1- end)))                   ; scan backward past them.
-              (while (char-equal (char-before end) ?\s); For any trailing space characters,
-                (setq end (1- end)                     ; scan backward past them, and trim
-                      m1-end end                       ; the whole from the captive group.
+              (while (= (char-before end) ?\\); For any trailing backslashes captured,
+                (setq end (1- end)))          ; scan backward past them.
+              (while (= (char-before end) ?\s); For any trailing space characters,
+                (setq end (1- end)            ; scan backward past them, and trim
+                      m1-end end              ; the whole from the captive group.
                       is-match-changed t)))
             (when
                 (catch 'is-free-form-bullet
@@ -778,7 +778,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
 
                   ;; Task bullet
                   ;; ───────────
-                  (when (char-equal ?+ char-last)
+                  (when (= ?+ char-last)
                     (if (= length 1)
                         (set 'brec-f 'brec-task-bullet-singleton)
                       (setq m2-end m1-end
@@ -792,8 +792,8 @@ predecessor.  See also ‘brec-is-divider-segment’ and
                   ;; Alarm bullet
                   ;; ────────────
                   (when (and (> length 1)
-                             (char-equal ?! char-last)
-                             (char-equal ?! (char-before match-last)))
+                             (= ?! char-last)
+                             (= ?! (char-before match-last)))
                     (if (= length 2)
                         (set 'brec-f 'brec-alarm-bullet-singleton)
                       (setq m2-end m1-end
@@ -807,9 +807,9 @@ predecessor.  See also ‘brec-is-divider-segment’ and
                   ;; Miscapture of non-bullet (divider) or non-free-form (aside|command) bullet
                   ;; ──────────
                   (setq char-first (char-after m1-beg))
-                  (when (and (= 1 length)                    ; When an aside or command bullet
-                             (or (char-equal ?/ char-first)  ; is captured, abandon the match
-                                 (char-equal ?: char-first))); and continue seeking.
+                  (when (and (= 1 length)           ; When an aside or command bullet
+                             (or (= ?/ char-first)  ; is captured, abandon the match
+                                 (= ?: char-first))); and continue seeking.
                     (throw 'is-free-form-bullet nil))
                   (when (brec-is-divider-drawing char-first); When a drawing character leads the match,
                     (throw 'is-free-form-bullet nil))       ; abandon the match and continue seeking.
