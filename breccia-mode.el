@@ -1109,7 +1109,7 @@ The face for a division label that contributes to the division title, or titles.
   ;; One does not, however, expect a package to demur in installing itself.  Rather let the package
   ;; *manager* mend its own bugs, and the user meantime find recourse in the means that Emacs provides.
   ;; https://stackoverflow.com/a/35949889/2402790
-  (add-to-list 'auto-mode-alist (cons "\\.brec\\'" 'breccia-mode)))
+  (set 'auto-mode-alist (cons (cons "\\.brec\\'" 'breccia-mode) auto-mode-alist)))
 
 
 
