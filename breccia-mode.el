@@ -140,7 +140,7 @@ The face for the descriptor of an aside point."
 
 
 (defun brec-at-body-fractum-start ()
-  "Tells whether point is at the start of a body fractum.
+  "Whether point is at the start of a body fractum.
 Returns the fractum’s first non-space position if so, nil otherwise.
 See also ‘brec-body-fractum-start’."
   (let ((start (brec-at-body-segment-start)))
@@ -152,7 +152,7 @@ See also ‘brec-body-fractum-start’."
 
 
 (defun brec-at-body-segment-start ()
-  "Tells whether point is at the start of a body segment.
+  "Whether point is at the start of a body segment.
 Returns the segment’s first non-space position if so, nil otherwise.
 See also ‘brec-body-segment-start’."
   (when (and (bolp) (looking-at brec-body-segment-start-pattern-unanchored))
@@ -161,7 +161,7 @@ See also ‘brec-body-segment-start’."
 
 
 (defun brec-at-fractum-start ()
-  "Tells whether point is at the start of a fractum.
+  "Whether point is at the start of a fractum.
 See also ‘brec-fractum-start’."
   (when (not (eobp)); Being neither in an empty buffer, nor at the end of the buffer where nothing starts,
     ;; Moreover being at the start of either the buffer or a body fractum.
@@ -500,7 +500,7 @@ The face for non-alphanumeric characters in the bullet of a generic point."
 
 
 (defun brec-in-body-fractum-start ()
-  "Tells whether point is on the start line of a body fractum.
+  "Whether point is on the start line of a body fractum.
 Returns the fractum’s first non-space position, or nil if point is not
 on the start line of a body fractum.  See also ‘brec-body-fractum-start’."
   (if (bolp)
@@ -512,7 +512,7 @@ on the start line of a body fractum.  See also ‘brec-body-fractum-start’."
 
 
 (defun brec-in-body-segment-start ()
-  "Tells whether point is on the start line of a body segment.
+  "Whether point is on the start line of a body segment.
 Returns the segment’s first non-space position, or nil if point is not
 on the start line of a body segment.  See also ‘brec-body-segment-start’."
   (if (bolp)
@@ -554,7 +554,7 @@ The face for the no-break spaces that delimit an indent blind."
 
 
 (defun brec-in-fractum-start ()
-  "Tells whether point is on the start line of a fractum.
+  "Whether point is on the start line of a fractum.
 See also ‘brec-fractum-start’."
   (if (bolp)
       (brec-at-fractum-start)
@@ -565,13 +565,13 @@ See also ‘brec-fractum-start’."
 
 
 (defun brec-is-divider-drawing (char)
-  "Tells whether CHAR is a divider drawing character."
+  "Whether CHAR is a divider drawing character."
  (and (>= char ?\u2500) (<= char ?\u259F)))
 
 
 
 (defun brec-is-divider-segment (segment-start)
-  "Tells whether a body segment is a divider segment.
+  "Whether a body segment is a divider segment.
 SEGMENT-START is the position of the segment’s first non-space character.
 The return value is t if the body segment is a divider segment, nil otherwise."
   (brec-is-divider-drawing (char-after segment-start)))
@@ -579,7 +579,7 @@ The return value is t if the body segment is a divider segment, nil otherwise."
 
 
 (defun brec-is-divider-segment-successor (segment-start)
-  "Tells whether a body segment is a divider segment that directly succeeds another.
+  "Whether a body segment is a divider segment that directly succeeds another.
 SEGMENT-START is the position of the segment’s first non-space character.
 The return value is the correponding position in the preceding divider segment,
 or nil if the body segment is not a divider segment or has no divider-segment
