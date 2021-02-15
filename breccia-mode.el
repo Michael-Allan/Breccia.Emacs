@@ -68,9 +68,9 @@ Pattern ‘brec-body-segment-start-pattern’ without the leading anchor ‘^’
 (defconst brec-gap-pattern
   (concat; The gap comprises one or more of the following.
    "\\(?:^ *[ \\].*\n?"; Indent blind, comment block
-   "\\| \\\\.*\n?"     ; or comment appender, each together with any bounding newline character.
+   "\\| \\\\.*\n?"     ; or comment appender, each together with any bounding newline.
    "\\| "; Space.
-   "\\|\n"; Newline character.
+   "\\|\n"; Newline.
    "\\)+") "\
 The regular-expression pattern of a gap in a descriptor.
 See also the simpler ‘brec-preceding-gap-character-pattern’
