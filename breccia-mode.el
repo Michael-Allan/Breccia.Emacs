@@ -50,7 +50,7 @@
 
 (defconst brec-body-segment-start-pattern
   (concat
-   "^\\( \\{4\\}*\\)\\("; Perfectly indented, the start of the segment comprises [SPC]
+   "^\\( \\{4\\}*\\)\\("; Perfectly indented, the start of the segment comprises [CCP]
      ;;; any sequence outside the delimiter of either a comment block or an indent blind.
    "\\\\+[^ \n\\]\\|[^[:space:]\\]\\)") "\
 The pattern of the start of a body segment up to its first non-space character.
@@ -740,7 +740,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
    (list; Face each bullet of an alarm, task or generic point.
     (let ((rough-bullet-pattern; The best a regular expression can do here, allowing some false matches.
            (concat
-            "^ \\{4\\}*\\("; Perfectly indented, the start of the bullet roughly comprises [SPC]
+            "^ \\{4\\}*\\("; Perfectly indented, the start of the bullet roughly comprises [CCP]
             "\\(?:\\\\+[\u00A0]"; either (←) a backslash sequence preceding a no-break-space,
               ;;; or (↓) zero or more backslashes preceding a character neither whitespace nor backslash.
             "\\|\\\\*\\(?:[[:alnum:]]+ *\\|[^[:alnum:][:space:]\\][\u00A0]?\\)\\)"
@@ -855,7 +855,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
 
    (list; A comment carrier is delimited per line by one or more backslashes (\⋯) together isolated
       ;;; in whitespace.  Usually the delimiter is followed by whitespace and commentary (WC) too.
-    "\\(?:^\\| \\)\\(\\\\+\\)\\( +.*\\)?$"; [SPC]
+    "\\(?:^\\| \\)\\(\\\\+\\)\\( +.*\\)?$"; [CCP]
       ;;;           └───────┘  └──────┘
       ;;;               \⋯        WC
 
@@ -864,7 +864,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
 
    (cons; Moreover, where a carrier formed as a comment block is delimited by two or more
       ;;; backslashes (\\⋯), any WC should be faced as a comment block label (L).
-    "^ *\\\\\\{2,\\}\\( +.+\\)$" '(1 'brec-comment-block-label t)); [OCF, SPC]
+    "^ *\\\\\\{2,\\}\\( +.+\\)$" '(1 'brec-comment-block-label t)); [CCP, OCF]
     ;;; └──────────┘  └──────┘
     ;;;     \\⋯           L
 
@@ -1130,7 +1130,7 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
   ;; Set up paragraph handling
   ;; ─────────────────────────
   (setq-local paragraph-start brec-body-segment-start-pattern); [PBD]
-  (setq-local paragraph-separate "^ *\\(?:\u00A0.*\\|\\\\+\\( +.*\\)?\\)?$"); [PBD, SPC]
+  (setq-local paragraph-separate "^ *\\(?:\u00A0.*\\|\\\\+\\( +.*\\)?\\)?$"); [CCP, PBD]
     ;;; Indent blinds, comment blocks and blank lines, that is.
   (let ((m breccia-mode-map))
     (define-key m [remap backward-paragraph] #'brec-backward)
@@ -1153,6 +1153,9 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;; NOTES
 ;; ─────
 ;;   BUG  This code is incorrect.
+;;
+;;   CCP  Comment-carriage pattern.  Marking an instance of a pattern or anti-pattern related to
+;;        comment carriers, one of several such instances that together are maintained in synchrony.
 ;;
 ;;   FLE  Font Lock extension.  The alternative to `font-lock-extend-region-functions`, namely the
 ;;        little used `font-lock-extend-after-change-region-function`, appears to be a design error.
@@ -1198,9 +1201,6 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;;
 ;;   SF · Standard faces: `https://www.gnu.org/software/emacs/manual/html_node/emacs/Standard-Faces.html`
 ;;        and § Standard faces at `http://git.savannah.gnu.org/cgit/emacs.git/tree/lisp/faces.el`.
-;;
-;;   SPC  Synchronized pattern of comment carriage.  Marking an instance of a pattern or anti-pattern,
-;;        one of several that together are maintained in synchrony.
 ;;
 ;;   UCN  Unicode character name. https://en.wikipedia.org/wiki/Unicode_character_property#Name
 
