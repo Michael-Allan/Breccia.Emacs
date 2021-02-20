@@ -346,8 +346,33 @@ The face for an operator in the descriptor of a command point."
 
 
 
-(defface brec-commentary-nobreak-space `((t . (:inherit (font-lock-comment-face brec-nobreak-space)))) "\
-The face for a no-break space in a comment carrier."
+(defface brec-comment-appender `((t . (:inherit font-lock-comment-face))) "\
+The face for the content of a comment appender."
+  :group 'breccia)
+
+
+
+(defface brec-comment-appender-delimiter `((t . (:inherit font-lock-comment-delimiter-face))) "\
+The face for the delimiter of a comment appender."
+  :group 'breccia)
+
+
+
+(defface brec-commentary-nobreak-space `((t . (:inherit (brec-comment-block brec-nobreak-space)))) "\
+The face for a no-break space in a block comment."
+  :group 'breccia)
+
+
+
+(defface brec-comment-block `((t . (:inherit font-lock-comment-face))) "\
+The face for comment-block content other than a block label.
+See also ‘brec-comment-block-label’."
+  :group 'breccia)
+
+
+
+(defface brec-comment-block-delimiter `((t . (:inherit font-lock-comment-delimiter-face))) "\
+The face for the delimiter of a comment block."
   :group 'breccia)
 
 
@@ -853,20 +878,31 @@ predecessor.  See also ‘brec-is-divider-segment’ and
    ;; Comment carrier
    ;; ═══════════════
 
-   (list; A comment carrier is delimited per line by one or more backslashes (\⋯) together isolated
-      ;;; in whitespace.  Usually the delimiter is followed by whitespace and commentary (WC) too.
-    "\\(?:^\\| \\)\\(\\\\+\\)\\( +.*\\)?$"; [CCP]
-      ;;;           └───────┘  └──────┘
-      ;;;               \⋯        WC
+   (list; Fontify each line of a comment block.  Each of its ordinary lines is delimited by a single
+      ;;; backslash (\) isolated in whitespace.  Usually the delimiter is followed by content (C).
+    "^ *\\(\\\\\\)\\(?:\\( +.*\\)?\\|\\(\\\\+\\)\\( +.*\\)?\\)$"; [CCP]
+      ;;; └──────┘       └──────┘      └───────┘  └──────┘
+      ;;;    \              C             \⋯         L
 
-    '(1 'font-lock-comment-delimiter-face t) '(2 'font-lock-comment-face t t)); [OCF]
+      ;;; A line may also be delimited by even more backslashes (\⋯) and so contain a block label (L).
+    '(1 'brec-comment-block-delimiter t)   '(2 'brec-comment-block t t)
+    '(3 'brec-comment-block-delimiter t t) '(4 'brec-comment-block-label t t))
 
 
-   (cons; Moreover, where a carrier formed as a comment block is delimited by two or more
-      ;;; backslashes (\\⋯), any WC should be faced as a comment block label (L).
-    "^ *\\\\\\{2,\\}\\( +.+\\)$" '(1 'brec-comment-block-label t)); [CCP, OCF]
-    ;;; └──────────┘  └──────┘
-    ;;;     \\⋯           L
+   (list; Fontify each comment appender.  Each is delimited by any number of backslashes (\⋯)
+      ;;; together isolated in whitespace.  Again, usually the delimiter is followed by content (C).
+    (lambda (limit)
+      (catch 'to-reface
+        (while (re-search-forward "[^\n ] +\\(\\\\+\\)\\( +.*\\)?$" limit t); [CCP]
+            ;;;                              └───────┘  └──────┘
+            ;;;                                 \⋯        C
+
+          (let ((face (get-text-property (match-beginning 1) 'face)))
+            (unless (or (eq face 'brec-comment-block); Not naively to reface block commentary where it
+                        (eq face 'brec-comment-block-label)); takes the superficial form of an appender.
+              (throw 'to-reface t))))
+        nil))
+    '(1 'brec-comment-appender-delimiter t) '(2 'brec-comment-appender t t)); [OCA]
 
 
 
@@ -887,8 +923,8 @@ predecessor.  See also ‘brec-is-divider-segment’ and
            ((= c ?\u00A0)
             (cond
 
-             ;; In commentary.
-             ((and face (memq face '(font-lock-comment-face brec-comment-block-label)))
+             ;; In block commentary.
+             ((and face (memq face '(brec-comment-block brec-comment-block-label)))
               (setq found t brec-f 'brec-commentary-nobreak-space))
 
              ;; In a free-form bullet.
@@ -1173,13 +1209,13 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;;   NCE  Not `char-equal` or `=`, which fail if the position is out of bounds.
 ;;        Rather `eq` which instead gives nil in that case.
 ;;
-;;   OCF  Overrides in comment-carrier fontification.  The fontifier must override (t) any fontifier
-;;        of the carrier’s containing head, and must therefore follow it in `brec-keywords`.
-;;            We might have tried fontifying the carrier using the syntax system, which runs earlier.
-;;        Not by mere syntax tabulation, which is unable to grasp the form of Breccian comment carriers;
-;;        rather we would probably have used the macro `syntax-propertize-rules` to set syntax properties
-;;        on the carrier delimiters.  But then could the `subexp-highlighters` for the containing fractum
-;;        have worked around the carriers, e.g. with `override` at nil?  [SBF]
+;;   OCA  Overrides in comment-appender fontification.  The fontifier must override (t) any facing
+;;        of the appender’s containing head, and must therefore follow it in `brec-keywords`.
+;;            Maybe the syntax system, which runs earlier, would suffice for fontifying comment carriers.
+;;        Not mere syntax tabulation, which would be unable to grasp their form.  Rather the macro
+;;        `syntax-propertize-rules`, which might set the necessary syntax properties on the delimiters.
+;;        But then, in the case of a comment appender, could the `subexp-highlighters` of the containing
+;;        head have worked around the carrier, e.g. with `override` at nil?  [SBF]
 ;;
 ;;   PBD  Paragraph boundary definition.  It is used by the command `fill-paragraph`, for instance,
 ;;        not however by the commands `brec-backward-paragraph` and `brec-forward-paragraph`.
