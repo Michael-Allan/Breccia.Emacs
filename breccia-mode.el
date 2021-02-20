@@ -928,7 +928,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
               (setq found t brec-f 'brec-commentary-nobreak-space))
 
              ;; In a free-form bullet.
-             ((and face (memq face '(brec-alarm-bullet brec-generic-bullet brec-task-bullet)))
+             ((and face (memq face '(brec-alarm-bullet brec-generic-bullet brec-task-bullet))); [NBB]
               (setq found t brec-f 'brec-bullet-nobreak-space))
 
              ;; Delimiting an indent blind.
@@ -1205,6 +1205,11 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;;
 ;;   GVF  A global variable for the use of fontifiers, e.g. from within forms they quote and pass
 ;;        to Font Lock to be evaluated outside of their lexical scope.
+;;
+;;   NBB  No-break space in a bullet.  Alone a face test suffices to guard the application
+;;        of `brec-bullet-nobreak-space` only because already the bullet fontifier detects
+;;        and refuses to face misplaced no-break spaces as bullet constituents.  For more on this,
+;;        see `http://reluk.ca/project/Breccia/Emacs/action_plan.brec` § no-break spaces.
 ;;
 ;;   NCE  Not `char-equal` or `=`, which fail if the position is out of bounds.
 ;;        Rather `eq` which instead gives nil in that case.
