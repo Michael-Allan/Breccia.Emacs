@@ -642,8 +642,8 @@ predecessor.  See also ‘brec-is-divider-segment’ and
    ;; Command point
    ;; ═════════════
 
-   (list; A command point starts with a perfectly indented (PI) bullet comprising one colon (:).
-    "^ \\{4\\}*\\(:\\)\\(?: +\\|$\\)"; (1) Anchoring on the bullet.
+   (list; A command point starts with a perfectly indented (PI) bullet comprising one colon ‘:’.
+    "^ \\{4\\}*\\(:\\)\\(?: \\|$\\)"; (1) Anchoring on the bullet + any delimiting whitespace character.
     ;; ┈──────┘
     ;;    PI
 
@@ -654,40 +654,48 @@ predecessor.  See also ‘brec-is-divider-segment’ and
     (list; (3, anchored highlighter) Usually a descriptor follows the bullet,
      "\\(\\(?:.\\|\n\\)+\\)";        extending thence to the end of the point head.
      '(setq; (2, pre-form)
-       brec-f (point); Saving the end-bound of the anchor.
-       brec-g (brec-segment-eol)); Saving the limit of the present fractal segment
-         ;;; and returning it, so extending the search region over the whole descriptor. [PSE]
-     '(goto-char brec-f); (4, post-form) Repositioning for the next anchored highlighter, below.
-     '(1 'brec-command-descriptor))
+       brec-f (goto-char (match-end 1)); Saving the end boundary of the bullet ‘:’, and starting from it.
+       brec-g (brec-segment-eol)); Saving the limit of the present fractal segment, and returning it,
+         ;;; so extending the search region over the whole descriptor. [PSE]
+     nil '(1 'brec-command-descriptor))
 
-    ;; Containment operators and backquoted patterns
-    ;; ─────────────────────────────────────────────
-    (let ((pre-gap brec-preceding-gap-character-pattern)
-          (post-gap brec-succeeding-gap-character-pattern))
-      (list; (6, anchored highlighter)
-       (concat
-        pre-gap "\\(?:\\(@\\)" post-gap "\\|\\(`\\)\\(\\(?:\\\\.\\|[^\\`]\\)+\\)\\(`\\)\\)")
-       ;;                ╵                 ╻   ╵           └────┘  └────┘          ╵
-       ;;                CO                ┃   Q             BC      NQ            Q
-       ;;                                  ╹
-       ;; Matching either a containment operator CO or backquoted pattern, the latter comprising
-       ;; subcomponents Q, BC and NQ which are explained at `brec-backquoted-pattern-pattern`.
-       '(progn; (5, pre-form)
-          (while (progn (backward-char)       ; Bringing the bullet ‘:’
-                        (/= ?: (char-after)))); into the search region
-          brec-g); and (again) ensuring it extends over the whole descriptor.
-       '(goto-char brec-f); (7, post-form) Repositioning for the next anchored highlighter, below.
-       '(1 'brec-command-operator t t) '(2 'brec-pattern-delimiter t t)
-       '(3 'brec-pattern t t) '(4 'brec-pattern-delimiter t t)))
+    ;; Backquoted patterns
+    ;; ───────────────────
+    (list; (5, anchored highlighter)
+     "\\(`\\)\\(\\(?:\\\\.\\|[^\\`]\\)+\\)\\(`\\)"
+     ;;  ╵           └────┘  └────┘          ╵
+     ;;  Q             BC      NQ            Q        Labels as per `brec-backquoted-pattern-pattern`.
+
+     '(progn; (4, pre-form)
+        (goto-char brec-f); Starting from the end boundary of the bullet ‘:’,
+        brec-g); again extend the search region over the whole descriptor.
+     nil '(1 'brec-pattern-delimiter t) '(2 'brec-pattern t) '(3 'brec-pattern-delimiter t))
+
+    ;; Containment operators ‘@’
+    ;; ─────────────────────
+    (list; (7, anchored highlighter)
+     (lambda (limit)
+       (catch 'to-reface
+         (while (re-search-forward
+                 (concat brec-preceding-gap-character-pattern "\\(@\\)"
+                         brec-succeeding-gap-character-pattern)
+                 limit t)
+           (let ((face (get-text-property (match-beginning 0) 'face)))
+             (unless (eq face 'brec-pattern); Not to accept ‘@’ characters that form pattern content.
+               (throw 'to-reface t))))
+         nil))
+     '(progn; (6, pre-form)
+        (goto-char brec-f); Starting from the end boundary of the bullet ‘:’,
+        brec-g); again extend the search region over the whole descriptor.
+     nil '(1 'brec-command-operator t))
 
     ;; Command keywords (last that any `error` face it applies might override the foregoing)
     ;; ────────────────
     (list; (9, anchored highlighter)
-     (mapconcat 'identity brec-command-matcher-components ""); Concatenating all the
-     '(progn; (8, pre-form)                                    components to one string.
-        (while (progn (backward-char)       ; Again bringing the bullet ‘:’
-                      (/= ?: (char-after)))); into the search region
-        brec-g); and ensuring it extends over the whole descriptor.
+     (mapconcat 'identity brec-command-matcher-components ""); Joining all components to one string.
+     '(progn; (8, pre-form)
+        (goto-char (1- brec-f)); Starting this time from the bullet ‘:’ itself,
+        brec-g); again extend the search region over the whole descriptor.
      nil
      '(1 'brec-command-keyword t t) '(2 'brec-command-keyword t t)
      '(3 'brec-command-keyword t t) '(4 'error t t)))
