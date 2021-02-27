@@ -289,32 +289,16 @@ The face for a keyword in the descriptor of a command point."
      ;; Initial component
      ;; ─────────────────
      (concat
-      ":" gap "\\(?:\\(?1:private\\)\\(?:" gap "\\)?$"; Parental privatizer.
+      ": +\\(?:\\(?1:private\\)\\(?:" gap "\\)?$"; Parental privatizer.
       "\\|\\(?:privately" gap "\\)?\\(?:"); Optional autoprivatizer to carry the regular command (below).
 
      ;; Associative reference
      ;; ─────────────────────
      (concat
-      "\\(?:\\(?1:re\\)" gap bq-pat gap "\\)?"; Referrer clause.
+      "\\(?:\\(?1:re\\)" gap bq-pat gap "\\)?"; Optional referrer clause.
 
-      ;; imperative clause, one of cases A and B
-      ;; ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
-      ;; A. It may start with a referential command that *cannot* infer a referent.
-      "\\(?:\\(?2:cf\\.\\|e\\.g\\.\\|i\\.e\\.\\|NB\\|N\\.B\\.\\|see" gap "also\\|viz\\.\\)" gap
-      "\\(?:\\(?4:@\\)"; That means it must be followed *not* by an ‘@’ (error faced),
-                     ;;; *nor* by any of the terms below (likewise error faced),
-      "\\|\\(?4:same\\|similar\\|head\\|term\\)\\(?:" brec-succeeding-gap-character-pattern "\\|\\'\\)"
-      "\\|[^ \n \\]\\)"; but by an explicit referent indicator, the leading character of which (left)
-        ;;; is sought on the pattern of a gap boundary, namely a character adjacent to a gap.
-        ;;; The no-break space ‘ ’ (A0) would be redundant in this pattern if the quantifier of `gap`
-        ;;; were possessive (consuming indent blinds even where it caused the match to fail).
-        ;;; But Emacs does not support possessive quantifiers.
-
-      ;; B. Alternatively it starts with a referential command that *can* infer a referent.
-      "\\|\\(?2:join\\|see\\)\\>"
-
-      ;; Order matters above: for `see also` of A to match, it must have priority over `see` of B.
-      "\\)")
+      "\\(?2:see\\(?: +also\\)?\\|join"; Referential command
+      "\\|\\(?:cf\\|e\\.g\\|i\\.e\\|N\\.B\\|viz\\)\\.\\|NB\\)\\(?: \\|$\\)")
 
      ;; Parental privatizer
      ;; ───────────────────
@@ -323,10 +307,10 @@ The face for a keyword in the descriptor of a command point."
 
      ;; Other command matchers, each a component
      ;; ──────────────────────
-     ;; Additional matchers may be inserted here.  Open each with `\\|`.  Capture up to three,
-     ;; explicitly numbered groups, e.g. `\(?1:foo\)`, `\(?2:bar\)` and `\(?3:etc\)`.
-     ;; The same fontification will be given to each group.  For a working example,
-     ;; see `http://reluk.ca/project/wayic/Waybrec/Emacs/waybrec-mode.el`.
+     ;; Additional matchers may be inserted here.  Open each with `\\|`.  Capture up to four,
+     ;; explicitly numbered groups, e.g. `\(?1:foo\)`, `\(?2:bar\)` and `\(?4:bad\)`.
+     ;; Command facing will be given to any group numbered 1 to 3, error facing to any numbered 4.
+     ;; For a working example, see `http://reluk.ca/project/wayic/Waybrec/Emacs/waybrec-mode.el`.
 
      ;; Final component
      ;; ───────────────
