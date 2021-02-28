@@ -285,12 +285,7 @@ The face for a keyword in the descriptor of a command point."
   (let ((bq-pat brec-backquoted-pattern-pattern)
         (gap brec-gap-pattern))
     (list
-
-     ;; Initial component
-     ;; ─────────────────
-     (concat
-      ": +\\(?:\\(?1:private\\)\\(?:" gap "\\)?$"; Parental privatizer.
-      "\\|\\(?:privately" gap "\\)?\\(?:"); Optional autoprivatizer to carry the regular command (below).
+     ": +\\(?:privately +\\)?\\(?:"
 
      ;; Associative reference
      ;; ─────────────────────
@@ -300,10 +295,9 @@ The face for a keyword in the descriptor of a command point."
       "\\(?2:see\\(?: +also\\)?\\|join"; Referential command
       "\\|\\(?:cf\\|e\\.g\\|i\\.e\\|N\\.B\\|viz\\)\\.\\|NB\\)\\(?: \\|$\\)")
 
-     ;; Parental privatizer
-     ;; ───────────────────
- ;;; "\\|\\(?1:private\\)\\>"
- ;;;; But it cannot follow `privately`, and therefore comes before it (above) in the initial component.
+     ;; Privatizer
+     ;; ──────────
+     "\\|\\(?1:private\\)\\>"
 
      ;; Other command matchers, each a component
      ;; ──────────────────────
@@ -314,7 +308,7 @@ The face for a keyword in the descriptor of a command point."
 
      ;; Final component
      ;; ───────────────
-     "\\)\\)"))
+     "\\)"))
   "\
 The command matcher for the command-point fontifier of ‘brec-keywords’.
 Formally this is a list of string components to be concatenated in order to
