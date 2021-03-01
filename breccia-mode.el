@@ -611,7 +611,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
 
     (list; (3, anchored highlighter) Usually a descriptor follows the bullet,
      "\\(\\(?:.\\|\n\\)+\\)";        extending thence to the end of the point head.
-     '(brec-segment-eol); (2, pre-form) Making the search region cover the whole of it. [PSE]
+     '(brec-segment-eol); (2, pre-form) Making the search region cover the whole of it. [REP]
      nil '(1 'brec-aside-descriptor)))
 
 
@@ -621,20 +621,20 @@ predecessor.  See also ‘brec-is-divider-segment’ and
    ;; ═════════════
 
    (list; A command point starts with a perfectly indented (PI) bullet comprising one colon ‘:’.
-    "^ \\{4\\}*\\(:\\)\\(?: \\|$\\)"; (1) Anchoring on the bullet + any delimiting whitespace character.
-    ;; ┈──────┘
-    ;;    PI
+    "^ \\{4\\}*\\(:\\) +[^ \n\\]"; (1) Anchoring on the bullet, space separator and first character of
+    ;; ┈──────┘                        the following term.  Assume that no term starts with a backslash,
+    ;;    PI                           so saving the cost of distinguishing it from a comment appender.
 
     '(1 'brec-command-bullet)
 
     ;; Descriptor
     ;; ──────────
-    (list; (3, anchored highlighter) Usually a descriptor follows the bullet,
+    (list; (3, anchored highlighter) Always a descriptor follows the bullet,
      "\\(\\(?:.\\|\n\\)+\\)";        extending thence to the end of the point head.
      '(setq; (2, pre-form)
        brec-f (goto-char (match-end 1)); Saving the end boundary of the bullet ‘:’, and starting from it.
        brec-g (brec-segment-eol)); Saving the limit of the present fractal segment, and returning it,
-         ;;; so extending the search region over the whole descriptor. [PSE]
+         ;;; so extending the search region over the whole descriptor. [REP]
      nil '(1 'brec-command-descriptor))
 
     ;; Backquoted patterns
@@ -736,7 +736,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
 
       ;; (3, anchored highlighter) Thence it may include any mix of drawing, titling and labeling.
       (list (concat drawing-cap "\\|" titling-cap "\\|" labeling-cap)
-            '(brec-segment-eol); (2, pre-form) Extending the search region over the whole segment. [PSE]
+            '(brec-segment-eol); (2, pre-form) Extending the search region over the whole segment. [REP]
             nil; (post-form)
             '(1 'brec-divider nil t);           `drawing-cap`
             '(2 'brec-titling-label nil t);     `titling-cap`
@@ -1160,11 +1160,8 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 
   ;; Hook into Font Lock
   ;; ───────────────────
-;;; (brec-set-for-buffer 'font-lock-multiline t)
-;;;;; This setting does not, however, seem necessary; nor does the documentation imply that it would be.
-;;;;; Should fontification ever depend on *subsequent* lines, there I think this setting would at least
-;;;;; speed the response to changes.  Meantime, it seems that `brec-extend-search` alone will suffice:
-  (add-hook 'font-lock-extend-region-functions #'brec-extend-search t t) ; [FLE]
+;;; (brec-set-for-buffer 'font-lock-multiline t); [FML]
+  (add-hook 'font-lock-extend-region-functions #'brec-extend-search t t) ; [RE]
   (brec-set-for-buffer 'font-lock-defaults '(brec-keywords)))
 
 
@@ -1179,9 +1176,9 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;;   CCP  Comment-carriage pattern.  Marking an instance of a pattern or anti-pattern related to
 ;;        comment carriers, one of several such instances that together are maintained in synchrony.
 ;;
-;;   FLE  Font Lock extension.  The alternative to `font-lock-extend-region-functions`, namely the
-;;        little used `font-lock-extend-after-change-region-function`, appears to be a design error.
-;;        https://lists.gnu.org/archive/html/bug-gnu-emacs/2015-03/msg00818.html
+;;   FML `font-lock-multiline`.  It seems unnecessary, and the documentation does not imply otherwise.
+;;        Should fontification ever depend on *subsequent* lines, then likely it would at least speed
+;;        the response to changes.  Meantime, it seems `brec-extend-search` alone suffices.
 ;;
 ;;   FV · Suppressing sporadic compiler warnings ‘reference to free variable’
 ;;        or ‘assignment to free variable’.
@@ -1218,10 +1215,14 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;;        merely on account of forbidden whitespace.  Forbidden whitespace is the separate
 ;;        concern of a dedicated fontifier.  See code § Whitespace.
 ;;
-;;   PSE  Pre-form search extension: extending the end boundary of the search region for multi-line
-;;        anchoring.  The manual warns, ‘It is generally a bad idea to return a position greater than
-;;        the end of the line’ [SBF].  But here the manual appears to be wrong.
-;;        https://stackoverflow.com/a/9456757/2402790
+;;   RE · Region extension.  The alternative to `font-lock-extend-region-functions`, namely the
+;;        little used `font-lock-extend-after-change-region-function`, appears to be a design error.
+;;        https://lists.gnu.org/archive/html/bug-gnu-emacs/2015-03/msg00818.html
+;;
+;;   REP  Region extension in the pre-form of an anchored highlighter: extending the end boundary
+;;        of the search region for multi-line fontification.  The manual warns, ‘It is generally
+;;        a bad idea to return a position greater than the end of the line’ [SBF].
+;;        But here the manual appears to be wrong.  https://stackoverflow.com/a/9456757/2402790
 ;;
 ;;   SBF  Search-based fontification.
 ;;        https://www.gnu.org/software/emacs/manual/html_node/elisp/Search_002dbased-Fontification.html
