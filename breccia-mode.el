@@ -403,7 +403,7 @@ non-nil otherwise."
   (unless (or (bolp)(eolp)); When the prior extenders such as `font-lock-extend-region-wholelines`
     ;; do not leave `font-lock-end` at a line terminus, as usually they do, then the search
     ;; region bisects the text of the line, which means the text of a fractal segment
-    ;; (a Breccian document contains nothing else), and each segment covers the whole of its lines.
+    ;; (a Breccian file contains nothing else), and each segment covers the whole of its lines.
     (end-of-line)); Thus far at least the present segment must extend; extend it now,
                 ;;; that `re-search-forward` (below) must miss its leader.
   (let (is-changed)
@@ -481,7 +481,7 @@ fracta and segments, see ‘brec-body-fractum-start’ and ‘brec-body-segment-
   (let ((start (brec-body-fractum-start)))
     (unless (or start (= (point-min) (point-max)))
       ;; If point is not in the head of a body fractum, and the buffer is not empty,
-      (setq start (point-min))); then point must be in the document head at its start.
+      (setq start (point-min))); then point must be in the file head at its start.
     start))
 
 
@@ -941,7 +941,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
 (defun brec-next-head (body-segment-start)
   "Locates the linear-order successor of a fractal head.
 BODY-SEGMENT-START is the position of the first non-space character of
-any body segment in the head, or nil for a document head.  The return value
+any body segment in the head, or nil for a file head.  The return value
 is the correponding position in the next head, or nil if no next head exists."
   (when body-segment-start
     (let ((next (brec-next-segment body-segment-start)))
@@ -968,7 +968,7 @@ non-space character in the next segment, or nil if no next segment exists."
 (defun brec-next-sibling (body-segment-start)
   "Locates the next sibling of a fractum.
 BODY-SEGMENT-START is the position of the first non-space character of
-any body segment in the head, or nil for a document head.  The return value is
+any body segment in the head, or nil for a file head.  The return value is
 the correponding position in the next sibling, or nil if no next sibling exists."
   (when body-segment-start
     (let ((next-head body-segment-start)
@@ -1028,7 +1028,7 @@ See also ‘brec-divider-segment-predecessor’."
 (defun brec-previous-head (start-segment-position)
   "Locates the linear-order predecessor of a fractal head.
 START-SEGMENT-POSITION is any position in the first body segment of the head,
-or nil for a document head.  The return value is the position of the first
+or nil for a file head.  The return value is the position of the first
 non-space character in the previous head, or nil if no previous head exists."
   (when start-segment-position
     (let ((previous (brec-previous-body-segment start-segment-position))
@@ -1043,7 +1043,7 @@ non-space character in the previous head, or nil if no previous head exists."
 (defun brec-previous-sibling (body-fractum-start)
   "Locates the previous sibling of a fractum.
 BODY-FRACTUM-START is the position of the fractum’s first non-space character,
-or nil for the document fractum.  The return value is the correponding position
+or nil for the file fractum.  The return value is the correponding position
 in the previous sibling, or nil if no previous sibling exists."
   (when body-fractum-start
     (let ((previous-head body-fractum-start)
@@ -1176,7 +1176,7 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;;   CCP  Comment-carriage pattern.  Marking an instance of a pattern or anti-pattern related to
 ;;        comment carriers, one of several such instances that together are maintained in synchrony.
 ;;
-;;   FML `font-lock-multiline`.  It seems unnecessary, and the documentation does not imply otherwise.
+;;   FML `font-lock-multiline`.  It seems unnecessary, and the description does not imply otherwise.
 ;;        Should fontification ever depend on *subsequent* lines, then likely it would at least speed
 ;;        the response to changes.  Meantime, it seems `brec-extend-search` alone suffices.
 ;;
