@@ -250,7 +250,7 @@ The face for a bullet."
 
 (defface brec-bullet-nobreak-space `((t . (:inherit brec-nobreak-space))) "\
 The face for a no-break space in a free-form bullet.
-This applies to alarm, task and generic bullets."
+This applies to alarm, task and plain bullets."
   :group 'breccia)
 
 
@@ -487,18 +487,6 @@ fracta and segments, see ‘brec-body-fractum-start’ and ‘brec-body-segment-
 
 
 (defvar brec-g); [GVF]
-
-
-
-(defface brec-generic-bullet `((t . (:inherit (brec-bullet font-lock-keyword-face)))) "\
-The face for the bullet of a generic point."
-  :group 'breccia)
-
-
-
-(defface brec-generic-bullet-punctuation `((t . (:inherit brec-generic-bullet :weight normal))) "\
-The face for non-alphanumeric characters in the bullet of a generic point."
-  :group 'breccia)
 
 
 
@@ -748,7 +736,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
    ;; Free-form bullet
    ;; ════════════════
 
-   (list; Face each bullet of an alarm, task or generic point.
+   (list; Face each bullet of an alarm, task or plain point.
     (let ((rough-bullet-pattern; The best a regular expression can do here, allowing some false matches.
            (concat
             "^ \\{4\\}*\\("; Perfectly indented, the start of the bullet roughly comprises [CCP]
@@ -825,9 +813,9 @@ predecessor.  See also ‘brec-is-divider-segment’ and
                   (when (brec-is-divider-drawing char-first); When a drawing character leads the match,
                     (throw 'is-free-form-bullet nil))       ; abandon the match and continue seeking.
 
-                  ;; Generic bullet
+                  ;; Plain bullet
                   ;; ──────────────
-                  (set 'brec-f 'brec-generic-bullet)
+                  (set 'brec-f 'brec-plain-bullet)
                   t)
 
               (when is-match-changed
@@ -846,7 +834,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
           (while (< match-beg limit)
             (setq face (get-text-property match-beg 'face)
                   match-end (next-single-property-change match-beg 'face (current-buffer) limit))
-            (when (or (eq face 'brec-generic-bullet)
+            (when (or (eq face 'brec-plain-bullet)
                       (eq face 'brec-task-bullet)
                       (eq face 'brec-alarm-bullet))
               (goto-char match-beg)
@@ -914,7 +902,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
               (setq found t brec-f 'brec-commentary-nobreak-space))
 
              ;; In a free-form bullet.
-             ((and face (memq face '(brec-alarm-bullet brec-generic-bullet brec-task-bullet))); [NBB]
+             ((and face (memq face '(brec-alarm-bullet brec-plain-bullet brec-task-bullet))); [NBB]
               (setq found t brec-f 'brec-bullet-nobreak-space))
 
              ;; Delimiting an indent blind.
@@ -1002,6 +990,18 @@ The face for each of the delimiters of a regular-expression pattern."
 
 (defface brec-pattern-element `((t . (:inherit brec-pattern))) "\
 The face for a formal element of a regular-expression pattern."
+  :group 'breccia)
+
+
+
+(defface brec-plain-bullet `((t . (:inherit (brec-bullet font-lock-keyword-face)))) "\
+The face for the bullet of a plain point."
+  :group 'breccia)
+
+
+
+(defface brec-plain-bullet-punctuation `((t . (:inherit brec-plain-bullet :weight normal))) "\
+The face for non-alphanumeric characters in the bullet of a plain point."
   :group 'breccia)
 
 
