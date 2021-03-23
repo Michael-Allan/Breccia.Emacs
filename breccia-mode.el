@@ -343,7 +343,7 @@ The face for a no-break space in a block comment."
 
 
 (defface brec-comment-block `((t . (:inherit font-lock-comment-face))) "\
-The face for comment-block content other than a block label.
+The face for comment-block content other than a comment-block label.
 See also ‘brec-comment-block-label’."
   :group 'breccia)
 
@@ -356,7 +356,7 @@ The face for the delimiter of a comment block."
 
 
 (defface brec-comment-block-label `((t . (:inherit font-lock-doc-face))) "\
-The face for a comment block label."
+The face for a comment-block label."
   :group 'breccia)
 
 
@@ -858,7 +858,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
       ;;; └──────┘       └──────┘      └───────┘  └──────┘
       ;;;    \              C             \⋯         L
 
-      ;;; A line may also be delimited by even more backslashes (\⋯) and so contain a block label (L).
+      ;;; A line may also be delimited by even more backslashes (\⋯) and so contain a label (L).
     '(1 'brec-comment-block-delimiter t)   '(2 'brec-comment-block t t)
     '(3 'brec-comment-block-delimiter t t) '(4 'brec-comment-block-label t t))
 
