@@ -292,8 +292,8 @@ The face for a keyword in the descriptor of a command point."
      (concat
       "\\(?:\\(?1:re\\)" gap bq-pat gap "\\)?"; Optional referrer clause.
 
-      "\\(?2:see\\(?: +also\\)?\\|join"; Referential command
-      "\\|\\(?:cf\\|e\\.g\\|i\\.e\\|N\\.B\\|viz\\)\\.\\|NB\\)\\(?: \\|$\\)")
+      "\\(?2:see\\(?: +\\(?:also\\|e\\.g\\.\\)?\\)?\\|join\\|cf\\.\\(?: +e\\.g\\.\\)?"; Referential
+      "\\|\\(?:e\\.g\\|i\\.e\\|N\\.B\\|viz\\)\\.\\|NB\\)\\(?: \\|$\\)")               ; command.
 
      ;; Privatizer
      ;; ──────────
