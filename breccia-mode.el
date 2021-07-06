@@ -67,8 +67,8 @@ Pattern ‘brec-body-segment-start-pattern’ without the leading anchor ‘^’
 
 (defconst brec-gap-pattern
   (concat; The gap comprises one or more of the following.
-   "\\(?:^ *[ \\].*\n?"; Indent blind, comment block
-   "\\| \\\\.*\n?"     ; or comment appender, each together with any bounding newline.
+   "\\(?:^ *[ \\].*$"; Indent blind, comment block
+   "\\| \\\\.*$"     ; or comment appender, each together with any bounding newline. [LLT]
    "\\| "; Space.
    "\\|\n"; Newline.
    "\\)+") "\
@@ -1188,6 +1188,11 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;;
 ;;   GVF  A global variable for the use of fontifiers, e.g. from within forms they quote and pass
 ;;        to Font Lock to be evaluated outside of their lexical scope.
+;;
+;;   LLT  Busy loops owing to line terminator in `brec-gap-pattern`.
+;;            (1) Use of `$` has caused busy looping, and `\n?` was the repair.
+;;        https://github.com/Michael-Allan/Breccia.Emacs/commit/fec92482f6c3bb1a859792dcec409bc4f3264763
+;;            (2) Now `\n?` itself is the cause and the original `$` the repair (2021-7, Emacs 27.2).
 ;;
 ;;   NBB  No-break space in a bullet.  Alone a face test suffices to guard the application
 ;;        of `brec-bullet-nobreak-space` only because already the bullet fontifier detects
