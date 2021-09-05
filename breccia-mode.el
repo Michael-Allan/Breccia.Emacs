@@ -263,6 +263,12 @@ A major mode for editing Breccian text"
 
 
 
+(defface brec-command-appendage `((t . (:inherit brec-aside-descriptor))) "\
+The face for the content of a command appendage."
+  :group 'breccia)
+
+
+
 (defface brec-command-bullet `((t . (:inherit (brec-bullet brec-command-descriptor)))) "\
 The face for the bullet of a command point."
   :group 'breccia)
@@ -655,11 +661,33 @@ predecessor.  See also ‘brec-is-divider-segment’ and
         brec-g); again extend the search region over the whole descriptor.
      nil '(1 'brec-command-operator t))
 
+    ;; Appendage delimiter ‘:’ and content
+    ;; ─────────
+    (list; (9, anchored highlighter)
+     (lambda (limit)
+       (catch 'to-reface
+         (when (re-search-forward
+                 (concat brec-preceding-gap-character-pattern "\\(:\\)"
+                         brec-succeeding-gap-character-pattern)
+                 limit t)
+           (let* ((m1-beg (match-beginning 0))
+                  (m1-end (point))
+                  (face (get-text-property m1-beg 'face)))
+             (unless (eq face 'brec-pattern); Not to accept ‘:’ characters that form pattern content.
+               (set-match-data (list m1-beg limit
+                                     m1-beg m1-end m1-end (goto-char limit) (current-buffer)))
+               (throw 'to-reface t))))
+         nil))
+     '(progn; (8, pre-form)
+        (goto-char brec-f); Starting from the end boundary of the bullet ‘:’,
+        brec-g); again extend the search region over the whole descriptor.
+     nil '(1 'brec-command-operator t) '(2 'brec-command-appendage t))
+
     ;; Command keywords (last that any `error` face it applies might override the foregoing)
     ;; ────────────────
-    (list; (9, anchored highlighter)
+    (list; (11, anchored highlighter)
      (mapconcat 'identity brec-command-matcher-components ""); Joining all components to one string.
-     '(progn; (8, pre-form)
+     '(progn; (10, pre-form)
         (goto-char (1- brec-f)); Starting this time from the bullet ‘:’ itself,
         brec-g); again extend the search region over the whole descriptor.
      nil
