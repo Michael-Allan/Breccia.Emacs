@@ -91,6 +91,12 @@ directly follow a non-gap character.  See also ‘brec-gap-pattern’.");
 
 
 
+(defconst brec-term-end-boundary-pattern "\\(?: \\|$\\)" "\
+The regular-expression pattern of the end boundary of a term,
+namely either a space or a line end.");
+
+
+
 (defvar font-lock-beg); Because Font Lock omits to export these definitions. [FV]
 (defvar font-lock-end)
 
@@ -289,6 +295,8 @@ The face for a keyword in the descriptor of a command point."
 
 (defvar brec-command-matcher-components
   (let ((bq-pat brec-backquoted-pattern-pattern)
+        (end brec-term-end-boundary-pattern); To reject any command keyword directly followed by
+          ;;; further term characters, e.g. the misplaced delimiter ‘:’ of an appendage clause.
         (gap brec-gap-pattern))
     (list
      ": +\\(?:privately +\\)?\\(?:"
@@ -299,11 +307,11 @@ The face for a keyword in the descriptor of a command point."
       "\\(?:\\(?1:re\\)" gap bq-pat gap "\\)?"; Optional referrer clause.
 
       "\\(?2:see\\(?: +\\(?:also\\|e\\.g\\.\\)?\\)?\\|join\\|cf\\.\\(?: +e\\.g\\.\\)?\\|"; Referential
-      "\\(?:e\\.g\\|i\\.e\\|N\\.B\\|sc\\|viz\\)\\.\\|contra\\|pace\\|NB\\)\\(?: \\|$\\)"); command.
+      "\\(?:e\\.g\\|i\\.e\\|N\\.B\\|sc\\|viz\\)\\.\\|contra\\|pace\\|NB\\)" end)         ; command.
 
      ;; Privatizer
      ;; ──────────
-     "\\|\\(?1:private\\)\\>"
+     "\\|\\(?1:private\\)" end
 
      ;; Other command matchers, each a component
      ;; ──────────────────────
