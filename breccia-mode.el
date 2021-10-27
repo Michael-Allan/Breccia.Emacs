@@ -1233,7 +1233,7 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;;   NBB  No-break space in a bullet.  Alone a face test suffices to guard the application
 ;;        of `brec-bullet-nobreak-space` only because already the bullet fontifier detects
 ;;        and refuses to face misplaced no-break spaces as bullet constituents.  For more on this,
-;;        see `http://reluk.ca/project/Breccia/Emacs/action_plan.brec` § no-break spaces.
+;;        see `http://reluk.ca/project/Breccia/Emacs/notepad.brec` § no-break spaces.
 ;;
 ;;   NCE  Not `char-equal` or `=`, which fail if the position is out of bounds.
 ;;        Rather `eq` which instead gives nil in that case.
