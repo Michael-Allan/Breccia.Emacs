@@ -299,7 +299,9 @@ The face for a keyword in the descriptor of a command point."
           ;;; further term characters, e.g. the misplaced delimiter ‘:’ of an appendage clause.
         (gap brec-gap-pattern))
     (list
-     ": +\\(?:privately +\\)?\\(?:"
+     "^ \\{4\\}*: +\\(?:privately +\\)?\\(?:"; Anchoring on the perfectly indented (PI) bullet ‘:’,
+     ;; ┈──────┘          so precluding a match that begins instead with an appendage operator ‘:’.
+     ;;    PI
 
      ;; Associative reference
      ;; ─────────────────────
@@ -623,20 +625,23 @@ predecessor.  See also ‘brec-is-divider-segment’ and
    ;; ═════════════
 
    (list; A command point starts with a perfectly indented (PI) bullet comprising one colon ‘:’.
-    "^ \\{4\\}*\\(:\\) +[^ \n\\]"; (1) Anchoring on the bullet, space separator and first character of
-    ;; ┈──────┘                        the following term.  Assume that no term starts with a backslash,
-    ;;    PI                           so saving the cost of distinguishing it from a comment appender.
+    "^ \\{4\\}*\\(:\\) +[^ \n\\]"; (1) Anchoring on the bullet, initial space separator and first
+    ;; ┈──────┘    character of the following term.  Assume that no term starts with a backslash,
+    ;;    PI       so saving the cost of distinguishing it from a comment appender.
 
     '(1 'brec-command-bullet)
 
     ;; Descriptor
     ;; ──────────
     (list; (3, anchored highlighter) Always a descriptor follows the bullet,
-     "\\(\\(?:.\\|\n\\)+\\)";        extending thence to the end of the point head.
-     '(setq; (2, pre-form)
-       brec-f (goto-char (match-end 1)); Saving the end boundary of the bullet ‘:’, and starting from it.
-       brec-g (brec-segment-eol)); Saving the limit of the present fractal segment, and returning it,
-         ;;; so extending the search region over the whole descriptor. [REP]
+     "\\(\\(?:.\\|\n\\)+\\)"; extending thence to the end of the point head.
+     '(progn; (2, pre-form)
+        (goto-char (match-end 1)); Starting from the end boundary of the bullet ‘:’.
+        (setq
+         brec-f (match-beginning 0) ; Saving the start boundary of the present fractal segment
+         brec-g (1- (match-end 0))  ; and the end boundaries both of the initial space separator
+         brec-x (brec-segment-eol))); and of the point head (N.B. this overwrites the match data),
+           ;;; returning the latter and so extending the search region over the whole descriptor. [REP]
      nil '(1 'brec-command-descriptor))
 
     ;; Backquoted patterns
@@ -647,8 +652,8 @@ predecessor.  See also ‘brec-is-divider-segment’ and
      ;;  Q             BC      NQ            Q        Labels as per `brec-backquoted-pattern-pattern`.
 
      '(progn; (4, pre-form)
-        (goto-char brec-f); Starting from the end boundary of the bullet ‘:’,
-        brec-g); again extend the search region over the whole descriptor.
+        (goto-char brec-g); Starting from the end boundary of the initial space separator,
+        brec-x); again extend the search region over the whole descriptor.
      nil '(1 'brec-pattern-delimiter t) '(2 'brec-pattern t) '(3 'brec-pattern-delimiter t))
 
     ;; Containment operators ‘@’
@@ -665,8 +670,8 @@ predecessor.  See also ‘brec-is-divider-segment’ and
                (throw 'to-reface t))))
          nil))
      '(progn; (6, pre-form)
-        (goto-char brec-f); Starting from the end boundary of the bullet ‘:’,
-        brec-g); again extend the search region over the whole descriptor.
+        (goto-char brec-g); Starting from the end boundary of the initial space separator,
+        brec-x); again extend the search region over the whole descriptor.
      nil '(1 'brec-command-operator t))
 
     ;; Appendage delimiter ‘:’ and content
@@ -687,8 +692,8 @@ predecessor.  See also ‘brec-is-divider-segment’ and
                (throw 'to-reface t))))
          nil))
      '(progn; (8, pre-form)
-        (goto-char brec-f); Starting from the end boundary of the bullet ‘:’,
-        brec-g); again extend the search region over the whole descriptor.
+        (goto-char brec-g); Starting from the end boundary of the initial space separator,
+        brec-x); again extend the search region over the whole descriptor.
      nil '(1 'brec-command-operator t) '(2 'brec-command-appendage t))
 
     ;; Command keywords (last that any `error` face it applies might override the foregoing)
@@ -696,8 +701,8 @@ predecessor.  See also ‘brec-is-divider-segment’ and
     (list; (11, anchored highlighter)
      (mapconcat 'identity brec-command-matcher-components ""); Joining all components to one string.
      '(progn; (10, pre-form)
-        (goto-char (1- brec-f)); Starting this time from the bullet ‘:’ itself,
-        brec-g); again extend the search region over the whole descriptor.
+        (goto-char brec-f); Starting this time from the bullet ‘:’ itself,
+        brec-x); again extend the search region over the whole descriptor.
      nil
      '(1 'brec-command-keyword t t) '(2 'brec-command-keyword t t)
      '(3 'brec-command-keyword t t) '(4 'error t t)))
@@ -1151,6 +1156,10 @@ Cf. ‘brec-task-bullet-singleton’."
 (defface brec-titling-label `((t . (:inherit (bold brec-division-label)))) "\
 The face for a division label that contributes to the division title, or titles."
   :group 'breccia)
+
+
+
+(defvar brec-x); [GVF]
 
 
 
