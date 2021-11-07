@@ -309,7 +309,7 @@ The face for a keyword in the descriptor of a command point."
       "\\(?:\\(?1:re\\)" gap bq-pat gap "\\)?"; Optional referrer clause.
 
       "\\(?2:see\\(?: +\\(?:also\\|e\\.g\\.\\)?\\)?\\|join\\|cf\\.\\(?: +e\\.g\\.\\)?\\|"; Referential
-      "\\(?:e\\.g\\|i\\.e\\|N\\.B\\|sc\\|viz\\)\\.\\|contra\\|pace\\|NB\\)" end)         ; command.
+      "\\(?:e\\.g\\|i\\.e\\|N\\.B\\|q\\.v\\|sc\\|viz\\)\\.\\|contra\\|pace\\|NB\\)" end) ; command.
 
      ;; Privatizer
      ;; ──────────
