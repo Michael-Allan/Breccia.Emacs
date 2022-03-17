@@ -1,6 +1,6 @@
 ;;; breccia-mode.el --- A major mode for editing Breccian text  -*- lexical-binding: t; -*-
 
-;; Copyright © 2019-2021 Michael Allan.
+;; Copyright © 2019-2022 Michael Allan.
 
 ;; Author: Michael Allan <mike@reluk.ca>
 ;; Version: 0-snapshot
@@ -76,6 +76,21 @@ The regular-expression pattern of a gap in a descriptor.
 See also the simpler ‘brec-preceding-gap-character-pattern’
 and ‘brec-succeeding-gap-character-pattern’; for use in detecting the presence
 of a gap without having to matching the whole of it, which could be lengthy.")
+
+
+
+(defconst brec-pattern-matcher-pattern "`\\(?:\\\\.\\|[^\\`]\\)+`[ms]*";  [PMP]
+  ;;                                    ╵     └────┘  └────┘    ╵└───┘
+  ;;                                    Q       BC      NQ      Q  M
+  ;;
+  ;; Each element between the backquotes (Q) is either a blackslashed character pair (BC) such as “\n”
+  ;; or “\`”, or a single character that is neither a backslash, nor a backquote (NQ).
+  ;; See also `https://stackoverflow.com/q/249791/2402790`.
+  ;;
+  ;; One or more modifiers (M) may follow the trailing quote.
+
+  "\
+The regular-expression pattern of a regular-expression pattern matcher.")
 
 
 
@@ -172,18 +187,6 @@ See also ‘brec-fractum-start’."
   (when (not (eobp)); Being neither in an empty buffer, nor at the end of the buffer where nothing starts,
     ;; Moreover being at the start of either the buffer or a body fractum.
     (or (bobp) (brec-at-body-fractum-start))))
-
-
-
-(defconst brec-backquoted-pattern-pattern "`\\(?:\\\\.\\|[^\\`]\\)+`"
-  ;;                                       ╵     └────┘  └────┘    ╵
-  ;;                                       Q       BC      NQ      Q
-  ;;
-  ;; Each element between the backquotes (Q) is either a blackslashed character pair (BC) such as “\n”
-  ;; or “\`”, or a single character that is neither a backslash, nor a backquote (NQ).
-  ;; See also `https://stackoverflow.com/q/249791/2402790`.
-  "\
-The regular-expression pattern of a regular-expression pattern complete with delimiters.")
 
 
 
@@ -294,8 +297,7 @@ The face for a keyword in the descriptor of a command point."
 
 
 (defvar brec-command-matcher-components
-  (let ((bq-pat brec-backquoted-pattern-pattern)
-        (end brec-term-end-boundary-pattern); To reject any command keyword directly followed by
+  (let ((end brec-term-end-boundary-pattern); To reject any command keyword directly followed by
           ;;; further term characters, e.g. the misplaced delimiter ‘:’ of an appendage clause.
         (gap brec-gap-pattern))
     (list
@@ -306,7 +308,7 @@ The face for a keyword in the descriptor of a command point."
      ;; Associative reference
      ;; ─────────────────────
      (concat
-      "\\(?:\\(?1:re\\)" gap bq-pat gap "\\)?"; Optional referrer clause.
+      "\\(?:\\(?1:re\\)" gap brec-pattern-matcher-pattern gap "\\)?"; Optional referrer clause.
 
       "\\(?2:see\\(?: +\\(?:also\\|e\\.g\\.\\)?\\)?\\|join\\|cf\\.\\(?: +e\\.g\\.\\)?\\|"; Referential
       "\\(?:e\\.g\\|i\\.e\\|N\\.B\\|q\\.v\\|sc\\|viz\\)\\.\\|contra\\|pace\\|NB\\)" end) ; command.
@@ -644,17 +646,18 @@ predecessor.  See also ‘brec-is-divider-segment’ and
            ;;; returning the latter and so extending the search region over the whole descriptor. [REP]
      nil '(1 'brec-command-descriptor))
 
-    ;; Backquoted patterns
-    ;; ───────────────────
+    ;; Pattern matchers
+    ;; ────────────────
     (list; (5, anchored highlighter)
-     "\\(`\\)\\(\\(?:\\\\.\\|[^\\`]\\)+\\)\\(`\\)"
-     ;;  ╵           └────┘  └────┘          ╵
-     ;;  Q             BC      NQ            Q        Labels as per `brec-backquoted-pattern-pattern`.
+     "\\(`\\)\\(\\(?:\\\\.\\|[^\\`]\\)+\\)\\(`\\)\\([ms]+\\)?";  [PMP]
+     ;;  ╵           └────┘  └────┘          ╵      └───┘
+     ;;  Q             BC      NQ            Q        M     Labels as per `brec-pattern-matcher-pattern`.
 
      '(progn; (4, pre-form)
         (goto-char brec-g); Starting from the end boundary of the initial space separator,
         brec-x); again extend the search region over the whole descriptor.
-     nil '(1 'brec-pattern-delimiter t) '(2 'brec-pattern t) '(3 'brec-pattern-delimiter t))
+     nil '(1 'brec-pattern-delimiter t) '(2 'brec-pattern t) '(3 'brec-pattern-delimiter t)
+     '(4 'brec-pattern-modifier t t))
 
     ;; Containment operators ‘@’
     ;; ─────────────────────
@@ -1035,6 +1038,12 @@ The face for a formal element of a regular-expression pattern."
 
 
 
+(defface brec-pattern-modifier `((t . (:inherit brec-pattern-element))) "\
+The face for a modifier of a regular-expression pattern."
+  :group 'breccia)
+
+
+
 (defface brec-plain-bullet `((t . (:inherit (brec-bullet font-lock-keyword-face)))) "\
 The face for the bullet of a plain point."
   :group 'breccia)
@@ -1219,7 +1228,7 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;;   BUG  This code is incorrect.
 ;;
 ;;   CCP  Comment-carriage pattern.  Marking an instance of a pattern or anti-pattern related to
-;;        comment carriers, one of several such instances that together are maintained in synchrony.
+;;        comment carriers, one of multiple instances that together are maintained in synchrony.
 ;;
 ;;   FML `font-lock-multiline`.  It seems unnecessary, and the description does not imply otherwise.
 ;;        Should fontification ever depend on *subsequent* lines, then likely it would at least speed
@@ -1260,6 +1269,9 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;;            The manual says it “should not use ‘^’ to anchor the match”; yet without that anchor,
 ;;        `fill-paragraph` fails to work, instead collapsing the fractal head to a single line.
 ;;        https://www.gnu.org/software/emacs/manual/html_node/elisp/Standard-Regexps.html
+;;
+;;   PMP Pattern-matcher pattern.  Marking an instance of a pattern related to pattern matchers,
+;;        one of multiple instances that together are maintained in synchrony.
 ;;
 ;;   PSA  Plain spaces alone are valid separators here, yet the pattern should not be broken
 ;;        merely on account of forbidden whitespace.  Forbidden whitespace is the separate
