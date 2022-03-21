@@ -87,7 +87,7 @@ of a gap without having to matching the whole of it, which could be lengthy.")
   ;; or “\`”, or a single character that is neither a backslash, nor a backquote (NQ).
   ;; See also `https://stackoverflow.com/q/249791/2402790`.
   ;;
-  ;; One or more modifiers (M) may follow the trailing quote.
+  ;; One or more match modifiers (M) may follow the trailing quote.
 
   "\
 The regular-expression pattern of a regular-expression pattern matcher.")
@@ -657,7 +657,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
         (goto-char brec-g); Starting from the end boundary of the initial space separator,
         brec-x); again extend the search region over the whole descriptor.
      nil '(1 'brec-pattern-delimiter t) '(2 'brec-pattern t) '(3 'brec-pattern-delimiter t)
-     '(4 'brec-pattern-modifier t t))
+     '(4 'brec-pattern-match-modifier t t))
 
     ;; Containment operators ‘@’
     ;; ─────────────────────
@@ -1038,8 +1038,8 @@ The face for a formal element of a regular-expression pattern."
 
 
 
-(defface brec-pattern-modifier `((t . (:inherit brec-pattern-element))) "\
-The face for a modifier of a regular-expression pattern."
+(defface brec-pattern-match-modifier `((t . (:inherit brec-pattern-element))) "\
+The face for a match modifier of a regular-expression pattern."
   :group 'breccia)
 
 
