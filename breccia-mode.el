@@ -932,40 +932,40 @@ predecessor.  See also ‘brec-is-divider-segment’ and
       (let ((p (point))
             c face found)
         (while (and (not found) (< p limit))
-          (setq c (char-after p)
-                face (get-text-property p 'face))
+          (setq c (char-after p))
           (cond
 
            ;; No-break space
            ;; ──────────────
            ((= c ?\u00A0)
+            (setq face (get-text-property p 'face))
             (cond
 
              ;; In block commentary.
              ((and face (memq face '(brec-comment-block brec-comment-block-label)))
-              (setq found t brec-f 'brec-commentary-nobreak-space))
+              (setq found t  brec-f 'brec-commentary-nobreak-space))
 
              ;; In a free-form bullet.
              ((and face (memq face '(brec-alarm-bullet brec-plain-bullet brec-task-bullet))); [NBB]
-              (setq found t brec-f 'brec-bullet-nobreak-space))
+              (setq found t  brec-f 'brec-bullet-nobreak-space))
 
              ;; Delimiting an indent blind.
              ((brec-indent-before p)
-              (setq found t brec-f 'brec-indent-blind-delimiter))
+              (setq found t  brec-f 'brec-indent-blind-delimiter))
 
              ;; Misplaced no-break space.
-             (t (setq found t brec-f 'brec-forbidden-whitespace))))
+             (t (setq found t  brec-f 'brec-forbidden-whitespace))))
 
            ;; Forbidden character
            ;; ───────────────────
            ((or (memq c '(?\t ?\u202F ?\u205F ?\u3000))
                 (and (>= c ?\u2000) (<= c ?\u200A)))
-            (setq found t brec-f 'brec-forbidden-whitespace))
+            (setq found t  brec-f 'brec-forbidden-whitespace))
 
            (t (setq p (1+ p)))))
         (when found
           (set-match-data (list p (goto-char (1+ p)) (current-buffer)))
-          t))); Then return t to Font Lock, else nil.
+          t))); Returning t to Font Lock if `found`, else nil.
     '(0 brec-f prepend)))); Prepended only in case the original face is ever wanted.
 
 
