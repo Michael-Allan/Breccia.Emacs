@@ -112,6 +112,14 @@ namely either a space or a line end.");
 
 
 
+(defvar brec-x); [FV, GVF]
+
+
+
+(with-no-warnings (defvar face)); [FV] ∵ somehow the compiler thinks `'face` is a variable reference.
+
+
+
 (defvar font-lock-beg); Because Font Lock omits to export these definitions. [FV]
 (defvar font-lock-end)
 
@@ -966,7 +974,32 @@ predecessor.  See also ‘brec-is-divider-segment’ and
         (when found
           (set-match-data (list p (goto-char (1+ p)) (current-buffer)))
           t))); Returning t to Font Lock if `found`, else nil.
-    '(0 brec-f prepend)))); Prepended only in case the original face is ever wanted.
+    '(0 brec-f prepend)); Prepended only in case the original face is ever wanted.
+
+
+   (cons; Selectively restore (outside of indent blinds) the line spacing earlier defeated.
+    (lambda (limit)
+      (setq brec-x (or (default-value 'line-spacing) (frame-parameter nil 'line-spacing)))
+      (when (and brec-x (/= 0 brec-x)); Then restoration is needed.
+        (let ((p (point))
+              c found in-blind)
+          (while (and (not found) (< p limit))
+            (setq c (char-after p))
+            (cond
+             ((= c ?\u00A0)
+              (setq face (get-text-property p 'face))
+              (when (and (listp face) (memq 'brec-indent-blind-delimiter face))
+                  ;;; Here `face` would be a list, having been set using `prepend`, q.v. further above.
+                (setq in-blind t)))
+             ((= c ?\n)
+              (if in-blind;
+                  (setq in-blind nil); Till again proven otherwise.
+                (setq found t)))); Then restore the line spacing.
+            (setq p (1+ p)))
+          (when found; The character to fontify is just before `p`.
+            (set-match-data (list (1- p) (goto-char p) (current-buffer)))
+            t)))); Returning t to Font Lock if `found`, else nil.
+    '(0 (list 'face 'default 'line-spacing brec-x)))))
 
 
 
@@ -1168,10 +1201,6 @@ The face for a division label that contributes to the division title, or titles.
 
 
 
-(defvar brec-x); [GVF]
-
-
-
 ;; ══════════════════════════════════════════════════════════════════════════════════════════════════════
 ;;  P a c k a g e   p r o v i s i o n
 ;; ══════════════════════════════════════════════════════════════════════════════════════════════════════
@@ -1202,6 +1231,12 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
   (setq-local nobreak-char-display nil); Default application of standard face `nobreak-space`. [SF]
      ;;; Defeat it, because it applies the face by a method unamenable to override in `brec-keywords`.
      ;;; Instead let Breccia Mode face these characters using standard, Font Lock methods.
+
+  ;; Ensure seamless jointing of semigraphics in indent blinds
+  ;; ────────────────────────────────────────
+  (brec-set-for-buffer 'line-spacing 0); Fontifiers can only enlarge it, they cannot zero it.  Therefore
+    ;;; defeated it up front, then use a fontifier to restore the default value outside of indent blinds.
+  (setq-local font-lock-extra-managed-props '(line-spacing))
 
   ;; Set up paragraph handling
   ;; ─────────────────────────
