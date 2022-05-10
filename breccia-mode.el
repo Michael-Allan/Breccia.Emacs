@@ -116,10 +116,6 @@ namely either a space or a line end.");
 
 
 
-(with-no-warnings (defvar face)); [FV] ∵ somehow the compiler thinks `'face` is a variable reference.
-
-
-
 (defvar font-lock-beg); Because Font Lock omits to export these definitions. [FV]
 (defvar font-lock-end)
 
@@ -982,7 +978,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
       (setq brec-x (or (default-value 'line-spacing) (frame-parameter nil 'line-spacing)))
       (when (and brec-x (/= 0 brec-x)); Then restoration is needed.
         (let ((p (point))
-              c found in-blind)
+              c face found in-blind)
           (while (and (not found) (< p limit))
             (setq c (char-after p))
             (cond
