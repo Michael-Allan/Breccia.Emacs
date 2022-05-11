@@ -990,7 +990,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
              ((= c ?\n)
               (if in-blind;
                   (setq in-blind nil); Till again proven otherwise.
-                (setq found t)))); Then restore the line spacing.
+                (setq found t)))); Else (being outside of any indent blind) restore the line spacing.
             (setq p (1+ p)))
           (when found; The character to fontify is just before `p`.
             (set-match-data (list (1- p) (goto-char p) (current-buffer)))
@@ -1222,8 +1222,8 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 
   ;; Ensure seamless jointing of semigraphics in indent blinds
   ;; ────────────────────────────────────────
-  (brec-set-for-buffer 'line-spacing 0); Fontifiers can only enlarge it, they cannot zero it.  Therefore
-    ;;; defeated it up front, then use a fontifier to restore the default value outside of indent blinds.
+  (brec-set-for-buffer 'line-spacing 0); Fontifiers can enlarge it only, they cannot zero it.  Therefore
+    ;;; defeat it up front, then use a fontifier to restore the default value outside of indent blinds.
   (setq-local font-lock-extra-managed-props '(line-spacing))
 
   ;; Set up paragraph handling
