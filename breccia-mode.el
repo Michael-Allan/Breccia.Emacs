@@ -79,6 +79,12 @@ of a gap without having to matching the whole of it, which could be lengthy.")
 
 
 
+(defvar brec--line-spacing-default); The line spacing that would have been in effect had it not been
+  ;;; zeroed in the present mode’s after-hook, or nil if there would have been none.  This is never
+  ;;; zero, so a simple nil test suffices to determine whether real spacing would have been in effect.
+
+
+
 (defconst brec-pattern-matcher-pattern "`\\(?:\\\\.\\|[^\\`]\\)+`[ms]*";  [PMP]
   ;;                                    ╵     └────┘  └────┘    ╵└───┘
   ;;                                    Q       BC      NQ      Q  M
@@ -109,10 +115,6 @@ directly follow a non-gap character.  See also ‘brec-gap-pattern’.");
 (defconst brec-term-end-boundary-pattern "\\(?: \\|$\\)" "\
 The regular-expression pattern of the end boundary of a term,
 namely either a space or a line end.");
-
-
-
-(defvar brec-x); [FV, GVF]
 
 
 
@@ -973,10 +975,9 @@ predecessor.  See also ‘brec-is-divider-segment’ and
     '(0 brec-f prepend)); Prepended only in case the original face is ever wanted.
 
 
-   (cons; Selectively restore (outside of indent blinds) the line spacing earlier defeated.
+   (cons; Selectively restore (outside of indent blinds) the line spacing earlier zeroed.
     (lambda (limit)
-      (setq brec-x (or (default-value 'line-spacing) (frame-parameter nil 'line-spacing)))
-      (when (and brec-x (/= 0 brec-x)); Then restoration is needed.
+      (when brec--line-spacing-default; Then restoration is needed.
         (let ((p (point))
               c face found in-blind)
           (while (and (not found) (< p limit))
@@ -988,14 +989,14 @@ predecessor.  See also ‘brec-is-divider-segment’ and
                   ;;; Here `face` would be a list, having been set using `prepend`, q.v. further above.
                 (setq in-blind t)))
              ((= c ?\n)
-              (if in-blind;
-                  (setq in-blind nil); Till again proven otherwise.
-                (setq found t)))); Else (being outside of any indent blind) restore the line spacing.
+              (if in-blind; Then keep going, seeking one that is outside a blind.
+                  (setq in-blind nil)
+                (setq found t)))); Else (being outside a blind) restore the line spacing.
             (setq p (1+ p)))
           (when found; The character to fontify is just before `p`.
             (set-match-data (list (1- p) (goto-char p) (current-buffer)))
             t)))); Returning t to Font Lock if `found`, else nil.
-    '(0 (list 'face 'default 'line-spacing brec-x)))))
+    '(0 (list 'face 'default  'line-spacing brec--line-spacing-default)))))
 
 
 
@@ -1197,6 +1198,10 @@ The face for a division label that contributes to the division title, or titles.
 
 
 
+(defvar brec-x); [FV, GVF]
+
+
+
 ;; ══════════════════════════════════════════════════════════════════════════════════════════════════════
 ;;  P a c k a g e   p r o v i s i o n
 ;; ══════════════════════════════════════════════════════════════════════════════════════════════════════
@@ -1212,6 +1217,17 @@ The face for a division label that contributes to the division title, or titles.
 A major mode for editing Breccian text.  For more information,
 see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
   :group 'breccia
+  :after-hook (progn
+
+    ;; Ensure seamless jointing of semigraphics in indent blinds (late part)
+    ;; ────────────────────────────────────────
+    (setq brec--line-spacing-default (or line-spacing (frame-parameter nil 'line-spacing)))
+    (when (and brec--line-spacing-default (= 0 brec--line-spacing-default))
+      (setq brec--line-spacing-default nil)); Honouring its contract.
+    (brec-set-for-buffer 'line-spacing 0)); Text properties can enlarge it only, they cannot zero it.
+      ;;; Therefore zero it up front, then use text properties to restore the default value outside
+      ;;; of indent blinds.
+
 
   ;; Set up no-break-space handling (Unicode A0)
   ;; ──────────────────────────────
@@ -1220,10 +1236,8 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
      ;;; Defeat it, because it applies the face by a method unamenable to override in `brec-keywords`.
      ;;; Instead let Breccia Mode face these characters using standard, Font Lock methods.
 
-  ;; Ensure seamless jointing of semigraphics in indent blinds
+  ;; Ensure seamless jointing of semigraphics in indent blinds (early part)
   ;; ────────────────────────────────────────
-  (brec-set-for-buffer 'line-spacing 0); Fontifiers can enlarge it only, they cannot zero it.  Therefore
-    ;;; defeat it up front, then use a fontifier to restore the default value outside of indent blinds.
   (setq-local font-lock-extra-managed-props '(line-spacing))
 
   ;; Set up paragraph handling
