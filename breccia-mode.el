@@ -278,6 +278,12 @@ A major mode for editing Breccian text"
 
 
 
+(defface brec-command `((t . (:inherit brec-command-descriptor))) "\
+The face for a command in the descriptor of a command point."
+  :group 'breccia)
+
+
+
 (defface brec-command-appendage `((t . (:inherit brec-aside-descriptor))) "\
 The face for the content of a command appendage."
   :group 'breccia)
@@ -296,19 +302,13 @@ The face for the descriptor of a command point."
 
 
 
-(defface brec-command-keyword `((t . (:inherit brec-command-descriptor))) "\
-The face for a keyword in the descriptor of a command point."
-  :group 'breccia)
-
-
-
 (defvar brec-command-matcher-components
-  (let ((end brec-term-end-boundary-pattern); To reject any command keyword directly followed by
-          ;;; further term characters, e.g. the misplaced delimiter ‘:’ of an appendage clause.
+  (let ((end brec-term-end-boundary-pattern); To reject any command directly followed by further
+          ;;; term characters, e.g. the misplaced delimiter ‘:’ of an appendage clause.
         (gap brec-gap-pattern))
     (list
      "^ \\{4\\}*: +\\(?:privately +\\)?\\(?:"; Anchoring on the perfectly indented (PI) bullet ‘:’,
-     ;; ┈──────┘          so precluding a match that begins instead with an appendage operator ‘:’.
+     ;; ┈──────┘          so precluding a match that begins instead with an appendage delimiter ‘:’.
      ;;    PI
 
      ;; Associative reference
@@ -705,16 +705,15 @@ predecessor.  See also ‘brec-is-divider-segment’ and
         brec-x); again extend the search region over the whole descriptor.
      nil '(1 'brec-command-operator t) '(2 'brec-command-appendage t))
 
-    ;; Command keywords (last that any `error` face it applies might override the foregoing)
-    ;; ────────────────
+    ;; Command (last that any `error` face it applies might override the foregoing)
+    ;; ───────
     (list; (11, anchored highlighter)
      (mapconcat 'identity brec-command-matcher-components ""); Joining all components to one string.
      '(progn; (10, pre-form)
         (goto-char brec-f); Starting this time from the bullet ‘:’ itself,
         brec-x); again extend the search region over the whole descriptor.
      nil
-     '(1 'brec-command-keyword t t) '(2 'brec-command-keyword t t)
-     '(3 'brec-command-keyword t t) '(4 'error t t)))
+     '(1 'brec-command t t) '(2 'brec-command t t) '(3 'brec-command t t) '(4 'error t t)))
 
 
    ;; Regular-expression pattern, formal elements of
