@@ -147,7 +147,7 @@ The face for an alarm bullet that comprises ‘!!’ alone."
 
 
 
-(defface brec-alarm-bullet-terminator `((t . (:inherit brec-alarm-bullet-punctuation))) "\
+(defface brec-alarm-bullet-terminator `((t . (:inherit font-lock-comment-face))) "\
 The face for the bullet terminator ‘!!’ of an alarm point.
 Cf. ‘brec-alarm-bullet-singleton’."
   :group 'breccia)
