@@ -278,12 +278,6 @@ A major mode for editing Breccian text"
 
 
 
-(defface brec-command `((t . (:inherit brec-command-descriptor))) "\
-The face for a command in the descriptor of a command point."
-  :group 'breccia)
-
-
-
 (defface brec-command-appendage `((t . (:inherit brec-aside-descriptor))) "\
 The face for the content of a command appendage."
   :group 'breccia)
@@ -343,7 +337,7 @@ code and comments of the variable definition before attempting to do that.")
 
 
 (defface brec-command-operator `((t . (:inherit brec-command-descriptor))) "\
-The face for an operator in the descriptor of a command point."
+The face for an operator or other key element of a command-point descriptor."
   :group 'breccia)
 
 
@@ -713,7 +707,8 @@ predecessor.  See also ‘brec-is-divider-segment’ and
         (goto-char brec-f); Starting this time from the bullet ‘:’ itself,
         brec-x); again extend the search region over the whole descriptor.
      nil
-     '(1 'brec-command t t) '(2 'brec-command t t) '(3 'brec-command t t) '(4 'error t t)))
+     '(1 'brec-command-operator t t) '(2 'brec-command-operator t t) '(3 'brec-command-operator t t)
+     '(4 'error t t)))
 
 
    ;; Regular-expression pattern, formal elements of
