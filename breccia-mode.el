@@ -729,7 +729,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
           nil)))
     (list; (3, anchored highlighter)
      (concat
-      "\\(?:\\(?1:\\\\\\(?:[bdRt]";  \b  \d  \R  \t
+      "\\(?:\\(?1:\\\\\\(?:[bdR]";   \b  \d  \R
          "\\|N{\\(?:[A-Z0-9 -]+";            \N{⋯}    (by name) [UCN]
             "\\|U\\+[0-9a-fA-F]+\\)}\\)\\)"; \N{U+⋯}  (by number)
       "\\|\\(?1:\\(?:(\\(?:\\?:\\)?";        (  (?:
