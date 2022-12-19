@@ -729,16 +729,16 @@ predecessor.  See also ‘brec-is-divider-segment’ and
           nil)))
     (list; (3, anchored highlighter)
      (concat
-      "\\(?:\\(\\\\\\(?:[bdRt]";     \b  \d  \R  \t
+      "\\(?:\\(?1:\\\\\\(?:[bdRt]";  \b  \d  \R  \t
          "\\|N{\\(?:[A-Z0-9 -]+";            \N{⋯}    (by name) [UCN]
             "\\|U\\+[0-9a-fA-F]+\\)}\\)\\)"; \N{U+⋯}  (by number)
-      "\\|\\(\\\\\\).";                      \·  (backslash-literal pair)
-      "\\|\\(\\(?:(\\(?:\\?:\\)?";   (  (?:
-         "\\|[.$|)*+?^]+\\)\\)\\)"); ^^  ^  .  $  |  )  *  +  ?
+      "\\|\\(?1:\\\\\\).";                   \·  (backslash-literal pair)
+      "\\|\\(?1:\\(?:(\\(?:\\?:\\)?";  (  (?:
+         "\\|[.$|)*+?^]+\\)\\)\\)");   ^^  ^  .  $  |  )  *  +  ?
      '(progn; (2, pre-form)
         (goto-char brec-f); To `match-beg` of the anchor effectively.
         brec-g); Limiting the search region (∵ return value is > point) effectively to `match-end`.
-     nil '(1 'brec-pattern-element t t) '(2 'brec-pattern-element t t) '(3 'brec-pattern-element t t)))
+     nil '(1 'brec-pattern-element t t)))
 
 
 
