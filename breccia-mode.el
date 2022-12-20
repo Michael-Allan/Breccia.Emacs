@@ -85,9 +85,9 @@ of a gap without having to matching the whole of it, which could be lengthy.")
 
 
 
-(defconst brec-pattern-matcher-pattern "`\\(?:\\\\.\\|[^\\`]\\)+`[msp]*";  [PMP]
-  ;;                                    ╵     └────┘  └────┘    ╵└────┘
-  ;;                                    Q       BC      NQ      Q  M
+(defconst brec-pattern-matcher-pattern "`\\(?:\\\\.\\|[^\\`]\\)+`[imsp]*";  [PMP]
+  ;;                                    ╵     └────┘  └────┘    ╵└─────┘
+  ;;                                    Q       BC      NQ      Q   M
   ;;
   ;; Each element between the backquotes (Q) is either a blackslashed character pair (BC) such as “\n”
   ;; or “\`”, or a single character that is neither a backslash, nor a backquote (NQ).
@@ -649,9 +649,9 @@ predecessor.  See also ‘brec-is-divider-segment’ and
     ;; Pattern matchers
     ;; ────────────────
     (list; (5, anchored highlighter)
-     "\\(`\\)\\(\\(?:\\\\.\\|[^\\`]\\)+\\)\\(`\\)\\([msp]+\\)?";  [PMP]
-     ;;  ╵           └────┘  └────┘          ╵      └────┘
-     ;;  Q             BC      NQ            Q        M     Labels as per `brec-pattern-matcher-pattern`.
+     "\\(`\\)\\(\\(?:\\\\.\\|[^\\`]\\)+\\)\\(`\\)\\([imsp]+\\)?"
+     ;;  ╵           └────┘  └────┘          ╵      └─────┘      See `brec-pattern-matcher-pattern`
+     ;;  Q             BC      NQ            Q         M         for a description of this pattern. [PMP]
 
      '(progn; (4, pre-form)
         (goto-char brec-g); Starting from the end boundary of the initial space separator,
