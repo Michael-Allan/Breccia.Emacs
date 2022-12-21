@@ -1301,7 +1301,7 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;;        `fill-paragraph` fails to work, instead collapsing the fractal head to a single line.
 ;;        https://www.gnu.org/software/emacs/manual/html_node/elisp/Standard-Regexps.html
 ;;
-;;   PMP Pattern-matcher pattern.  Marking an instance of a pattern related to pattern matchers,
+;;   PMP  Pattern-matcher pattern.  Marking an instance of a pattern related to pattern matchers,
 ;;        one of multiple instances that together are maintained in synchrony.
 ;;
 ;;   PSA  Plain spaces alone are valid separators here, yet the pattern should not be broken
