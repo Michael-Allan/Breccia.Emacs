@@ -1,6 +1,6 @@
-;;; breccia-mode.el --- A major mode for editing Breccian text  -*- lexical-binding: t; -*-
+;;; brec-mode.el --- A major mode for editing Breccian text  -*- lexical-binding: t; -*-
 
-;; Copyright © 2019-2022 Michael Allan.
+;; Copyright © 2019-2023 Michael Allan.
 
 ;; Author: Michael Allan <mike@reluk.ca>
 ;; Version: 0-snapshot
@@ -13,10 +13,10 @@
 
 ;;; Commentary:
 
-;; This package introduces a major mode for editing Breccian text (`breccia-mode`).
+;; This package introduces a major mode (`brec-mode`) for editing Breccian text. [BM]
 ;; For more information, see `http://reluk.ca/project/Breccia/Emacs/`.
 ;;
-;; If you install this package using a package manager, then already `breccia-mode` should activate
+;; If you install this package using a package manager, then already `brec-mode` should activate
 ;; for any `.brec` file you load.  Alternatively you may want to install the mode manually:
 ;;
 ;;   1. Put a copy of the present file on your load path.
@@ -28,8 +28,8 @@
 ;;   3. Add the following code to your initialization file.
 ;;      https://www.gnu.org/software/emacs/manual/html_node/emacs/Init-File.html
 ;;
-;;         (autoload 'breccia-mode "breccia-mode" nil t)
-;;         (set 'auto-mode-alist (cons (cons "\\.brec\\'" 'breccia-mode) auto-mode-alist))
+;;         (autoload 'brec-mode "brec-mode" nil t)
+;;         (set 'auto-mode-alist (cons (cons "\\.brec\\'" 'brec-mode) auto-mode-alist))
 ;;
 ;; For a working example of manual installation, see the relevant lines
 ;; of `http://reluk.ca/.config/emacs/lisp/initialization.el`, and follow the reference there.
@@ -39,7 +39,7 @@
 ;; For anyone coding a derivation of Breccia Mode, see `brec-command-matcher-components`.
 
 
-(eval-when-compile (require 'cl-lib)); For macro `cl-assert`.
+(eval-when-compile (require 'cl-lib)); Built into Emacs since version 24.3.
 
 
 
@@ -128,41 +128,49 @@ namely either a space or a line end.");
 ;; ══════════════════════════════════════════════════════════════════════════════════════════════════════
 
 
+(defgroup brec nil "\
+A major mode for editing Breccian text"
+  :group 'text :group 'faces
+  :prefix "brec-"
+  :link '(url-link "http://reluk.ca/project/Breccia/Emacs/"))
+
+
+
 (defface brec-alarm-bullet `((t . (:inherit (brec-bullet font-lock-warning-face)))) "\
 The face for the bullet of an alarm point."
-  :group 'breccia)
+  :group 'brec)
 
 
 
 (defface brec-alarm-bullet-punctuation `((t . (:inherit brec-alarm-bullet :weight normal))) "\
 The face for any non-alphanumeric character of an alarm bullet other than
 those of ‘brec-alarm-bullet-singleton’ and ‘brec-alarm-bullet-terminator’."
-  :group 'breccia)
+  :group 'brec)
 
 
 
 (defface brec-alarm-bullet-singleton `((t . (:inherit brec-alarm-bullet))) "\
 The face for an alarm bullet that comprises ‘!!’ alone."
-  :group 'breccia)
+  :group 'brec)
 
 
 
 (defface brec-alarm-bullet-terminator `((t . (:inherit font-lock-comment-face))) "\
 The face for the bullet terminator ‘!!’ of an alarm point.
 Cf. ‘brec-alarm-bullet-singleton’."
-  :group 'breccia)
+  :group 'brec)
 
 
 
 (defface brec-aside-bullet `((t . (:inherit (brec-bullet brec-aside-descriptor)))) "\
 The face for the bullet of an aside point."
-  :group 'breccia)
+  :group 'brec)
 
 
 
 (defface brec-aside-descriptor `((t . (:inherit shadow))) "\
 The face for the descriptor of an aside point."
-  :group 'breccia)
+  :group 'brec)
 
 
 
@@ -259,40 +267,32 @@ For fracta in general, see ‘brec-fractum-start’."
 
 (defface brec-bullet `((t . (:inherit bold))) "\
 The face for a bullet."
-  :group 'breccia)
+  :group 'brec)
 
 
 
 (defface brec-bullet-nobreak-space `((t . (:inherit brec-nobreak-space))) "\
 The face for a no-break space in a free-form bullet.
 This applies to alarm, task and plain bullets."
-  :group 'breccia)
-
-
-
-(defgroup breccia nil "\
-A major mode for editing Breccian text"
-  :group 'text :group 'faces
-  :prefix "brec-"
-  :link '(url-link "http://reluk.ca/project/Breccia/Emacs/"))
+  :group 'brec)
 
 
 
 (defface brec-command-appendage `((t . (:inherit brec-aside-descriptor))) "\
 The face for the content of a command appendage."
-  :group 'breccia)
+  :group 'brec)
 
 
 
 (defface brec-command-bullet `((t . (:inherit (brec-bullet brec-command-descriptor)))) "\
 The face for the bullet of a command point."
-  :group 'breccia)
+  :group 'brec)
 
 
 
 (defface brec-command-descriptor `((t . (:inherit font-lock-builtin-face))) "\
 The face for the descriptor of a command point."
-  :group 'breccia)
+  :group 'brec)
 
 
 
@@ -338,50 +338,50 @@ code and comments of the variable definition before attempting to do that.")
 
 (defface brec-command-operator `((t . (:inherit brec-command-descriptor))) "\
 The face for an operator or other key element of a command-point descriptor."
-  :group 'breccia)
+  :group 'brec)
 
 
 
 (defface brec-comment-appender `((t . (:inherit font-lock-comment-face))) "\
 The face for the content of a comment appender."
-  :group 'breccia)
+  :group 'brec)
 
 
 
 (defface brec-comment-appender-delimiter `((t . (:inherit font-lock-comment-delimiter-face))) "\
 The face for the delimiter of a comment appender."
-  :group 'breccia)
+  :group 'brec)
 
 
 
 (defface brec-commentary-nobreak-space `((t . (:inherit (brec-comment-block brec-nobreak-space)))) "\
 The face for a no-break space in a block comment."
-  :group 'breccia)
+  :group 'brec)
 
 
 
 (defface brec-comment-block `((t . (:inherit font-lock-comment-face))) "\
 The face for comment-block content other than a comment-block label.
 See also ‘brec-comment-block-label’."
-  :group 'breccia)
+  :group 'brec)
 
 
 
 (defface brec-comment-block-delimiter `((t . (:inherit font-lock-comment-delimiter-face))) "\
 The face for the delimiter of a comment block."
-  :group 'breccia)
+  :group 'brec)
 
 
 
 (defface brec-comment-block-label `((t . (:inherit font-lock-doc-face))) "\
 The face for a comment-block label."
-  :group 'breccia)
+  :group 'brec)
 
 
 
 (defface brec-divider `((t . (:inherit font-lock-doc-face))) "\
 The face for a divider."
-  :group 'breccia)
+  :group 'brec)
 
 
 
@@ -399,7 +399,7 @@ and ‘brec-is-divider-segment-successor’."
 
 (defface brec-division-label `((t . (:inherit brec-divider))) "\
 The face for a label in a divider."
-  :group 'breccia)
+  :group 'brec)
 
 
 
@@ -465,7 +465,7 @@ non-nil otherwise."
   ;; no-break space might appear without its warning colour, which by default is a foreground color.
   ;; Other forbidden whitespace, however, would at least be made visible.
   "The face for a misplaced no-break space or disallowed whitespace character."
-  :group 'breccia)
+  :group 'brec)
 
 
 
@@ -558,7 +558,7 @@ is out of bounds.  See also ‘current-column’ and ‘current-indentation’."
 
 (defface brec-indent-blind-delimiter `((t . (:inherit brec-nobreak-space))) "\
 The face for the no-break spaces that delimit an indent blind."
-  :group 'breccia)
+  :group 'brec)
 
 
 
@@ -1043,43 +1043,43 @@ the correponding position in the next sibling, or nil if no next sibling exists.
 
 (defface brec-nobreak-space `((t . (:inherit nobreak-space))) "\
 The face for a no-break space (Unicode A0) in Breccia."
-  :group 'breccia)
+  :group 'brec)
 
 
 
 (defface brec-pattern `((t . (:inherit brec-command-descriptor))) "\
 The face for a regular-expression pattern in the descriptor of a command point."
-  :group 'breccia)
+  :group 'brec)
 
 
 
 (defface brec-pattern-delimiter `((t . (:inherit brec-command-descriptor))) "\
 The face for each of the delimiters of a regular-expression pattern."
-  :group 'breccia)
+  :group 'brec)
 
 
 
 (defface brec-pattern-element `((t . (:inherit brec-pattern))) "\
 The face for a formal element of a regular-expression pattern."
-  :group 'breccia)
+  :group 'brec)
 
 
 
 (defface brec-pattern-match-modifier `((t . (:inherit brec-pattern-element))) "\
 The face for a match modifier of a regular-expression pattern."
-  :group 'breccia)
+  :group 'brec)
 
 
 
 (defface brec-plain-bullet `((t . (:inherit (brec-bullet font-lock-keyword-face)))) "\
 The face for the bullet of a plain point."
-  :group 'breccia)
+  :group 'brec)
 
 
 
 (defface brec-plain-bullet-punctuation `((t . (:inherit brec-plain-bullet :weight normal))) "\
 The face for non-alphanumeric characters in the bullet of a plain point."
-  :group 'breccia)
+  :group 'brec)
 
 
 
@@ -1165,33 +1165,33 @@ the opposite of ‘ignore’."
 
 (defface brec-task-bullet `((t . (:inherit (brec-bullet font-lock-function-name-face)))) "\
 The face for the bullet of a task point."
-  :group 'breccia)
+  :group 'brec)
 
 
 
 (defface brec-task-bullet-punctuation `((t . (:inherit brec-task-bullet :weight normal))) "\
 The face for any non-alphanumeric character of a task bullet other than
 those of ‘brec-task-bullet-singleton’ and ‘brec-task-bullet-terminator’."
-  :group 'breccia)
+  :group 'brec)
 
 
 
 (defface brec-task-bullet-singleton `((t . (:inherit brec-task-bullet))) "\
 The face for a task bullet that comprises ‘+’ alone."
-  :group 'breccia)
+  :group 'brec)
 
 
 
 (defface brec-task-bullet-terminator `((t . (:inherit font-lock-comment-face))) "\
 The face for the bullet terminator ‘+’ of a non-singleton task point.
 Cf. ‘brec-task-bullet-singleton’."
-  :group 'breccia)
+  :group 'brec)
 
 
 
 (defface brec-titling-label `((t . (:inherit (bold brec-division-label)))) "\
 The face for a division label that contributes to the division title, or titles."
-  :group 'breccia)
+  :group 'brec)
 
 
 
@@ -1204,16 +1204,16 @@ The face for a division label that contributes to the division title, or titles.
 ;; ══════════════════════════════════════════════════════════════════════════════════════════════════════
 
 
-;;;###autoload (set 'auto-mode-alist (cons (cons "\\.brec\\'" 'breccia-mode) auto-mode-alist))
+;;;###autoload (set 'auto-mode-alist (cons (cons "\\.brec\\'" 'brec-mode) auto-mode-alist))
 
 
 
 ;;;###autoload
-(define-derived-mode breccia-mode text-mode
+(define-derived-mode brec-mode text-mode; [BM]
   "Breccia" "\
 A major mode for editing Breccian text.  For more information,
 see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
-  :group 'breccia
+  :group 'brec
   :after-hook (progn
 
     ;; Ensure seamless jointing of semigraphics in indent blinds (late part)
@@ -1228,7 +1228,7 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 
   ;; Set up no-break-space handling (Unicode A0)
   ;; ──────────────────────────────
-  (modify-syntax-entry ?\u00A0 " " breccia-mode-syntax-table); Assigning whitespace syntax.
+  (modify-syntax-entry ?\u00A0 " " brec-mode-syntax-table); Assigning whitespace syntax.
   (setq-local nobreak-char-display nil); Default application of standard face `nobreak-space`. [SF]
      ;;; Defeat it, because it applies the face by a method unamenable to override in `brec-keywords`.
      ;;; Instead let Breccia Mode face these characters using standard, Font Lock methods.
@@ -1242,7 +1242,7 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
   (setq-local paragraph-start brec-body-segment-start-pattern); [PBD]
   (setq-local paragraph-separate "^ *\\(?:\u00A0.*\\|\\\\+\\( +.*\\)?\\)?$"); [CCP, PBD]
     ;;; Indent blinds, comment blocks and blank lines, that is.
-  (let ((m breccia-mode-map))
+  (let ((m brec-mode-map))
     (define-key m [remap backward-paragraph] #'brec-backward)
     (define-key m [remap forward-paragraph] #'brec-forward))
 
@@ -1254,11 +1254,18 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 
 
 
-(provide 'breccia-mode)
+(provide 'brec-mode); [BM]
 
 
 ;; NOTES
 ;; ─────
+;;   BM · Package name `brec-mode`, as opposed to `breccia-mode`.  Symbol names are prefixed `brec-`
+;;        and convention dictates that package names take the same prefix.  Likewise file names
+;;        in cases where the package comprises a single file.
+;;            Moreover `package-lint-current-buffer` assumes this convention and would complain under
+;;        package name `breccia-mode` in regard to each symbol prefixed `brec-` that it ‘doesn't start
+;;        with package's prefix "breccia".’  Apparently there is no way to silence such complaints.
+;;
 ;;   BUG  This code is incorrect.
 ;;
 ;;   CCP  Comment-carriage pattern.  Marking an instance of a pattern or anti-pattern related to
@@ -1326,4 +1333,4 @@ see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;;   UCN  Unicode character name. https://en.wikipedia.org/wiki/Unicode_character_property#Name
 
 
-;;; breccia-mode.el ends here
+;;; brec-mode.el ends here
