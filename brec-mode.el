@@ -16,7 +16,8 @@
 
 ;;; Commentary:
 
-;;   This package introduces a major mode (`brec-mode`) for editing Breccian text.
+;;   This package introduces a major mode (`brec-mode`) for editing Breccia.
+;;   Breccia is a lightweight markup language for point-form outlining and drafting.
 ;;   For more information, see `http://reluk.ca/project/Breccia/`
 ;;   and `http://reluk.ca/project/Breccia/Emacs/`.
 ;;
@@ -39,6 +40,16 @@
 ;;
 ;;   For a working example of manual installation, see the relevant lines of the file
 ;;   `http://reluk.ca/.config/emacs/lisp/initialization.el` and follow the reference there.
+;;
+;; Bugs
+;;
+;;   If you set a `line-spacing` other than zero, then the `line-spacing` will snap back to zero for any
+;;   line that pushes past the right edge of the window, causing the text to bounce in the buffer as you
+;;   edit it.  [http://reluk.ca/project/Breccia/Emacs/working_notes.brec.xht#bounces,whenever,newline]
+;;   The workaround is to zero the `line-spacing` for your Breccia Mode buffers.  For example,
+;;   put this in your intialization file:
+;;
+;;      (add-hook 'brec-mode-hook (lambda () (set 'line-spacing 0)))
 
 ;;; Code:
 
@@ -149,8 +160,7 @@ The face for the bullet of an alarm point."
 
 
 
-(defface brec-alarm-bullet-punctuation
-  `((t . (:inherit brec-alarm-bullet :weight normal))) "\
+(defface brec-alarm-bullet-punctuation  `((t . (:inherit brec-alarm-bullet))) "\
 The face for any non-alphanumeric character of an alarm bullet other than
 those of ‘brec-alarm-bullet-singleton’ and ‘brec-alarm-bullet-terminator’."
   :group 'brec)
@@ -1090,8 +1100,7 @@ The face for the bullet of a plain point."
 
 
 
-(defface brec-plain-bullet-punctuation
-  `((t . (:inherit brec-plain-bullet :weight normal))) "\
+(defface brec-plain-bullet-punctuation `((t . (:inherit brec-plain-bullet))) "\
 The face for non-alphanumeric characters in the bullet of a plain point."
   :group 'brec)
 
@@ -1183,8 +1192,7 @@ The face for the bullet of a task point."
 
 
 
-(defface brec-task-bullet-punctuation
-  `((t . (:inherit brec-task-bullet :weight normal))) "\
+(defface brec-task-bullet-punctuation `((t . (:inherit brec-task-bullet))) "\
 The face for any non-alphanumeric character of a task bullet other than
 those of ‘brec-task-bullet-singleton’ and ‘brec-task-bullet-terminator’."
   :group 'brec)
@@ -1226,8 +1234,9 @@ The face for a division label that contributes to the division title, or titles.
 ;;;###autoload
 (define-derived-mode brec-mode text-mode; [BM]
   "Breccia" "\
-A major mode for editing Breccian text.  For more information,
-see URL ‘http://reluk.ca/project/Breccia/’
+A major mode for editing Breccia.
+Breccia is a lightweight markup language for point-form outlining and drafting.
+For more information, see URL ‘http://reluk.ca/project/Breccia/’
 and URL ‘http://reluk.ca/project/Breccia/Emacs/’."
   :group 'brec
   :after-hook (progn
