@@ -1,38 +1,44 @@
 ;;; brec-mode.el --- A major mode for editing Breccian text  -*- lexical-binding: t; -*-
 
 ;; Copyright © 2019-2023 Michael Allan.
-
+;;
 ;; Author: Michael Allan <mike@reluk.ca>
 ;; Version: 0-snapshot
 ;; SPDX-License-Identifier: MIT
-;; Package-Requires: (cl-lib)
-;; Keywords: wp, outlines
+;; Package-Requires: ((emacs "24.3"))
+;; Keywords: outlines, wp
 ;; URL: http://reluk.ca/project/Breccia/Emacs/
-
+;;
 ;; This file is not part of GNU Emacs.
+;;
+;; This file is released under an MIT licence.  A copy of the licence normally accompanies it.
+;; If not, then see `http://reluk.ca/project/Breccia/Emacs/LICENCE.txt`.
 
 ;;; Commentary:
 
-;; This package introduces a major mode (`brec-mode`) for editing Breccian text. [BM]
-;; For more information, see `http://reluk.ca/project/Breccia/Emacs/`.
+;;   This package introduces a major mode (`brec-mode`) for editing Breccian text.
+;;   For more information, see `http://reluk.ca/project/Breccia/`
+;;   and `http://reluk.ca/project/Breccia/Emacs/`.
 ;;
-;; If you install this package using a package manager, then already `brec-mode` should activate
-;; for any `.brec` file you load.  Alternatively you may want to install the mode manually:
+;; Installation
 ;;
-;;   1. Put a copy of the present file on your load path.
-;;      https://www.gnu.org/software/emacs/manual/html_node/elisp/Library-Search.html
+;;   If you install this package using a package manager, then already `brec-mode` should activate
+;;   for any `.brec` file you load.  Alternatively you may want to install the mode manually:
 ;;
-;;   2. Optionally compile that copy.  E.g. load it into an Emacs buffer and type
-;;      `M-x emacs-lisp-byte-compile`.
+;;       1. Put a copy of the present file on your load path.
+;;          https://www.gnu.org/software/emacs/manual/html_node/elisp/Library-Search.html
 ;;
-;;   3. Add the following code to your initialization file.
-;;      https://www.gnu.org/software/emacs/manual/html_node/emacs/Init-File.html
+;;       2. Optionally compile that copy.  E.g. load it into an Emacs buffer and type
+;;          `M-x emacs-lisp-byte-compile`.
 ;;
-;;         (autoload 'brec-mode "brec-mode" nil t)
-;;         (set 'auto-mode-alist (cons (cons "\\.brec\\'" 'brec-mode) auto-mode-alist))
+;;       3. Add the following code to your initialization file.
+;;          https://www.gnu.org/software/emacs/manual/html_node/emacs/Init-File.html
 ;;
-;; For a working example of manual installation, see the relevant lines
-;; of `http://reluk.ca/.config/emacs/lisp/initialization.el`, and follow the reference there.
+;;             (autoload 'brec-mode "brec-mode" nil t)
+;;             (set 'auto-mode-alist (cons (cons "\\.brec\\'" 'brec-mode) auto-mode-alist))
+;;
+;;   For a working example of manual installation, see the relevant lines of the file
+;;   `http://reluk.ca/.config/emacs/lisp/initialization.el` and follow the reference there.
 
 ;;; Code:
 
@@ -136,13 +142,15 @@ A major mode for editing Breccian text"
 
 
 
-(defface brec-alarm-bullet `((t . (:inherit (brec-bullet font-lock-warning-face)))) "\
+(defface brec-alarm-bullet
+  `((t . (:inherit (brec-bullet font-lock-warning-face)))) "\
 The face for the bullet of an alarm point."
   :group 'brec)
 
 
 
-(defface brec-alarm-bullet-punctuation `((t . (:inherit brec-alarm-bullet :weight normal))) "\
+(defface brec-alarm-bullet-punctuation
+  `((t . (:inherit brec-alarm-bullet :weight normal))) "\
 The face for any non-alphanumeric character of an alarm bullet other than
 those of ‘brec-alarm-bullet-singleton’ and ‘brec-alarm-bullet-terminator’."
   :group 'brec)
@@ -162,7 +170,8 @@ Cf. ‘brec-alarm-bullet-singleton’."
 
 
 
-(defface brec-aside-bullet `((t . (:inherit (brec-bullet brec-aside-descriptor)))) "\
+(defface brec-aside-bullet
+  `((t . (:inherit (brec-bullet brec-aside-descriptor)))) "\
 The face for the bullet of an aside point."
   :group 'brec)
 
@@ -205,10 +214,10 @@ See also ‘brec-fractum-start’."
 
 
 (defun brec-backward ()
-  "Moves point to the fractal start line, previous sibling, fractum or line.
-If point is below the start line of the fractum, then it moves to the start
-line.  Otherwise it moves to the first applicable, if any, of the previous
-sibling, linear-order predecessor or preceding line.  This command preserves
+  "Move point to the fractal start line, previous sibling, fractum or line.
+If point is below the start line of the fractum, then move to the start line.
+Otherwise move to the first applicable, if any, of the previous sibling,
+linear-order predecessor or preceding line.  This command preserves
 the column as far as possible."
   (interactive "^")
   (let (column previous start)
@@ -284,7 +293,8 @@ The face for the content of a command appendage."
 
 
 
-(defface brec-command-bullet `((t . (:inherit (brec-bullet brec-command-descriptor)))) "\
+(defface brec-command-bullet
+  `((t . (:inherit (brec-bullet brec-command-descriptor)))) "\
 The face for the bullet of a command point."
   :group 'brec)
 
@@ -348,13 +358,15 @@ The face for the content of a comment appender."
 
 
 
-(defface brec-comment-appender-delimiter `((t . (:inherit font-lock-comment-delimiter-face))) "\
+(defface brec-comment-appender-delimiter
+  `((t . (:inherit font-lock-comment-delimiter-face))) "\
 The face for the delimiter of a comment appender."
   :group 'brec)
 
 
 
-(defface brec-commentary-nobreak-space `((t . (:inherit (brec-comment-block brec-nobreak-space)))) "\
+(defface brec-commentary-nobreak-space
+  `((t . (:inherit (brec-comment-block brec-nobreak-space)))) "\
 The face for a no-break space in a block comment."
   :group 'brec)
 
@@ -367,7 +379,8 @@ See also ‘brec-comment-block-label’."
 
 
 
-(defface brec-comment-block-delimiter `((t . (:inherit font-lock-comment-delimiter-face))) "\
+(defface brec-comment-block-delimiter
+  `((t . (:inherit font-lock-comment-delimiter-face))) "\
 The face for the delimiter of a comment block."
   :group 'brec)
 
@@ -404,9 +417,8 @@ The face for a label in a divider."
 
 
 (defun brec-extend-search ()
-  "Ensures that the font-lock search region extends to cover the whole of its
-fractal segments, bisecting none of them.  Returns nil if already it does,
-non-nil otherwise."
+  "Ensure the font-lock search region comprises one or more whole fractal segments.
+Return nil if already it does, non-nil otherwise."
   (save-excursion
     (let ((is-changed (brec-extend-search-up)))
       (or (brec-extend-search-down) is-changed))))
@@ -414,9 +426,9 @@ non-nil otherwise."
 
 
 (defun brec-extend-search-down ()
-  "Ensures that ‘font-lock-end’ bisects no fractal segment, moving it
-forward in the buffer as necessary.  Returns nil if no change was required,
-non-nil otherwise."
+  "Ensure that ‘font-lock-end’ bisects no fractal segment.
+Move it forward in the buffer if necessary.  Return nil if no change
+was required, non-nil otherwise."
   (goto-char font-lock-end)
   (unless (or (bolp)(eolp)); When the prior extenders such as `font-lock-extend-region-wholelines`
     ;; do not leave `font-lock-end` at a line terminus, as usually they do, then the search
@@ -436,9 +448,9 @@ non-nil otherwise."
 
 
 (defun brec-extend-search-up ()
-  "Ensures that ‘font-lock-beg’ bisects no fractal segment, moving it
-backward in the buffer as necessary.  Returns nil if no change was required,
-non-nil otherwise."
+  "Ensure that ‘font-lock-beg’ bisects no fractal segment.
+Move it backward in the buffer if necessary.  Return nil if no change
+was required, non-nil otherwise."
   (goto-char font-lock-beg)
   (end-of-line); That `re-search-backward` (below) finds any leader on the present line.
   (let (is-changed)
@@ -456,7 +468,8 @@ non-nil otherwise."
 
 
 
-(defface brec-forbidden-whitespace `((t . (:inherit (font-lock-warning-face nobreak-space))))
+(defface brec-forbidden-whitespace
+  `((t . (:inherit (font-lock-warning-face nobreak-space))))
   ;; This inheritance list aims to add the attributes of warning face to those of `nobreak-space`,
   ;; so treating the latter as the common attributes for whitespace that should be made visible.
   ;; The addition of the warning attributes can fail with certain user customizations, though it tends
@@ -470,10 +483,10 @@ non-nil otherwise."
 
 
 (defun brec-forward ()
-  "Moves point to the next sibling, fractum or line.
+  "Move point to the next sibling, fractum or line.
 If point is on the start line of a fractum that is followed by a sibling,
-then it moves to the sibling.  Otherwise it moves to the fractal head’s
-linear-order successor, if any.  Failing that, it moves to the next line,
+then move it to the sibling.  Otherwise move it to the fractal head’s
+linear-order successor, if any.  Failing that, move it to the next line,
 if any.  This command preserves the column as far as possible."
   (interactive "^")
   (let (column next)
@@ -493,9 +506,9 @@ if any.  This command preserves the column as far as possible."
 
 (defun brec-fractum-start ()
   "The start position of any fractum whose head is located at point.
-Returns the fractum’s first position, or nil if the buffer is empty.
-See also ‘brec-at-fractum-start’ and ‘brec-in-fractum-start’.  For body
-fracta and segments, see ‘brec-body-fractum-start’ and ‘brec-body-segment-start’."
+Return the fractum’s first position, or nil if the buffer is empty.  See also
+‘brec-at-fractum-start’ and ‘brec-in-fractum-start’.  For body fracta
+and segments, see ‘brec-body-fractum-start’ and ‘brec-body-segment-start’."
   (let ((start (brec-body-fractum-start)))
     (unless (or start (= (point-min) (point-max)))
       ;; If point is not in the head of a body fractum, and the buffer is not empty,
@@ -600,7 +613,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
 
 
 (defun brec-keywords ()
-  "Returns the value of ‘font-lock-keywords’ to use for highlighting Breccian text."
+  "Return the value of ‘font-lock-keywords’ to use for highlighting Breccian text."
   (list
 
 
@@ -998,7 +1011,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
 
 
 (defun brec-next-head (body-segment-start)
-  "Locates the linear-order successor of a fractal head.
+  "Locate the linear-order successor of a fractal head.
 BODY-SEGMENT-START is the position of the first non-space character of
 any body segment in the head, or nil for a file head.  The return value
 is the correponding position in the next head, or nil if no next head exists."
@@ -1012,7 +1025,7 @@ is the correponding position in the next head, or nil if no next head exists."
 
 
 (defun brec-next-segment (position)
-  "Locates the linear-order successor of a fractal segment.
+  "Locate the linear-order successor of a fractal segment.
 POSITION is any position within the segment.  The return value is the first
 non-space character in the next segment, or nil if no next segment exists."
   (let (next)
@@ -1025,7 +1038,7 @@ non-space character in the next segment, or nil if no next segment exists."
 
 
 (defun brec-next-sibling (body-segment-start)
-  "Locates the next sibling of a fractum.
+  "Locate the next sibling of a fractum.
 BODY-SEGMENT-START is the position of the first non-space character of
 any body segment in the head, or nil for a file head.  The return value is
 the correponding position in the next sibling, or nil if no next sibling exists."
@@ -1077,14 +1090,15 @@ The face for the bullet of a plain point."
 
 
 
-(defface brec-plain-bullet-punctuation `((t . (:inherit brec-plain-bullet :weight normal))) "\
+(defface brec-plain-bullet-punctuation
+  `((t . (:inherit brec-plain-bullet :weight normal))) "\
 The face for non-alphanumeric characters in the bullet of a plain point."
   :group 'brec)
 
 
 
 (defun brec-previous-body-segment (position)
-  "Locates the linear-order body-segment predecessor of a fractal segment.
+  "Locate the linear-order body-segment predecessor of a fractal segment.
 POSITION is any position within the fractal segment.  The return value
 is the position of the first non-space character in the preceding
 body segment, or nil if no preceding body segment exists.
@@ -1103,7 +1117,7 @@ See also ‘brec-divider-segment-predecessor’."
 
 
 (defun brec-previous-head (start-segment-position)
-  "Locates the linear-order predecessor of a fractal head.
+  "Locate the linear-order predecessor of a fractal head.
 START-SEGMENT-POSITION is any position in the first body segment of the head,
 or nil for a file head.  The return value is the position of the first
 non-space character in the previous head, or nil if no previous head exists."
@@ -1118,7 +1132,7 @@ non-space character in the previous head, or nil if no previous head exists."
 
 
 (defun brec-previous-sibling (body-fractum-start)
-  "Locates the previous sibling of a fractum.
+  "Locate the previous sibling of a fractum.
 BODY-FRACTUM-START is the position of the fractum’s first non-space character,
 or nil for the file fractum.  The return value is the correponding position
 in the previous sibling, or nil if no previous sibling exists."
@@ -1135,9 +1149,8 @@ in the previous sibling, or nil if no previous sibling exists."
 
 
 (defun brec-segment-eol ()
-  "The position at the end of the last line of the present fractal segment,
-provided point is not at the beginning of the segment; otherwise the result
-is undefined.
+  "The position at the end of the last line of the present fractal segment.
+Point must not lie at the beginning of the segment, or the result is undefined.
 
 See also ‘brec-body-segment-start-pattern’."
   (save-excursion
@@ -1149,27 +1162,29 @@ See also ‘brec-body-segment-start-pattern’."
 
 
 (defun brec-set-for-buffer (variable value)
-  "Sets VARIABLE (a symbol) to VALUE.  Signals an error if the setting
-is not buffer local."
+  "Set VARIABLE (a symbol) to VALUE.
+Signal an error if the setting is not buffer local."
   (set variable value)
   (cl-assert (local-variable-p variable)))
 
 
 
 (defun brec-t (&rest _args)
-  "Ignores any arguments and returns t.  In other words,
-the opposite of ‘ignore’."
+  "Ignore any arguments and return t.
+In other words, do the opposite of ‘ignore’."
   t)
 
 
 
-(defface brec-task-bullet `((t . (:inherit (brec-bullet font-lock-function-name-face)))) "\
+(defface brec-task-bullet
+  `((t . (:inherit (brec-bullet font-lock-function-name-face)))) "\
 The face for the bullet of a task point."
   :group 'brec)
 
 
 
-(defface brec-task-bullet-punctuation `((t . (:inherit brec-task-bullet :weight normal))) "\
+(defface brec-task-bullet-punctuation
+  `((t . (:inherit brec-task-bullet :weight normal))) "\
 The face for any non-alphanumeric character of a task bullet other than
 those of ‘brec-task-bullet-singleton’ and ‘brec-task-bullet-terminator’."
   :group 'brec)
@@ -1212,7 +1227,8 @@ The face for a division label that contributes to the division title, or titles.
 (define-derived-mode brec-mode text-mode; [BM]
   "Breccia" "\
 A major mode for editing Breccian text.  For more information,
-see URL ‘http://reluk.ca/project/Breccia/Emacs/’."
+see URL ‘http://reluk.ca/project/Breccia/’
+and URL ‘http://reluk.ca/project/Breccia/Emacs/’."
   :group 'brec
   :after-hook (progn
 
