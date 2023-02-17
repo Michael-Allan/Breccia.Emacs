@@ -26,7 +26,7 @@
 ;;   If you install this package using a package manager, then already `brec-mode` should activate
 ;;   for any `.brec` file you load.  Alternatively you may want to install the mode manually:
 ;;
-;;       1. Put a copy of the present file on your load path.
+;;       1. Put a copy of `brec-mode.el` on your load path.
 ;;          https://www.gnu.org/software/emacs/manual/html_node/elisp/Library-Search.html
 ;;
 ;;       2. Optionally compile that copy.  E.g. load it into an Emacs buffer and type
@@ -39,7 +39,7 @@
 ;;             (set 'auto-mode-alist (cons (cons "\\.brec\\'" 'brec-mode) auto-mode-alist))
 ;;
 ;;   For a working example of manual installation, see the relevant lines of the file
-;;   `http://reluk.ca/.config/emacs/lisp/initialization.el` and follow the reference there.
+;;   `http://reluk.ca/.config/emacs/lisp/initialization.el`.
 ;;
 ;; Bugs
 ;;
@@ -50,6 +50,17 @@
 ;;   put this in your intialization file:
 ;;
 ;;      (add-hook 'brec-mode-hook (lambda () (set 'line-spacing 0)))
+;;
+;; Customization
+;;
+;;   To see a list of customizeable faces, enter a `brec-mode` buffer (or otherwise load `brec-mode`)
+;;   and type `M-x customize-group <RET> brec <RET>`.  Alternatively, look through the `defface`
+;;   definitions in `brec-mode.el`.
+;;
+;;   For reference, a working example of customization is available:
+;;
+;;       • The author’s `~/.Xresources` — http://reluk.ca/.Xresources
+;;       • Corresponding screen shot — http://reluk.ca/project/Breccia/Emacs/screen_shot.png
 
 ;;; Code:
 
