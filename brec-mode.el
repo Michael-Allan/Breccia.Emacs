@@ -734,7 +734,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
     ;; Command (last that any `error` face it applies might override the foregoing)
     ;; ───────
     (list; (11, anchored highlighter)
-     (mapconcat 'identity brec-command-matcher-components ""); Joining all components to one string.
+     (mapconcat #'identity brec-command-matcher-components ""); Joining all components to one string.
      '(progn; (10, pre-form)
         (goto-char brec-f); Starting this time from the bullet ‘:’ itself,
         brec-x); again extend the search region over the whole descriptor.
