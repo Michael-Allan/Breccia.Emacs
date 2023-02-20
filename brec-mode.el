@@ -128,20 +128,20 @@ of a gap without having to matching the whole of it, which could be lengthy.")
 
 
 (defconst brec-preceding-gap-character-pattern "[ \n]"
-  "The regular-expression pattern of a descriptor gap character that could
-directly precede a non-gap character.  See also ‘brec-gap-pattern’.");
+  "The regex pattern of a gap character that could directly precede a non-gap.
+See also ‘brec-gap-pattern’.");
 
 
 
 (defconst brec-succeeding-gap-character-pattern "[ \n]"
-  "The regular-expression pattern of a descriptor gap character that could
-directly follow a non-gap character.  See also ‘brec-gap-pattern’.");
+  "The regex pattern of a gap character that could directly follow a non-gap.
+See also ‘brec-gap-pattern’.");
 
 
 
 (defconst brec-term-end-boundary-pattern "\\(?: \\|$\\)"
-  "The regular-expression pattern of the end boundary of a term,
-namely either a space or a line end.");
+  "The regular-expression pattern of the end boundary of a term.
+This is either a space or a line end.");
 
 
 
@@ -156,7 +156,7 @@ namely either a space or a line end.");
 
 
 (defgroup brec nil
-  "A major mode for editing Breccian text"
+  "A major mode for editing Breccian text."
   :group 'text :group 'faces
   :prefix "brec-"
   :link '(url-link "http://reluk.ca/project/Breccia/Emacs/"))
@@ -171,8 +171,8 @@ namely either a space or a line end.");
 
 
 (defface brec-alarm-bullet-punctuation  `((t . (:inherit brec-alarm-bullet)))
-  "The face for any non-alphanumeric character of an alarm bullet other than
-those of ‘brec-alarm-bullet-singleton’ and ‘brec-alarm-bullet-terminator’."
+  "The face for a non-alphanumeric character of an alarm bullet.
+Cf. ‘brec-alarm-bullet-singleton’ and ‘brec-alarm-bullet-terminator’."
   :group 'brec)
 
 
@@ -1202,8 +1202,8 @@ In other words, do the opposite of ‘ignore’."
 
 
 (defface brec-task-bullet-punctuation `((t . (:inherit brec-task-bullet)))
-  "The face for any non-alphanumeric character of a task bullet other than
-those of ‘brec-task-bullet-singleton’ and ‘brec-task-bullet-terminator’."
+  "The face for a non-alphanumeric character of a task bullet.
+Cf. ‘brec-task-bullet-singleton’ and ‘brec-task-bullet-terminator’."
   :group 'brec)
 
 
