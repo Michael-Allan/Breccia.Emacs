@@ -80,16 +80,16 @@
   (concat
    "^\\( \\{4\\}*\\)\\("; Perfectly indented, the start of the segment comprises [CCP]
      ;;; any sequence outside the delimiter of either a comment block or an indent blind.
-   "\\\\+[^ \n\\]\\|[^[:space:]\\]\\)") "\
-The pattern of the start of a body segment up to its first non-space character.
+   "\\\\+[^ \n\\]\\|[^[:space:]\\]\\)")
+  "The pattern of the start of a body segment up to its first non-space character.
 It captures groups (1) the indent and (2) the first non-space character.
 See also ‘brec-body-segment-start-pattern-unanchored’ and ‘brec-segment-eol’.")
 
 
 
 (defconst brec-body-segment-start-pattern-unanchored
-  (substring-no-properties brec-body-segment-start-pattern 1) "\
-Pattern ‘brec-body-segment-start-pattern’ without the leading anchor ‘^’.")
+  (substring-no-properties brec-body-segment-start-pattern 1)
+  "Pattern ‘brec-body-segment-start-pattern’ without the leading anchor ‘^’.")
 
 
 
@@ -99,8 +99,8 @@ Pattern ‘brec-body-segment-start-pattern’ without the leading anchor ‘^’
    "\\| \\\\.*$"     ; or comment appender, each together with any bounding newline. [LLT]
    "\\| "; Space.
    "\\|\n"; Newline.
-   "\\)+") "\
-The regular-expression pattern of a gap in a descriptor.
+   "\\)+")
+  "The regular-expression pattern of a gap in a descriptor.
 See also the simpler ‘brec-preceding-gap-character-pattern’
 and ‘brec-succeeding-gap-character-pattern’; for use in detecting the presence
 of a gap without having to matching the whole of it, which could be lengthy.")
@@ -123,25 +123,24 @@ of a gap without having to matching the whole of it, which could be lengthy.")
   ;;
   ;; One or more match modifiers (M) may follow the trailing quote.
 
-  "\
-The regular-expression pattern of a regular-expression pattern matcher.")
+  "The regular-expression pattern of a regular-expression pattern matcher.")
 
 
 
-(defconst brec-preceding-gap-character-pattern "[ \n]" "\
-The regular-expression pattern of a descriptor gap character that could
+(defconst brec-preceding-gap-character-pattern "[ \n]"
+  "The regular-expression pattern of a descriptor gap character that could
 directly precede a non-gap character.  See also ‘brec-gap-pattern’.");
 
 
 
-(defconst brec-succeeding-gap-character-pattern "[ \n]" "\
-The regular-expression pattern of a descriptor gap character that could
+(defconst brec-succeeding-gap-character-pattern "[ \n]"
+  "The regular-expression pattern of a descriptor gap character that could
 directly follow a non-gap character.  See also ‘brec-gap-pattern’.");
 
 
 
-(defconst brec-term-end-boundary-pattern "\\(?: \\|$\\)" "\
-The regular-expression pattern of the end boundary of a term,
+(defconst brec-term-end-boundary-pattern "\\(?: \\|$\\)"
+  "The regular-expression pattern of the end boundary of a term,
 namely either a space or a line end.");
 
 
@@ -156,8 +155,8 @@ namely either a space or a line end.");
 ;; ══════════════════════════════════════════════════════════════════════════════════════════════════════
 
 
-(defgroup brec nil "\
-A major mode for editing Breccian text"
+(defgroup brec nil
+  "A major mode for editing Breccian text"
   :group 'text :group 'faces
   :prefix "brec-"
   :link '(url-link "http://reluk.ca/project/Breccia/Emacs/"))
@@ -165,41 +164,41 @@ A major mode for editing Breccian text"
 
 
 (defface brec-alarm-bullet
-  `((t . (:inherit (brec-bullet font-lock-warning-face)))) "\
-The face for the bullet of an alarm point."
+  `((t . (:inherit (brec-bullet font-lock-warning-face))))
+  "The face for the bullet of an alarm point."
   :group 'brec)
 
 
 
-(defface brec-alarm-bullet-punctuation  `((t . (:inherit brec-alarm-bullet))) "\
-The face for any non-alphanumeric character of an alarm bullet other than
+(defface brec-alarm-bullet-punctuation  `((t . (:inherit brec-alarm-bullet)))
+  "The face for any non-alphanumeric character of an alarm bullet other than
 those of ‘brec-alarm-bullet-singleton’ and ‘brec-alarm-bullet-terminator’."
   :group 'brec)
 
 
 
-(defface brec-alarm-bullet-singleton `((t . (:inherit brec-alarm-bullet))) "\
-The face for an alarm bullet that comprises ‘!!’ alone."
+(defface brec-alarm-bullet-singleton `((t . (:inherit brec-alarm-bullet)))
+  "The face for an alarm bullet that comprises ‘!!’ alone."
   :group 'brec)
 
 
 
-(defface brec-alarm-bullet-terminator `((t . (:inherit font-lock-comment-face))) "\
-The face for the bullet terminator ‘!!’ of an alarm point.
+(defface brec-alarm-bullet-terminator `((t . (:inherit font-lock-comment-face)))
+  "The face for the bullet terminator ‘!!’ of an alarm point.
 Cf. ‘brec-alarm-bullet-singleton’."
   :group 'brec)
 
 
 
 (defface brec-aside-bullet
-  `((t . (:inherit (brec-bullet brec-aside-descriptor)))) "\
-The face for the bullet of an aside point."
+  `((t . (:inherit (brec-bullet brec-aside-descriptor))))
+  "The face for the bullet of an aside point."
   :group 'brec)
 
 
 
-(defface brec-aside-descriptor `((t . (:inherit shadow))) "\
-The face for the descriptor of an aside point."
+(defface brec-aside-descriptor `((t . (:inherit shadow)))
+  "The face for the descriptor of an aside point."
   :group 'brec)
 
 
@@ -295,34 +294,34 @@ For fracta in general, see ‘brec-fractum-start’."
 
 
 
-(defface brec-bullet `((t . (:inherit bold))) "\
-The face for a bullet."
+(defface brec-bullet `((t . (:inherit bold)))
+  "The face for a bullet."
   :group 'brec)
 
 
 
-(defface brec-bullet-nobreak-space `((t . (:inherit brec-nobreak-space))) "\
-The face for a no-break space in a free-form bullet.
+(defface brec-bullet-nobreak-space `((t . (:inherit brec-nobreak-space)))
+  "The face for a no-break space in a free-form bullet.
 This applies to alarm, task and plain bullets."
   :group 'brec)
 
 
 
-(defface brec-command-appendage `((t . (:inherit brec-aside-descriptor))) "\
-The face for the content of a command appendage."
+(defface brec-command-appendage `((t . (:inherit brec-aside-descriptor)))
+  "The face for the content of a command appendage."
   :group 'brec)
 
 
 
 (defface brec-command-bullet
-  `((t . (:inherit (brec-bullet brec-command-descriptor)))) "\
-The face for the bullet of a command point."
+  `((t . (:inherit (brec-bullet brec-command-descriptor))))
+  "The face for the bullet of a command point."
   :group 'brec)
 
 
 
-(defface brec-command-descriptor `((t . (:inherit font-lock-builtin-face))) "\
-The face for the descriptor of a command point."
+(defface brec-command-descriptor `((t . (:inherit font-lock-builtin-face)))
+  "The face for the descriptor of a command point."
   :group 'brec)
 
 
@@ -358,8 +357,7 @@ The face for the descriptor of a command point."
      ;; Final component
      ;; ───────────────
      "\\)"))
-  "\
-The command matcher for the command-point fontifier of ‘brec-keywords’.
+  "The command matcher for the command-point fontifier of ‘brec-keywords’.
 Formally this is a list of string components to be concatenated in order to
 form the matcher.  Derived modes may modify it before calling ‘brec-keywords’,
 e.g. by inserting components that match additional commands.  Read the source
@@ -367,54 +365,54 @@ code and comments of the variable definition before attempting to do that.")
 
 
 
-(defface brec-command-operator `((t . (:inherit brec-command-descriptor))) "\
-The face for an operator or other key element of a command-point descriptor."
+(defface brec-command-operator `((t . (:inherit brec-command-descriptor)))
+  "The face for an operator or other key element of a command-point descriptor."
   :group 'brec)
 
 
 
-(defface brec-comment-appender `((t . (:inherit font-lock-comment-face))) "\
-The face for the content of a comment appender."
+(defface brec-comment-appender `((t . (:inherit font-lock-comment-face)))
+  "The face for the content of a comment appender."
   :group 'brec)
 
 
 
 (defface brec-comment-appender-delimiter
-  `((t . (:inherit font-lock-comment-delimiter-face))) "\
-The face for the delimiter of a comment appender."
+  `((t . (:inherit font-lock-comment-delimiter-face)))
+  "The face for the delimiter of a comment appender."
   :group 'brec)
 
 
 
 (defface brec-commentary-nobreak-space
-  `((t . (:inherit (brec-comment-block brec-nobreak-space)))) "\
-The face for a no-break space in a block comment."
+  `((t . (:inherit (brec-comment-block brec-nobreak-space))))
+  "The face for a no-break space in a block comment."
   :group 'brec)
 
 
 
-(defface brec-comment-block `((t . (:inherit font-lock-comment-face))) "\
-The face for comment-block content other than a comment-block label.
+(defface brec-comment-block `((t . (:inherit font-lock-comment-face)))
+  "The face for comment-block content other than a comment-block label.
 See also ‘brec-comment-block-label’."
   :group 'brec)
 
 
 
 (defface brec-comment-block-delimiter
-  `((t . (:inherit font-lock-comment-delimiter-face))) "\
-The face for the delimiter of a comment block."
+  `((t . (:inherit font-lock-comment-delimiter-face)))
+  "The face for the delimiter of a comment block."
   :group 'brec)
 
 
 
-(defface brec-comment-block-label `((t . (:inherit font-lock-doc-face))) "\
-The face for a comment-block label."
+(defface brec-comment-block-label `((t . (:inherit font-lock-doc-face)))
+  "The face for a comment-block label."
   :group 'brec)
 
 
 
-(defface brec-divider `((t . (:inherit font-lock-doc-face))) "\
-The face for a divider."
+(defface brec-divider `((t . (:inherit font-lock-doc-face)))
+  "The face for a divider."
   :group 'brec)
 
 
@@ -431,8 +429,8 @@ and ‘brec-is-divider-segment-successor’."
 
 
 
-(defface brec-division-label `((t . (:inherit brec-divider))) "\
-The face for a label in a divider."
+(defface brec-division-label `((t . (:inherit brec-divider)))
+  "The face for a label in a divider."
   :group 'brec)
 
 
@@ -590,8 +588,8 @@ is out of bounds.  See also ‘current-column’ and ‘current-indentation’."
 
 
 
-(defface brec-indent-blind-delimiter `((t . (:inherit brec-nobreak-space))) "\
-The face for the no-break spaces that delimit an indent blind."
+(defface brec-indent-blind-delimiter `((t . (:inherit brec-nobreak-space)))
+  "The face for the no-break spaces that delimit an indent blind."
   :group 'brec)
 
 
@@ -1075,44 +1073,44 @@ the correponding position in the next sibling, or nil if no next sibling exists.
 
 
 
-(defface brec-nobreak-space `((t . (:inherit nobreak-space))) "\
-The face for a no-break space (Unicode A0) in Breccia."
+(defface brec-nobreak-space `((t . (:inherit nobreak-space)))
+  "The face for a no-break space (Unicode A0) in Breccia."
   :group 'brec)
 
 
 
-(defface brec-pattern `((t . (:inherit brec-command-descriptor))) "\
-The face for a regular-expression pattern in the descriptor of a command point."
+(defface brec-pattern `((t . (:inherit brec-command-descriptor)))
+  "The face for a regular-expression pattern in the descriptor of a command point."
   :group 'brec)
 
 
 
-(defface brec-pattern-delimiter `((t . (:inherit brec-command-descriptor))) "\
-The face for each of the delimiters of a regular-expression pattern."
+(defface brec-pattern-delimiter `((t . (:inherit brec-command-descriptor)))
+  "The face for each of the delimiters of a regular-expression pattern."
   :group 'brec)
 
 
 
-(defface brec-pattern-element `((t . (:inherit brec-pattern))) "\
-The face for a formal element of a regular-expression pattern."
+(defface brec-pattern-element `((t . (:inherit brec-pattern)))
+  "The face for a formal element of a regular-expression pattern."
   :group 'brec)
 
 
 
-(defface brec-pattern-match-modifier `((t . (:inherit brec-pattern-element))) "\
-The face for a match modifier of a regular-expression pattern."
+(defface brec-pattern-match-modifier `((t . (:inherit brec-pattern-element)))
+  "The face for a match modifier of a regular-expression pattern."
   :group 'brec)
 
 
 
-(defface brec-plain-bullet `((t . (:inherit (brec-bullet font-lock-keyword-face)))) "\
-The face for the bullet of a plain point."
+(defface brec-plain-bullet `((t . (:inherit (brec-bullet font-lock-keyword-face))))
+  "The face for the bullet of a plain point."
   :group 'brec)
 
 
 
-(defface brec-plain-bullet-punctuation `((t . (:inherit brec-plain-bullet))) "\
-The face for non-alphanumeric characters in the bullet of a plain point."
+(defface brec-plain-bullet-punctuation `((t . (:inherit brec-plain-bullet)))
+  "The face for non-alphanumeric characters in the bullet of a plain point."
   :group 'brec)
 
 
@@ -1197,34 +1195,34 @@ In other words, do the opposite of ‘ignore’."
 
 
 (defface brec-task-bullet
-  `((t . (:inherit (brec-bullet font-lock-function-name-face)))) "\
-The face for the bullet of a task point."
+  `((t . (:inherit (brec-bullet font-lock-function-name-face))))
+  "The face for the bullet of a task point."
   :group 'brec)
 
 
 
-(defface brec-task-bullet-punctuation `((t . (:inherit brec-task-bullet))) "\
-The face for any non-alphanumeric character of a task bullet other than
+(defface brec-task-bullet-punctuation `((t . (:inherit brec-task-bullet)))
+  "The face for any non-alphanumeric character of a task bullet other than
 those of ‘brec-task-bullet-singleton’ and ‘brec-task-bullet-terminator’."
   :group 'brec)
 
 
 
-(defface brec-task-bullet-singleton `((t . (:inherit brec-task-bullet))) "\
-The face for a task bullet that comprises ‘+’ alone."
+(defface brec-task-bullet-singleton `((t . (:inherit brec-task-bullet)))
+  "The face for a task bullet that comprises ‘+’ alone."
   :group 'brec)
 
 
 
-(defface brec-task-bullet-terminator `((t . (:inherit font-lock-comment-face))) "\
-The face for the bullet terminator ‘+’ of a non-singleton task point.
+(defface brec-task-bullet-terminator `((t . (:inherit font-lock-comment-face)))
+  "The face for the bullet terminator ‘+’ of a non-singleton task point.
 Cf. ‘brec-task-bullet-singleton’."
   :group 'brec)
 
 
 
-(defface brec-titling-label `((t . (:inherit (bold brec-division-label)))) "\
-The face for a division label that contributes to the division title, or titles."
+(defface brec-titling-label `((t . (:inherit (bold brec-division-label))))
+  "The face for a division label that contributes to the division title, or titles."
   :group 'brec)
 
 
@@ -1244,8 +1242,8 @@ The face for a division label that contributes to the division title, or titles.
 
 ;;;###autoload
 (define-derived-mode brec-mode text-mode; [BM]
-  "Breccia" "\
-A major mode for editing Breccia.
+  "Breccia"
+  "A major mode for editing Breccia.
 Breccia is a lightweight markup language for point-form outlining and drafting.
 For more information, see URL ‘http://reluk.ca/project/Breccia/’
 and URL ‘http://reluk.ca/project/Breccia/Emacs/’."
