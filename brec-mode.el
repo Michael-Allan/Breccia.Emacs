@@ -343,25 +343,32 @@ This applies to alarm, task and plain bullets."
       "\\(?2:see\\(?: +\\(?:also\\|e\\.g\\.\\)?\\)?\\|join\\|cf\\.\\(?: +e\\.g\\.\\)?\\|"; Referential
       "\\(?:e\\.g\\|i\\.e\\|N\\.B\\|q\\.v\\|sc\\|viz\\)\\.\\|contra\\|pace\\|NB\\)" end) ; command.
 
+     ;; Note carrier
+     ;; ────────────
+     (concat
+      "\\|\\(?1:ad\\|on\\)" gap brec-pattern-matcher-pattern "\\(?:" gap "\\(?2:note\\)\\)?" end
+        ;;; Either a pertainment clause ↑ optionally followed by a note label ↑, or
+      "\\|\\(?1:note\\)" end); ← a note label all alone.
+
      ;; Privatizer
      ;; ──────────
      "\\|\\(?1:private\\)" end
 
-     ;; Other command matchers, each a component
-     ;; ──────────────────────
-     ;; Additional matchers may be inserted here.  Open each with `\\|`.  Capture up to four,
-     ;; explicitly numbered groups, e.g. `\(?1:foo\)`, `\(?2:bar\)` and `\(?4:bad\)`.
+     ;; Other components, each matching one or more additional commands
+     ;; ────────────────
+     ;; Derived modes may insert their own components here.  Open each with `\\|`.
+     ;; Capture up to four explicitly numbered groups, e.g. `\(?1:foo\)`, `\(?2:bar\)` and `\(?4:bad\)`.
      ;; Command facing will be given to any group numbered 1 to 3, error facing to any numbered 4.
      ;; For a working example, see `http://reluk.ca/project/wayic/Waybrec/Emacs/waybrec-mode.el`.
 
-     ;; Final component
+     ;; Final component, terminating the matcher
      ;; ───────────────
      "\\)"))
   "The command matcher for the command-point fontifier of ‘brec-keywords’.
 Formally this is a list of string components to be concatenated in order to
 form the matcher.  Derived modes may modify it before calling ‘brec-keywords’,
 e.g. by inserting components that match additional commands.  Read the source
-code and comments of the variable definition before attempting to do that.")
+code and comments of this variable’s definition before attempting to do that.")
 
 
 
