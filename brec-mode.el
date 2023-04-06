@@ -516,7 +516,7 @@ linear-order successor, if any.  Failing that, move it to the next line,
 if any.  This command preserves the column as far as possible."
   (interactive "^")
   (let (column next)
-    (setq next (brec-next-sibling (brec-in-body-fractum-start)))
+    (setq next (brec-next-sibling-or-elder (brec-in-body-fractum-start)))
     (unless next
       (setq next (brec-next-head (brec-body-fractum-start))))
     (unless next
@@ -1065,8 +1065,8 @@ non-space character in the next segment, or nil if no next segment exists."
 
 (defun brec-next-sibling (body-segment-start)
   "Locate the next sibling of a fractum.
-BODY-SEGMENT-START is the position of the first non-space character of
-any body segment in the head, or nil for a file head.  The return value is
+BODY-SEGMENT-START is the position of the first non-space character of any
+body segment in the fractal head, or nil for a file head.  The return value is
 the correponding position in the next sibling, or nil if no next sibling exists."
   (when body-segment-start
     (let ((next-head body-segment-start)
@@ -1077,6 +1077,23 @@ the correponding position in the next sibling, or nil if no next sibling exists.
                            (when (= i sib-i); Found the sibling.
                              (setq next-sibling next-head))))))
       next-sibling)))
+
+
+
+(defun brec-next-sibling-or-elder (body-segment-start)
+  "Locate the next sibling of a fractum, or of an ancestor of the fractum.
+BODY-SEGMENT-START is the position of the first non-space character of any
+body segment in the fractal head, or nil for a file head.  The return value
+is the correponding position in the next fractum that is sibling of either
+the fractum itself or an ancestor of the fractum, or nil if there is none."
+  (when body-segment-start
+    (let ((next-head body-segment-start)
+          (sib-i (brec-indent-before body-segment-start))
+          next-sib/elder)
+      (while (and (setq next-head (brec-next-head next-head))
+                  (not (when (<= (brec-indent-before next-head) sib-i); Found it.
+                         (setq next-sib/elder next-head)))))
+      next-sib/elder)))
 
 
 
@@ -1343,10 +1360,11 @@ and URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;;        But then, in the case of a comment appender, could the `subexp-highlighters` of the containing
 ;;        head have worked around the carrier, e.g. with `override` at nil?  [SBF]
 ;;
-;;   PBD  Paragraph boundary definition.  It is used by the command `fill-paragraph`, for instance,
-;;        not however by the commands `brec-backward-paragraph` and `brec-forward-paragraph`.
+;;   PBD  Paragraph boundary definition.  It is used by the command `fill-paragraph`, for instance
+;;        (though not by the Breccian equivalents of `backward-paragraph` and `forward-paragraph`,
+;;        namely `brec-backward` and `brec-forward`, to which the keys of the former are remapped).
 ;;            The manual says it “should not use ‘^’ to anchor the match”; yet without that anchor,
-;;        `fill-paragraph` fails to work, instead collapsing the fractal head to a single line.
+;;        `fill-paragraph` fails, instead collapsing each paragraph (fractal head) to a single line.
 ;;        https://www.gnu.org/software/emacs/manual/html_node/elisp/Standard-Regexps.html
 ;;
 ;;   PMP  Pattern-matcher pattern.  Marking an instance of a pattern related to pattern matchers,
