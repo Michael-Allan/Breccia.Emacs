@@ -45,7 +45,7 @@
 ;;
 ;;   If you set a `line-spacing` other than zero, then the `line-spacing` will snap back to zero for any
 ;;   line that pushes past the right edge of the window, causing the text to bounce in the buffer as you
-;;   edit it.  [http://reluk.ca/project/Breccia/Emacs/working_notes.brec.xht#bounces,whenever,newline]
+;;   edit it.  [http://reluk.ca/project/Breccia/Emacs/notes.brec.xht#bounces,whenever,newline]
 ;;   The workaround is to zero the `line-spacing` for your Breccia Mode buffers.  For example,
 ;;   put this in your intialization file:
 ;;
@@ -1347,7 +1347,7 @@ and URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;;   NBB  No-break space in a bullet.  Alone a face test suffices to guard the application
 ;;        of `brec-bullet-nobreak-space` only because already the bullet fontifier detects
 ;;        and refuses to face misplaced no-break spaces as bullet constituents.  For more on this,
-;;        see `http://reluk.ca/project/Breccia/Emacs/working_notes.brec.xht` § no-break spaces.
+;;        see `http://reluk.ca/project/Breccia/Emacs/notes.brec.xht` § no-break spaces.
 ;;
 ;;   NCE  Not `char-equal` or `=`, which fail if the position is out of bounds.
 ;;        Rather `eq` which instead gives nil in that case.
