@@ -1,6 +1,6 @@
 ;;; brec-mode.el --- A major mode for editing Breccian text  -*- lexical-binding: t; -*-
 
-;; Copyright © 2019-2023 Michael Allan.
+;; Copyright © 2019-2024 Michael Allan.
 ;;
 ;; Author: Michael Allan <mike@reluk.ca>
 ;; Version: 0-snapshot
@@ -969,6 +969,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
    ;; ══════════
    ;; Whitespace
    ;; ══════════
+
    (cons
     (lambda (limit)
       (let ((p (point))
@@ -1032,7 +1033,28 @@ predecessor.  See also ‘brec-is-divider-segment’ and
           (when found; The character to fontify is just before `p`.
             (set-match-data (list (1- p) (goto-char p) (current-buffer)))
             t)))); Returning t to Font Lock if `found`, else nil.
-    '(0 (list 'face 'default  'line-spacing brec--line-spacing-default)))))
+    '(0 (list 'face 'default  'line-spacing brec--line-spacing-default)))
+
+
+
+   ;; ═════════════════════
+   ;; Mathematic expression  [ME]
+   ;; ═════════════════════
+
+   (cons; Face each inline math expression, appending face `brec-math-expression`.
+    (lambda (limit)
+      (catch 'to-reface
+        (while (re-search-forward "[\u2060].+?\\(?:[\u2060]\\|$\\)" limit t)
+          (throw 'to-reface t))
+        nil))
+    '(0 'brec-math-expression append))))
+
+
+
+(defface brec-math-expression `((t . (:inherit italic)))
+  "The face for an inline mathematic expression.
+See URL ‘http://reluk.ca/project/Breccia/Web/imager/bin/breccia-web-image.brec.xht#math’."
+  :group 'brec)
 
 
 
@@ -1343,6 +1365,9 @@ and URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;;            (1) Use of `$` has caused busy looping, and `\n?` was the repair.
 ;;        https://github.com/Michael-Allan/Breccia.Emacs/commit/fec92482f6c3bb1a859792dcec409bc4f3264763
 ;;            (2) Now `\n?` itself is the cause and the original `$` the repair (2021-7, Emacs 27.2).
+;;
+;;   ME · Breccia Web Imager includes an option to render mathematic expressions.
+;;        http://reluk.ca/project/Breccia/Web/imager/bin/breccia-web-image.brec.xht#math
 ;;
 ;;   NBB  No-break space in a bullet.  Alone a face test suffices to guard the application
 ;;        of `brec-bullet-nobreak-space` only because already the bullet fontifier detects
