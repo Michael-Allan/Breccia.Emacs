@@ -1308,7 +1308,6 @@ and URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 
   ;; Set up no-break-space handling (Unicode A0)
   ;; ──────────────────────────────
-  (modify-syntax-entry ?\u00A0 " " brec-mode-syntax-table); Assigning whitespace syntax.
   (setq-local nobreak-char-display nil); Default application of standard face `nobreak-space`. [SF]
      ;;; Defeat it, because it applies the face by a method unamenable to override in `brec-keywords`.
      ;;; Instead let Breccia Mode face these characters using standard, Font Lock methods.
