@@ -1041,7 +1041,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
    ;; Mathematic expression  [ME]
    ;; ═════════════════════
 
-   (cons; Face each inline math expression, appending face `brec-math-expression`.
+   (cons; Face each in-line math expression, appending face `brec-math-expression`.
     (lambda (limit)
       (catch 'to-reface
         (while (re-search-forward "[\u2060].+?\\(?:[\u2060]\\|$\\)" limit t)
@@ -1052,7 +1052,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
 
 
 (defface brec-math-expression `((t . (:inherit italic)))
-  "The face for an inline mathematic expression.
+  "The face for an in-line mathematic expression.
 See URL ‘http://reluk.ca/project/Breccia/Web/imager/bin/breccia-web-image.brec.xht#math’."
   :group 'brec)
 
