@@ -698,8 +698,8 @@ predecessor.  See also ‘brec-is-divider-segment’ and
      nil '(1 'brec-pattern-delimiter t) '(2 'brec-pattern t) '(3 'brec-pattern-delimiter t)
      '(4 'brec-pattern-match-modifier t t))
 
-    ;; Containment operators ‘@’
-    ;; ─────────────────────
+    ;; Context operators ‘@’
+    ;; ─────────────────
     (list; (7, anchored highlighter)
      (lambda (limit)
        (catch 'to-reface
@@ -717,7 +717,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
      nil '(1 'brec-command-operator t))
 
     ;; Appendage delimiter ‘:’ and content
-    ;; ─────────
+    ;; ───────────────────
     (list; (9, anchored highlighter)
      (lambda (limit)
        (catch 'to-reface
