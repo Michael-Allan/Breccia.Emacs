@@ -335,10 +335,10 @@ This applies to alarm, task and plain bullets."
      ;; ┈──────┘          so precluding a match that begins instead with an appendage delimiter ‘:’.
      ;;    PI
 
-     ;; Associative reference
+     ;; Afterlinker
      ;; ─────────────────────
      (concat
-      "\\(?:\\(?1:re\\)" gap brec-pattern-matcher-pattern gap "\\)?"; Optional referrer clause.
+      "\\(?:\\(?1:re\\)" gap brec-pattern-matcher-pattern gap "\\)?"; Optional subject clause.
 
       "\\(?2:see\\(?: +\\(?:also\\|e\\.g\\.\\)?\\)?\\|join\\|cf\\.\\(?: +e\\.g\\.\\)?\\|"; Referential
       "\\(?:e\\.g\\|i\\.e\\|N\\.B\\|q\\.v\\|sc\\|viz\\)\\.\\|contra\\|pace\\|NB\\)" end) ; command.
