@@ -347,8 +347,8 @@ This applies to alarm, task and plain bullets."
      ;; ────────────
      (concat
       "\\|\\(?1:ad\\|on\\)" gap brec-pattern-matcher-pattern "\\(?:" gap "\\(?2:note\\)\\)?" end
-        ;;; Either a pertainment clause ↑ optionally followed by a note label ↑, or
-      "\\|\\(?1:note\\)" end); ← a note label all alone.
+        ;;; Either a purview clause ↑ optionally followed by a note label ↑,
+      "\\|\\(?1:note\\)" end); ← or a note label all alone.
 
      ;; Privatizer
      ;; ──────────
