@@ -77,10 +77,10 @@
 
 
 (defconst brec-body-segment-start-pattern
-  (concat
-   "^\\( \\{4\\}*\\)\\("; Perfectly indented, the start of the segment comprises [CCP]
-     ;;; any sequence outside the delimiter of either a comment block or an indent blind.
-   "\\\\+[^ \n\\]\\|[^[:space:]\\]\\)")
+  (concat                   ; The start of a body segment comprises
+   "^\\( \\{4\\}*\\)\\("    ; a perfect indent of spaces plus anything
+     "\\\\+[^ \n\\]"        ; outside a comment block delimiter, [CCP]
+     "\\|[^[:space:]\\]\\)"); indent blind delimiter, or further space.
   "The pattern of the start of a body segment up to its first non-space character.
 It captures groups (1) the indent and (2) the first non-space character.
 See also ‘brec-body-segment-start-pattern-unanchored’ and ‘brec-segment-eol’.")
@@ -938,13 +938,14 @@ predecessor.  See also ‘brec-is-divider-segment’ and
    ;; Comment carrier
    ;; ═══════════════
 
-   (list; Fontify each line of a comment block.  Each of its ordinary lines is delimited by a single
-      ;;; backslash (\) isolated in whitespace.  Usually the delimiter is followed by content (C).
+   (list; Fontify each line of a comment block.  A line may be marked by a single leading backslash (\),
+      ;;; and may be followed by carried content (C) that begins with a space.
     "^ *\\(\\\\\\)\\(?:\\( +.*\\)?\\|\\(\\\\+\\)\\( +.*\\)?\\)$"; [CCP]
       ;;; └──────┘       └──────┘      └───────┘  └──────┘
       ;;;    \              C             \⋯         L
 
-      ;;; A line may also be delimited by even more backslashes (\⋯) and so contain a label (L).
+      ;;; Alternatively a leading backslash (\) may be followed by one or more further backslashes (\⋯),
+      ;;; in which case any carried content constitutes a label (L).
     '(1 'brec-comment-block-delimiter t)   '(2 'brec-comment-block t t)
     '(3 'brec-comment-block-delimiter t t) '(4 'brec-comment-block-label t t))
 
@@ -1327,8 +1328,14 @@ and URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 
   ;; Hook into Font Lock
   ;; ───────────────────
-;;; (brec-set-for-buffer 'font-lock-multiline t); [FML]
-  (add-hook 'font-lock-extend-region-functions #'brec-extend-search t t) ; [RE]
+;;; (brec-set-for-buffer 'font-lock-multiline t)
+;;;;;;; It seems unnecessary and the description for `font-lock-multiline` does not imply otherwise.
+    ;;; It might become necessary if fontification ever demands a rapid response to changes
+    ;;; on subsequent lines.  Meantime it seems `brec-extend-search` alone suffices:
+  (add-hook 'font-lock-extend-region-functions #'brec-extend-search t t)
+    ;;; The alternative to `font-lock-extend-region-functions`, namely the little used
+    ;;; `font-lock-extend-after-change-region-function`, appears to be a design error.
+    ;;; https://lists.gnu.org/archive/html/bug-gnu-emacs/2015-03/msg00818.html
   (brec-set-for-buffer 'font-lock-defaults '(brec-keywords)))
 
 
@@ -1349,10 +1356,6 @@ and URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;;
 ;;   CCP  Comment-carriage pattern.  Marking an instance of a pattern or anti-pattern related to
 ;;        comment carriers, one of multiple instances that together are maintained in synchrony.
-;;
-;;   FML `font-lock-multiline`.  It seems unnecessary, and the description does not imply otherwise.
-;;        Should fontification ever depend on *subsequent* lines, then likely it would at least speed
-;;        the response to changes.  Meantime, it seems `brec-extend-search` alone suffices.
 ;;
 ;;   FV · Suppressing sporadic compiler warnings ‘reference to free variable’
 ;;        or ‘assignment to free variable’.
@@ -1397,10 +1400,6 @@ and URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;;   PSA  Plain spaces alone are valid separators here, yet the pattern should not be broken
 ;;        merely on account of forbidden whitespace.  Forbidden whitespace is the separate
 ;;        concern of a dedicated fontifier.  See code § Whitespace.
-;;
-;;   RE · Region extension.  The alternative to `font-lock-extend-region-functions`, namely the
-;;        little used `font-lock-extend-after-change-region-function`, appears to be a design error.
-;;        https://lists.gnu.org/archive/html/bug-gnu-emacs/2015-03/msg00818.html
 ;;
 ;;   REP  Region extension in the pre-form of an anchored highlighter: extending the end boundary
 ;;        of the search region for multi-line fontification.  The manual warns, ‘It is generally
