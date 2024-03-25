@@ -1215,7 +1215,7 @@ in the previous sibling, or nil if no previous sibling exists."
 
 (defun brec-segment-eol ()
   "The position at the end of the last line of the present fractal segment.
-Point must not lie at the beginning of the segment, or the result is undefined.
+Point must not lie at the start of a body segment, or the result is undefined.
 
 See also ‘brec-body-segment-start-pattern’."
   (save-excursion
