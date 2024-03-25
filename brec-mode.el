@@ -83,7 +83,7 @@
      "\\|[^[:space:]\\]\\)"); indent blind delimiter, or further space.
   "The pattern of the start of a body segment up to its first non-space character.
 It captures groups (1) the indent and (2) the first non-space character.
-See also ‘brec-body-segment-start-pattern-unanchored’ and ‘brec-segment-eol’.")
+See also ‘brec-body-segment-start-pattern-unanchored’ and ‘brec-segment-end’.")
 
 
 
@@ -463,7 +463,7 @@ was required, non-nil otherwise."
     (end-of-line)); Thus far at least the present segment must extend; extend it now,
                 ;;; that `re-search-forward` (below) must miss its leader.
   (let (is-changed)
-    (if (re-search-forward brec-body-segment-start-pattern nil t); Cf. `brec-segment-eol`.
+    (if (re-search-forward brec-body-segment-start-pattern nil t); Cf. `brec-segment-end`.
         (end-of-line 0); Moving to the end of the previous line.
       (goto-char (point-max)))
     (when (< font-lock-end (point))
@@ -656,7 +656,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
 
     (list; (3, anchored highlighter) Usually a descriptor follows the bullet,
      "\\(\\(?:.\\|\n\\)+\\)";        extending thence to the end of the point head.
-     '(brec-segment-eol); (2, pre-form) Making the search region cover the whole of it. [REP]
+     '(brec-segment-end); (2, pre-form) Making the search region cover the whole of it. [REP]
      nil '(1 'brec-aside-descriptor)))
 
 
@@ -681,7 +681,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
         (setq
          brec-f (match-beginning 0) ; Saving the start boundary of the present fractal segment
          brec-g (1- (match-end 0))  ; and the end boundaries both of the initial space separator
-         brec-x (brec-segment-eol))); and of the point head (N.B. this overwrites the match data),
+         brec-x (brec-segment-end))); and of the point head (N.B. this overwrites the match data),
            ;;; returning the latter and so extending the search region over the whole descriptor. [REP]
      nil '(1 'brec-command-descriptor))
 
@@ -810,7 +810,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
 
       ;; (3, anchored highlighter) Thence it may include any mix of drawing, titling and labeling.
       (list (concat drawing-cap "\\|" titling-cap "\\|" labeling-cap)
-            '(brec-segment-eol); (2, pre-form) Extending the search region over the whole segment. [REP]
+            '(brec-segment-end); (2, pre-form) Extending the search region over the whole segment. [REP]
             nil; (post-form)
             '(1 'brec-divider nil t);           `drawing-cap`
             '(2 'brec-titling-label nil t);     `titling-cap`
@@ -1213,7 +1213,7 @@ in the previous sibling, or nil if no previous sibling exists."
 
 
 
-(defun brec-segment-eol ()
+(defun brec-segment-end ()
   "The position at the end of the last line of the present fractal segment.
 Point must not lie at the start of a body segment, or the result is undefined.
 
