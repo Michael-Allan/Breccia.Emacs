@@ -83,7 +83,7 @@
      "\\|[^[:space:]\\]\\)"); indent blind delimiter, or further space.
   "The pattern of the start of a body segment up to its first non-space character.
 It captures groups (1) the indent and (2) the first non-space character.
-See also ‘brec-body-segment-start-pattern-unanchored’ and ‘brec-segment-end’.")
+See also ‘brec-segment-end’ and ‘brec-body-segment-start-pattern-unanchored’.")
 
 
 
@@ -336,7 +336,7 @@ This applies to alarm, task and plain bullets."
      ;;    PI
 
      ;; Afterlinker
-     ;; ─────────────────────
+     ;; ───────────
      (concat
       "\\(?:\\(?1:re\\)" gap brec-pattern-matcher-pattern gap "\\)?"; Optional subject clause.
 
@@ -456,14 +456,15 @@ Return nil if already it does, non-nil otherwise."
 Move it forward in the buffer if necessary.  Return nil if no change
 was required, non-nil otherwise."
   (goto-char font-lock-end)
-  (unless (or (bolp)(eolp)); When the prior extenders such as `font-lock-extend-region-wholelines`
-    ;; do not leave `font-lock-end` at a line terminus, as usually they do, then the search
-    ;; region bisects the text of the line, which means the text of a fractal segment
-    ;; (a Breccian file contains nothing else), and each segment covers the whole of its lines.
-    (end-of-line)); Thus far at least the present segment must extend; extend it now,
-                ;;; that `re-search-forward` (below) must miss its leader.
+;;(unless (or (bolp)(eolp)); When the prior extenders such as `font-lock-extend-region-wholelines`
+;;  ;; do not leave `font-lock-end` at a line terminus, as usually they do, then the search
+;;  ;; region bisects the text of the line, which means the text of a fractal segment
+;;  ;; (a Breccian file contains nothing else), and each segment covers the whole of its lines.
+;;  (end-of-line)); Thus far at least the present segment must extend, so move there now and bring
+;;              ;;; point nearer to any next match of `brec-body-segment-start-pattern` (below).
+;;;; not an optimization
   (let (is-changed)
-    (if (re-search-forward brec-body-segment-start-pattern nil t); Cf. `brec-segment-end`.
+    (if (re-search-forward brec-body-segment-start-pattern nil t); Cf. `brec--segment-end`.
         (end-of-line 0); Moving to the end of the previous line.
       (goto-char (point-max)))
     (when (< font-lock-end (point))
@@ -656,7 +657,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
 
     (list; (3, anchored highlighter) Usually a descriptor follows the bullet,
      "\\(\\(?:.\\|\n\\)+\\)";        extending thence to the end of the point head.
-     '(brec-segment-end); (2, pre-form) Making the search region cover the whole of it. [REP]
+     '(brec--segment-end); (2, pre-form) Making the search region cover the whole of it. [REP]
      nil '(1 'brec-aside-descriptor)))
 
 
@@ -679,9 +680,9 @@ predecessor.  See also ‘brec-is-divider-segment’ and
      '(progn; (2, pre-form)
         (goto-char (match-end 1)); Starting from the end boundary of the bullet ‘:’.
         (setq
-         brec-f (match-beginning 0) ; Saving the start boundary of the present fractal segment
-         brec-g (1- (match-end 0))  ; and the end boundaries both of the initial space separator
-         brec-x (brec-segment-end))); and of the point head (N.B. this overwrites the match data),
+         brec-f (match-beginning 0)  ; Saving the start boundary of the present fractal segment
+         brec-g (1- (match-end 0))   ; and the end boundaries both of the initial space separator
+         brec-x (brec--segment-end))); and of the point head (N.B. this overwrites the match data),
            ;;; returning the latter and so extending the search region over the whole descriptor. [REP]
      nil '(1 'brec-command-descriptor))
 
@@ -810,7 +811,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
 
       ;; (3, anchored highlighter) Thence it may include any mix of drawing, titling and labeling.
       (list (concat drawing-cap "\\|" titling-cap "\\|" labeling-cap)
-            '(brec-segment-end); (2, pre-form) Extending the search region over the whole segment. [REP]
+            '(brec--segment-end); (2, pre-form) Extending the search region over the whole segment. [REP]
             nil; (post-form)
             '(1 'brec-divider nil t);           `drawing-cap`
             '(2 'brec-titling-label nil t);     `titling-cap`
@@ -1043,11 +1044,20 @@ predecessor.  See also ‘brec-is-divider-segment’ and
    ;; ═════════════════════
 
    (cons; Face each in-line math expression, appending face `brec-math-expression`.
-    (lambda (limit)
-      (catch 'to-reface
-        (while (re-search-forward "[\u2060].+?\\(?:[\u2060]\\|$\\)" limit t)
-          (throw 'to-reface t))
-        nil))
+    (let (match-beg match-end)
+      (lambda (limit)
+        (setq match-beg (point)); Presumptively.
+        (catch 'to-reface
+          (while (< match-beg limit)
+            (setq match-end (next-single-property-change match-beg 'face (current-buffer) limit))
+              ;;; Now mimic the behaviour of Breccia Web Imager, which never renders math expressions
+              ;;; across granal boundaries, by restricting fontification to the monofaced sequence
+              ;;; of text that ends at `match-end`:
+            (when (re-search-forward "\u2060\\(?:.\\|\n\\)+?\u2060" match-end t)
+              (throw 'to-reface t))
+            (setq match-beg match-end)
+            (goto-char match-beg))
+          nil)))
     '(0 'brec-math-expression append))))
 
 
@@ -1216,9 +1226,23 @@ in the previous sibling, or nil if no previous sibling exists."
 (defun brec-segment-end ()
   "The position at the end of the last line of the present fractal segment.
 Point must not lie at the start of a body segment, or the result is undefined.
-
-See also ‘brec-body-segment-start-pattern’."
+See also ‘brec-body-segment-start-pattern’ and ‘brec--segment-end’."
   (save-excursion
+    (when (bolp)   ; Then ‘brec-body-segment-start-pattern’ might (below) match the present segment;
+      (end-of-line)); but this far at least the present segment extends, and moving to here
+                   ;;; prevents that error.
+    ;; Changing what follows?  Sync → `brec--segment-end`.
+    (if (re-search-forward brec-body-segment-start-pattern nil t); Cf. `brec-extend-search-down`.
+        (end-of-line 0); Moving to the end of the previous line.
+      (goto-char (point-max)))
+    (point)))
+
+
+
+(defun brec--segment-end ()
+  "Like ‘brec-segment-end’, except with one proviso as follows.
+Point must not lie at the start of a body segment or the result is undefined."
+  (save-excursion; Changing what follows?  Sync → `brec-segment-end`.
     (if (re-search-forward brec-body-segment-start-pattern nil t); Cf. `brec-extend-search-down`.
         (end-of-line 0); Moving to the end of the previous line.
       (goto-char (point-max)))
