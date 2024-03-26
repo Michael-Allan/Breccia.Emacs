@@ -78,9 +78,9 @@
 
 (defconst brec-body-segment-start-pattern
   (concat
-   "^\\( \\{4\\}*\\)\\("    ; The start of a body segment comprises indent-perfect spacing plus either:
-     "\\\\+[^ \n\\]"        ; i) one or more backslashes not making a comment-block delimiter [CCP], or
-     "\\|[^[:space:]\\]\\)"); ii) anything except an indent-imperfecting space, indent-blind delimiter,
+   "^\\( \\{4\\}*\\)\\(" ; The start of a body segment comprises indent-perfect spacing plus either:
+     "\\\\+[^ \n\\]\\|"  ;  i) one or more backslashes not making a comment-block delimiter [CCP], or
+     "[^[:space:]\\]\\)"); ii) anything except an indent-imperfecting space, indent-blind delimiter,
        ;;; disallowed whitespace, or backslash which — given the prior failure of (i) to match —
        ;;; comprises or leads a backslash sequence that *does* make a comment-block delimiter.
   "The pattern of the start of a body segment.
