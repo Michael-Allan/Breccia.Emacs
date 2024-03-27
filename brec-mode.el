@@ -1301,7 +1301,7 @@ Cf. ‘brec-task-bullet-singleton’."
 
 
 
-(defvar brec-x); [FV, GVF]
+(defvar brec-x); [GVF]
 
 
 
