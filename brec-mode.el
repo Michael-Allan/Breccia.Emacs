@@ -76,26 +76,6 @@
 ;; ══════════════════════════════════════════════════════════════════════════════════════════════════════
 
 
-(defconst brec-body-segment-start-pattern
-  (concat
-   "^\\( \\{4\\}*\\)\\(" ; The start of a body segment comprises indent-perfect spacing plus either:
-     "\\\\+[^ \n\\]\\|"  ;  i) one or more backslashes not making a comment-block delimiter [CCP], or
-     "[^[:space:]\\]\\)"); ii) anything except an indent-imperfecting space, indent-blind delimiter,
-       ;;; disallowed whitespace, or backslash which — given the prior failure of (i) to match —
-       ;;; comprises or leads a backslash sequence that *does* make a comment-block delimiter.
-  "The pattern of the start of a body segment.
-It captures groups (1) the perfect indent and (2) one or more
-of the non-plain-space characters (Unicode non-20) that directly follow.
-See also ‘brec-segment-end’ and ‘brec-body-segment-start-pattern-unanchored’.")
-
-
-
-(defconst brec-body-segment-start-pattern-unanchored
-  (substring-no-properties brec-body-segment-start-pattern 1)
-  "Pattern ‘brec-body-segment-start-pattern’ without the leading anchor ‘^’.")
-
-
-
 (defconst brec-gap-pattern
   (concat; The gap comprises one or more of the following.
    "\\(?:^ *[ \\].*$"; Indent blind, comment block
@@ -107,12 +87,6 @@ See also ‘brec-segment-end’ and ‘brec-body-segment-start-pattern-unanchore
 See also the simpler ‘brec-preceding-gap-character-pattern’
 and ‘brec-succeeding-gap-character-pattern’; for use in detecting the presence
 of a gap without having to matching the whole of it, which could be lengthy.")
-
-
-
-(defvar brec--line-spacing-default); The line spacing that would have been in effect had it not been
-  ;;; zeroed in the present mode’s after-hook, or nil if there would have been none.  This is never
-  ;;; zero, so a simple nil test suffices to determine whether real spacing would have been in effect.
 
 
 
@@ -130,25 +104,13 @@ of a gap without having to matching the whole of it, which could be lengthy.")
 
 
 
-(defconst brec-preceding-gap-character-pattern "[ \n]"
-  "The regex pattern of a gap character that could directly precede a non-gap.
-See also ‘brec-gap-pattern’.");
-
-
-
-(defconst brec-succeeding-gap-character-pattern "[ \n]"
-  "The regex pattern of a gap character that could directly follow a non-gap.
-See also ‘brec-gap-pattern’.");
-
-
-
 (defconst brec-term-end-boundary-pattern "\\(?: \\|$\\)"
   "The regular-expression pattern of the end boundary of a term.
 This is either a space or a line end.");
 
 
 
-(defvar font-lock-beg); Because Font Lock omits to export these definitions. [FV]
+(defvar font-lock-beg); [FV, because Font Lock omits to export these definitions]
 (defvar font-lock-end)
 
 
@@ -222,6 +184,7 @@ See also ‘brec-body-fractum-start’."
   "Whether point is at the start of a body segment.
 Returns the segment’s first non-space position if so, nil otherwise.
 See also ‘brec-body-segment-start’."
+  (defvar brec-body-segment-start-pattern-unanchored); [FV]
   (when (and (bolp) (looking-at brec-body-segment-start-pattern-unanchored))
     (match-beginning 2)))
 
@@ -294,6 +257,26 @@ For fracta in general, see ‘brec-fractum-start’."
           (forward-line -1)
           (setq start (brec-at-body-segment-start)))))
     start))
+
+
+
+(defconst brec-body-segment-start-pattern
+  (concat
+   "^\\( \\{4\\}*\\)\\(" ; The start of a body segment comprises indent-perfect spacing plus either:
+     "\\\\+[^ \n\\]\\|"  ;  i) one or more backslashes not making a comment-block delimiter [CCP], or
+     "[^[:space:]\\]\\)"); ii) anything except an indent-imperfecting space, indent-blind delimiter,
+       ;;; disallowed whitespace, or backslash which — given the prior failure of (i) to match —
+       ;;; comprises or leads a backslash sequence that *does* make a comment-block delimiter.
+  "The pattern of the start of a body segment.
+It captures groups (1) the perfect indent and (2) one or more
+of the non-plain-space characters (Unicode non-20) that directly follow.
+See also ‘brec-segment-end’ and ‘brec-body-segment-start-pattern-unanchored’.")
+
+
+
+(defconst brec-body-segment-start-pattern-unanchored
+  (substring-no-properties brec-body-segment-start-pattern 1)
+  "Pattern ‘brec-body-segment-start-pattern’ without the leading anchor ‘^’.")
 
 
 
@@ -551,6 +534,11 @@ and segments, see ‘brec-body-fractum-start’ and ‘brec-body-segment-start�
 
 
 
+;;  brec-gap-pattern   (defined above in § Preliminary declarations)
+(cl-assert (boundp 'brec-gap-pattern))
+
+
+
 (defun brec-in-body-fractum-start ()
   "Whether point is on the start line of a body fractum.
 Returns the fractum’s first non-space position, or nil if point is not
@@ -706,6 +694,8 @@ predecessor.  See also ‘brec-is-divider-segment’ and
     ;; ─────────────────
     (list; (7, anchored highlighter)
      (lambda (limit)
+       (defvar brec-preceding-gap-character-pattern); [FV]
+       (defvar brec-succeeding-gap-character-pattern); [FV]
        (catch 'to-reface
          (while (re-search-forward
                  (concat brec-preceding-gap-character-pattern "\\(@\\)"
@@ -724,6 +714,8 @@ predecessor.  See also ‘brec-is-divider-segment’ and
     ;; ───────────────────
     (list; (9, anchored highlighter)
      (lambda (limit)
+       (defvar brec-preceding-gap-character-pattern); [FV]
+       (defvar brec-succeeding-gap-character-pattern); [FV]
        (catch 'to-reface
          (when (re-search-forward
                  (concat brec-preceding-gap-character-pattern "\\(:\\)"
@@ -1019,6 +1011,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
 
    (cons; Selectively restore (outside of indent blinds) the line spacing earlier zeroed.
     (lambda (limit)
+      (defvar brec--line-spacing-default); [FV]
       (when brec--line-spacing-default; Then restoration is needed.
         (let ((p (point))
               c face found in-blind)
@@ -1062,6 +1055,12 @@ predecessor.  See also ‘brec-is-divider-segment’ and
             (goto-char match-beg))
           nil)))
     '(0 'brec-math-expression append))))
+
+
+
+(defvar brec--line-spacing-default); The line spacing that would have been in effect had it not been
+  ;;; zeroed in the present mode’s after-hook, or nil if there would have been none.  This is never
+  ;;; zero, so a simple nil test suffices to determine whether real spacing would have been in effect.
 
 
 
@@ -1157,6 +1156,11 @@ the fractum itself or an ancestor of the fractum, or nil if there is none."
 
 
 
+;;  brec-pattern-matcher-pattern  (defined above in § Preliminary declarations)
+(cl-assert (boundp 'brec-pattern-matcher-pattern))
+
+
+
 (defface brec-pattern-match-modifier `((t . (:inherit brec-pattern-element)))
   "The face for a match modifier of a regular-expression pattern."
   :group 'brec)
@@ -1172,6 +1176,12 @@ the fractum itself or an ancestor of the fractum, or nil if there is none."
 (defface brec-plain-bullet-punctuation `((t . (:inherit brec-plain-bullet)))
   "The face for non-alphanumeric characters in the bullet of a plain point."
   :group 'brec)
+
+
+
+(defconst brec-preceding-gap-character-pattern "[ \n]"
+  "The regex pattern of a gap character that could directly precede a non-gap.
+See also ‘brec-gap-pattern’.");
 
 
 
@@ -1261,6 +1271,12 @@ Signal an error if the setting is not buffer local."
 
 
 
+(defconst brec-succeeding-gap-character-pattern "[ \n]"
+  "The regex pattern of a gap character that could directly follow a non-gap.
+See also ‘brec-gap-pattern’.");
+
+
+
 (defun brec-t (&rest _args)
   "Ignore any arguments and return t.
 In other words, do the opposite of ‘ignore’."
@@ -1292,6 +1308,11 @@ Cf. ‘brec-task-bullet-singleton’ and ‘brec-task-bullet-terminator’."
   "The face for the bullet terminator ‘+’ of a non-singleton task point.
 Cf. ‘brec-task-bullet-singleton’."
   :group 'brec)
+
+
+
+;;  brec-term-end-boundary-pattern  (defined above in § Preliminary declarations)
+(cl-assert (boundp 'brec-term-end-boundary-pattern))
 
 
 
