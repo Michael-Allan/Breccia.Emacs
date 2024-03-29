@@ -481,7 +481,7 @@ was required, non-nil otherwise."
 
 
 
-(defface brec-forbidden-whitespace
+(defface brec-forbidden-whitespace; Cf. `brec-transparent-error`.
   `((t . (:inherit (font-lock-warning-face nobreak-space))))
   ;; This inheritance list aims to add the attributes of warning face to those of `nobreak-space`,
   ;; so treating the latter as the common attributes for whitespace that should be made visible.
@@ -1039,7 +1039,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
    ;; Mathematic expression  [ME]
    ;; ═════════════════════
 
-   (cons; Face each in-line math expression, appending face `brec-math-expression`.
+   (list; Face each in-line math expression by appending face `brec-math-expression`.
     (let (match-beg match-end)
       (lambda (limit)
         (setq match-beg (point)); Presumptively.
@@ -1049,12 +1049,18 @@ predecessor.  See also ‘brec-is-divider-segment’ and
               ;;; Now mimic the behaviour of Breccia Web Imager, which never renders math expressions
               ;;; across granal boundaries, by restricting fontification to the monofaced sequence
               ;;; of text that ends at `match-end`:
-            (when (re-search-forward "\u2060\\(?:.\\|\n\\)+?\u2060" match-end t)
+            (when (re-search-forward "\\(\u2060\\)\\(?:\\([^\u2060]+\\)\\(\u2060\\)\\)?" match-end t)
+              (set 'brec-f; Delimiter face.
+                   (if (match-end 2)
+                       (or (get-text-property match-beg 'face) 'default)
+                          ;;; For any in-line delimiter of a pair that encloses a non-empty expression.
+                     'brec-transparent-error))
+                        ;;; For all other in-line delimiters, whether of empty or open expressions.
               (throw 'to-reface t))
             (setq match-beg match-end)
             (goto-char match-beg))
           nil)))
-    '(0 'brec-math-expression append))))
+    '(1 brec-f t) '(2 'brec-math-expression append t) '(3 brec-f t t))))
 
 
 
@@ -1318,6 +1324,13 @@ Cf. ‘brec-task-bullet-singleton’."
 
 (defface brec-titling-label `((t . (:inherit (bold brec-division-label))))
   "The face for a division label that contributes to the division title, or titles."
+  :group 'brec)
+
+
+
+(defface brec-transparent-error; Cf. `brec-forbidden-whitespace`.
+  `((t . (:inherit font-lock-warning-face :inverse-video t)))
+  "An error face for characters whose glyphs are transparent, such as whitepace."
   :group 'brec)
 
 
