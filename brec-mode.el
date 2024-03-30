@@ -1039,8 +1039,8 @@ predecessor.  See also ‘brec-is-divider-segment’ and
    ;; Mathematic expression  [↑FF, ME]
    ;; ═════════════════════
 
-   (list; Face each in-line mathematic expression by appending face `brec-math-expression`.
-    (let (match-beg match-end)
+   (list; Face mathematics by appending face `brec-math-inline` or `brec-math-block`.
+    (let (is-block match-beg match-end)
       (lambda (limit)
         (setq match-beg (point)); Presumptively.
         (catch 'to-reface
@@ -1049,18 +1049,22 @@ predecessor.  See also ‘brec-is-divider-segment’ and
               ;;; Now mimic in the expression matcher that follows the behaviour of Breccia Web Imager
               ;;; (which never renders a math expression across a granal boundary) by restricting
               ;;; the matcher to the monoface sequence of text that ends at `match-end`. [↑FF]
-            (when (re-search-forward "\\(\u2060\\)\\(?:\\([^\u2060]+\\)\\(\u2060\\)\\)?" match-end t)
-              (set 'brec-f; Delimiter face.
+            (when (re-search-forward "\\([･\u2060]\\)\\(?:\\([^･\u2060]+\\)\\(\\1\\)\\)?" match-end t)
+              (setq is-block (string= (match-string 1) "･"))
+              (set 'brec-f; The delimiter face.
                    (if (match-end 2)
-                       (or (get-text-property match-beg 'face) 'default)
-                          ;;; For any in-line delimiter of a pair that encloses a non-empty expression.
-                     'brec-transparent-error))
-                        ;;; For all other in-line delimiters, whether of empty or open expressions.
+                       (if is-block 'brec-math-block-delimiter
+                         (or (get-text-property match-beg 'face) 'default))
+                          ;;; For any delimiter of a pair that encloses a non-empty expression.
+                     (if is-block 'brec-math-block-delimiter-error 'brec-transparent-error)))
+                        ;;; For all other delimiters, whether of empty or open expressions.
+              (set 'brec-g; The expression face.
+                   (if is-block 'brec-math-block 'brec-math))
               (throw 'to-reface t))
             (setq match-beg match-end)
             (goto-char match-beg))
           nil)))
-    '(1 brec-f t) '(2 'brec-math-expression append t) '(3 brec-f t t))))
+    '(1 brec-f t) '(2 brec-g append t) '(3 brec-f t t))))
 
 
 
@@ -1070,9 +1074,33 @@ predecessor.  See also ‘brec-is-divider-segment’ and
 
 
 
-(defface brec-math-expression `((t . (:inherit italic)))
-  "The face for an in-line mathematic expression.
+(defface brec-math `((t . (:inherit italic)))
+  "The face for a mathematic expression.
 See URL ‘http://reluk.ca/project/Breccia/Web/imager/bin/breccia-web-image.brec.xht#math’."
+  :group 'brec)
+
+
+
+(defface brec-math-block `((t . (:inherit brec-math)))
+  "The face for a block (aka display) mathematic expression."
+  :group 'brec)
+
+
+
+(defface brec-math-block-delimiter `((t . (:inherit brec-command-descriptor)))
+  "The face for the delimiters of block expressions."
+  :group 'brec)
+
+
+
+(defface brec-math-block-delimiter-error `((t . (:inherit font-lock-warning-face :weight normal)))
+  "The face for the delimiters of malformed (empty or open) block expressions."
+  :group 'brec)
+
+
+
+(defface brec-math-inline `((t . (:inherit brec-math)))
+  "The face for an in-line mathematic expression."
   :group 'brec)
 
 
