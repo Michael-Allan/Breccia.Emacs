@@ -1036,19 +1036,19 @@ predecessor.  See also ‘brec-is-divider-segment’ and
 
 
    ;; ═════════════════════
-   ;; Mathematic expression  [ME]
+   ;; Mathematic expression  [↑FF, ME]
    ;; ═════════════════════
 
-   (list; Face each in-line math expression by appending face `brec-math-expression`.
+   (list; Face each in-line mathematic expression by appending face `brec-math-expression`.
     (let (match-beg match-end)
       (lambda (limit)
         (setq match-beg (point)); Presumptively.
         (catch 'to-reface
           (while (< match-beg limit)
             (setq match-end (next-single-property-change match-beg 'face (current-buffer) limit))
-              ;;; Now mimic the behaviour of Breccia Web Imager, which never renders math expressions
-              ;;; across granal boundaries, by restricting fontification to the monofaced sequence
-              ;;; of text that ends at `match-end`:
+              ;;; Now mimic in the expression matcher that follows the behaviour of Breccia Web Imager
+              ;;; (which never renders a math expression across a granal boundary) by restricting
+              ;;; the matcher to the monoface sequence of text that ends at `match-end`. [↑FF]
             (when (re-search-forward "\\(\u2060\\)\\(?:\\([^\u2060]+\\)\\(\u2060\\)\\)?" match-end t)
               (set 'brec-f; Delimiter face.
                    (if (match-end 2)
@@ -1417,6 +1417,8 @@ and URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;;
 ;;   CCP  Comment-carriage pattern.  Marking an instance of a pattern or anti-pattern related to
 ;;        comment carriers, one of multiple instances that together are maintained in synchrony.
+;;
+;;  ↑FF · Fontification code that must execute late in the fontification sequence.
 ;;
 ;;   FV · Suppressing sporadic compiler warnings ‘reference to free variable’
 ;;        or ‘assignment to free variable’.
