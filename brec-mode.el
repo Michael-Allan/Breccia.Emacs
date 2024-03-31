@@ -49,7 +49,7 @@
 ;;   The workaround is to zero the `line-spacing` for your Breccia Mode buffers.  For example,
 ;;   put this in your intialization file:
 ;;
-;;      (add-hook 'brec-mode-hook (lambda () (set 'line-spacing 0)))
+;;      (add-hook 'brec-mode-hook (lambda () (setq line-spacing 0)))
 ;;
 ;; Customization
 ;;
@@ -454,8 +454,8 @@ was required, non-nil otherwise."
         (end-of-line 0); Moving to the end of the previous line.
       (goto-char (point-max)))
     (when (< font-lock-end (point))
-      (set 'font-lock-end (point))
-      (setq is-changed t))
+      (setq font-lock-end (point)
+            is-changed t))
     is-changed))
 
 
@@ -471,8 +471,8 @@ was required, non-nil otherwise."
         (beginning-of-line)
       (goto-char (point-min)))
     (when (> font-lock-beg (point))
-      (set 'font-lock-beg (point))
-      (setq is-changed t))
+      (setq font-lock-beg (point)
+            is-changed t))
     is-changed))
 
 
@@ -757,8 +757,8 @@ predecessor.  See also ‘brec-is-divider-segment’ and
             (setq match-end (next-single-property-change match-beg 'face (current-buffer) limit))
             (when (eq 'brec-pattern (get-text-property match-beg 'face))
               (set-match-data (list match-beg (goto-char match-end) (current-buffer)))
-              (set 'brec-f match-beg); Saving the anchor’s bounds.
-              (set 'brec-g match-end)
+              (setq brec-f match-beg; Saving the anchor’s bounds.
+                    brec-g match-end)
               (throw 'to-anchor t))
             (setq match-beg match-end))
           nil)))
@@ -861,13 +861,13 @@ predecessor.  See also ‘brec-is-divider-segment’ and
                   ;; ───────────
                   (when (= ?+ char-last)
                     (if (= length 1)
-                        (set 'brec-f 'brec-task-bullet-singleton)
+                        (setq brec-f 'brec-task-bullet-singleton)
                       (setq m2-end m1-end
                             m2-beg match-last
                             m1-end m2-beg
-                            is-match-changed t)
-                      (set 'brec-f 'brec-task-bullet)
-                      (set 'brec-g 'brec-task-bullet-terminator))
+                            brec-f 'brec-task-bullet
+                            brec-g 'brec-task-bullet-terminator
+                            is-match-changed t))
                     (throw 'is-free-form-bullet t))
 
                   ;; Alarm bullet
@@ -876,13 +876,13 @@ predecessor.  See also ‘brec-is-divider-segment’ and
                              (= ?! char-last)
                              (= ?! (char-before match-last)))
                     (if (= length 2)
-                        (set 'brec-f 'brec-alarm-bullet-singleton)
+                        (setq brec-f 'brec-alarm-bullet-singleton)
                       (setq m2-end m1-end
                             m2-beg (1- match-last)
                             m1-end m2-beg
-                            is-match-changed t)
-                      (set 'brec-f 'brec-alarm-bullet)
-                      (set 'brec-g 'brec-alarm-bullet-terminator))
+                            brec-f 'brec-alarm-bullet
+                            brec-g 'brec-alarm-bullet-terminator
+                            is-match-changed t))
                     (throw 'is-free-form-bullet t))
 
                   ;; Miscapture of non-bullet (divider) or non-free-form (aside|command) bullet
@@ -897,7 +897,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
 
                   ;; Plain bullet
                   ;; ──────────────
-                  (set 'brec-f 'brec-plain-bullet)
+                  (setq brec-f 'brec-plain-bullet)
                   t)
 
               (when is-match-changed
@@ -921,7 +921,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
                       (eq face 'brec-alarm-bullet))
               (goto-char match-beg)
               (when (re-search-forward "[^[:alnum:] \u00A0]+" match-end t)
-                (set 'brec-f (intern (concat (symbol-name face) "-punctuation")))
+                (setq brec-f (intern (concat (symbol-name face) "-punctuation")))
                   ;;; To the punctuation variant of the face.
                 (throw 'to-reface t)))
             (setq match-beg match-end))
@@ -1051,14 +1051,14 @@ predecessor.  See also ‘brec-is-divider-segment’ and
               ;;; the matcher to the monoface sequence of text that ends at `match-end`. [↑FF]
             (when (re-search-forward "\\([･\u2060]\\)\\(?:\\([^･\u2060]+\\)\\(\\1\\)\\)?" match-end t)
               (setq is-block (string= (match-string 1) "･"))
-              (set 'brec-f; The delimiter face.
+              (setq brec-f; The delimiter face.
                    (if (match-end 2)
                        (if is-block 'brec-math-block-delimiter
                          (or (get-text-property match-beg 'face) 'default))
                           ;;; For any delimiter of a pair that encloses a non-empty expression.
                      (if is-block 'brec-math-block-delimiter-error 'brec-transparent-error)))
                         ;;; For all other delimiters, whether of empty or open expressions.
-              (set 'brec-g; The expression face.
+              (setq brec-g; The expression face.
                    (if is-block 'brec-math-block 'brec-math))
               (throw 'to-reface t))
             (setq match-beg match-end)
