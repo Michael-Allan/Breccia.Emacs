@@ -1386,6 +1386,11 @@ and URL ‘http://reluk.ca/project/Breccia/Emacs/’."
   :group 'brec
   :after-hook (progn
 
+
+    ;; ═══════════════
+    ;; II. Late set-up
+    ;; ═══════════════
+
     ;; Seamless jointing of semigraphics in indent blinds (late part)
     ;; ─────────────────────────────────
     (setq brec--line-spacing-default (or line-spacing (frame-parameter nil 'line-spacing)))
@@ -1394,6 +1399,12 @@ and URL ‘http://reluk.ca/project/Breccia/Emacs/’."
     (brec-set-for-buffer 'line-spacing 0)); Text properties can enlarge it only, they cannot zero it.
       ;;; Therefore zero it up front, then use text properties to restore the default value outside
       ;;; of indent blinds.
+
+
+
+  ;; ═══════════════
+  ;; I. Early set-up
+  ;; ═══════════════
 
   ;; Font Lock integration
   ;; ─────────────────────
