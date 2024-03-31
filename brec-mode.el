@@ -1386,8 +1386,8 @@ and URL ‘http://reluk.ca/project/Breccia/Emacs/’."
   :group 'brec
   :after-hook (progn
 
-    ;; Ensure seamless jointing of semigraphics in indent blinds (late part)
-    ;; ────────────────────────────────────────
+    ;; Seamless jointing of semigraphics in indent blinds (late part)
+    ;; ─────────────────────────────────
     (setq brec--line-spacing-default (or line-spacing (frame-parameter nil 'line-spacing)))
     (when (and brec--line-spacing-default (= 0 brec--line-spacing-default))
       (setq brec--line-spacing-default nil)); Honouring its contract.
@@ -1396,18 +1396,18 @@ and URL ‘http://reluk.ca/project/Breccia/Emacs/’."
       ;;; of indent blinds.
 
 
-  ;; Set up no-break-space handling (Unicode A0)
-  ;; ──────────────────────────────
+  ;; No-break-space display (Unicode A0)
+  ;; ──────────────────────
   (setq-local nobreak-char-display nil); Default application of standard face `nobreak-space`. [SF]
      ;;; Defeat it, because it applies the face by a method unamenable to override in `brec-keywords`.
      ;;; Instead let Breccia Mode face these characters using standard, Font Lock methods.
 
-  ;; Ensure seamless jointing of semigraphics in indent blinds (early part)
-  ;; ────────────────────────────────────────
+  ;; Seamless jointing of semigraphics in indent blinds (early part)
+  ;; ─────────────────────────────────
   (setq-local font-lock-extra-managed-props '(line-spacing))
 
-  ;; Set up paragraph handling
-  ;; ─────────────────────────
+  ;; Paragraph detection and transit
+  ;; ───────────────────────────────
   (setq-local paragraph-start brec-body-segment-start-pattern); [PBD]
   (setq-local paragraph-separate "^ *\\(?:\u00A0.*\\|\\\\+\\( +.*\\)?\\)?$"); [CCP, PBD]
     ;;; Indent blinds, comment blocks and blank lines, that is.
@@ -1415,8 +1415,8 @@ and URL ‘http://reluk.ca/project/Breccia/Emacs/’."
     (define-key m [remap backward-paragraph] #'brec-backward)
     (define-key m [remap forward-paragraph] #'brec-forward))
 
-  ;; Hook into Font Lock
-  ;; ───────────────────
+  ;; Font Lock integration
+  ;; ─────────────────────
 ;;; (brec-set-for-buffer 'font-lock-multiline t)
 ;;;;;;; It seems unnecessary and the description for `font-lock-multiline` does not imply otherwise.
     ;;; It might become necessary if fontification ever demands a rapid response to changes
