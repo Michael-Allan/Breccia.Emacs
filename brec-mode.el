@@ -1395,26 +1395,6 @@ and URL ‘http://reluk.ca/project/Breccia/Emacs/’."
       ;;; Therefore zero it up front, then use text properties to restore the default value outside
       ;;; of indent blinds.
 
-
-  ;; No-break-space display (Unicode A0)
-  ;; ──────────────────────
-  (setq-local nobreak-char-display nil); Default application of standard face `nobreak-space`. [SF]
-     ;;; Defeat it, because it applies the face by a method unamenable to override in `brec-keywords`.
-     ;;; Instead let Breccia Mode face these characters using standard, Font Lock methods.
-
-  ;; Seamless jointing of semigraphics in indent blinds (early part)
-  ;; ─────────────────────────────────
-  (setq-local font-lock-extra-managed-props '(line-spacing))
-
-  ;; Paragraph detection and transit
-  ;; ───────────────────────────────
-  (setq-local paragraph-start brec-body-segment-start-pattern); [PBD]
-  (setq-local paragraph-separate "^ *\\(?:\u00A0.*\\|\\\\+\\( +.*\\)?\\)?$"); [CCP, PBD]
-    ;;; Indent blinds, comment blocks and blank lines, that is.
-  (let ((m brec-mode-map))
-    (define-key m [remap backward-paragraph] #'brec-backward)
-    (define-key m [remap forward-paragraph] #'brec-forward))
-
   ;; Font Lock integration
   ;; ─────────────────────
 ;;; (brec-set-for-buffer 'font-lock-multiline t)
@@ -1425,7 +1405,27 @@ and URL ‘http://reluk.ca/project/Breccia/Emacs/’."
     ;;; The alternative to `font-lock-extend-region-functions`, namely the little used
     ;;; `font-lock-extend-after-change-region-function`, appears to be a design error.
     ;;; https://lists.gnu.org/archive/html/bug-gnu-emacs/2015-03/msg00818.html
-  (brec-set-for-buffer 'font-lock-defaults '(brec-keywords)))
+  (brec-set-for-buffer 'font-lock-defaults '(brec-keywords))
+
+
+  ;; No-break-space display (Unicode A0)
+  ;; ──────────────────────
+  (setq-local nobreak-char-display nil); Default application of standard face `nobreak-space`. [SF]
+     ;;; Defeat it, because it applies the face by a method unamenable to override in `brec-keywords`.
+     ;;; Instead let Breccia Mode face these characters using standard, Font Lock methods.
+
+  ;; Paragraph detection and transit
+  ;; ───────────────────────────────
+  (setq-local paragraph-start brec-body-segment-start-pattern); [PBD]
+  (setq-local paragraph-separate "^ *\\(?:\u00A0.*\\|\\\\+\\( +.*\\)?\\)?$"); [CCP, PBD]
+    ;;; Indent blinds, comment blocks and blank lines, that is.
+  (let ((m brec-mode-map))
+    (define-key m [remap backward-paragraph] #'brec-backward)
+    (define-key m [remap forward-paragraph] #'brec-forward))
+
+  ;; Seamless jointing of semigraphics in indent blinds (early part)
+  ;; ─────────────────────────────────
+  (setq-local font-lock-extra-managed-props '(line-spacing)))
 
 
 
