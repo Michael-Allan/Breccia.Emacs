@@ -1406,6 +1406,23 @@ and URL ‘http://reluk.ca/project/Breccia/Emacs/’."
   ;; I. Early set-up
   ;; ═══════════════
 
+  ;; Character syntax
+  ;; ────────────────
+  (let ((s brec-mode-syntax-table))
+    (modify-syntax-entry ?\u2060 "$\u2060" s); Paired-delimiter syntax on in-line
+    (modify-syntax-entry ?･      "$･"      s); and block mathematic delimiters;
+    (modify-syntax-entry ?`      "$`"      s); regular-expression pattern delimiters;
+    (modify-syntax-entry ?\'     "$'"      s); ASCII single
+    (modify-syntax-entry ?\"     "$\""     s); and double quotes.
+ ;;;(modify-syntax-entry ?\‘     "$’"      s); ← The same syntax on symmetric single quotes, however,
+ ;;;(modify-syntax-entry ?\’     "$‘"      s);   fails to enable `forward-sexp` between each pair
+ ;;;(modify-syntax-entry ?\“     "$”"      s); ← (though oddly it succeeds on double quotes).
+ ;;;(modify-syntax-entry ?\”     "$“"      s);   Therefore do the following instead.
+    (modify-syntax-entry ?\‘     "(’"      s); Parenthetic syntax
+    (modify-syntax-entry ?\’     ")‘"      s); on symmetric single
+    (modify-syntax-entry ?\“     "(”"      s); and double quotes.
+    (modify-syntax-entry ?\”     ")“"      s))
+
   ;; Font Lock integration
   ;; ─────────────────────
 ;;; (brec-set-for-buffer 'font-lock-multiline t)
@@ -1417,7 +1434,6 @@ and URL ‘http://reluk.ca/project/Breccia/Emacs/’."
     ;;; `font-lock-extend-after-change-region-function`, appears to be a design error.
     ;;; https://lists.gnu.org/archive/html/bug-gnu-emacs/2015-03/msg00818.html
   (brec-set-for-buffer 'font-lock-defaults '(brec-keywords))
-
 
   ;; No-break-space display (Unicode A0)
   ;; ──────────────────────
