@@ -1298,8 +1298,10 @@ Point must not lie at the start of a body segment or the result is undefined."
 
 
 (defun brec-set-for-buffer (variable value)
-  "Set VARIABLE (a symbol) to VALUE.
-Signal an error if the setting is not buffer local."
+  "Set buffer-local VARIABLE (a symbol) to VALUE.
+Signal an error if the binding is not actually buffer-local.
+This might happen, for example, if an externally defined VARIABLE
+that was documented as being buffer-local no longer is."
   (set variable value)
   (cl-assert (local-variable-p variable)))
 
