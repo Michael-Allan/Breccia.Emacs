@@ -1445,9 +1445,10 @@ and URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 
   ;; Paragraph detection and transit
   ;; ───────────────────────────────
-  (setq-local paragraph-start brec-body-segment-start-pattern); [PBD]
-  (setq-local paragraph-separate "^ *\\(?:\u00A0.*\\|\\\\+\\( +.*\\)?\\)?$"); [CCP, PBD]
-    ;;; Indent blinds, comment blocks and blank lines, that is.
+  (setq-local
+   paragraph-start brec-body-segment-start-pattern; [PBD]
+   paragraph-separate "^ *\\(?:\u00A0.*\\|\\\\+\\( +.*\\)?\\)?$"); [CCP, PBD]
+     ;;; Indent blinds, comment blocks and blank lines, that is.
   (let ((m brec-mode-map))
     (define-key m [remap backward-paragraph] #'brec-backward)
     (define-key m [remap forward-paragraph] #'brec-forward))
