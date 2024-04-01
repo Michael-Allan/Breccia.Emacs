@@ -90,6 +90,16 @@ of a gap without having to matching the whole of it, which could be lengthy.")
 
 
 
+(defconst brec-math-block-delimiter-char ?･; Halfwidth katakana middle dot (FF65).
+  "The delimiter character for block-form mathematics.")
+
+
+
+(defconst brec-math-inline-delimiter-char ?\u2060; Word joiner.
+  "The delimiter character for in-line mathematics.")
+
+
+
 (defconst brec-pattern-matcher-pattern "`\\(?:\\\\.\\|[^\n\\`]\\)+`[isp]*";  [PMP]
   ;;                                    ╵     └────┘  └──────┘    ╵└────┘
   ;;                                    Q       BC       NQ       Q   M
@@ -1040,7 +1050,9 @@ predecessor.  See also ‘brec-is-divider-segment’ and
    ;; ═════════════════════
 
    (list; Face mathematics by appending face `brec-math-inline` or `brec-math-block`.
-    (let (is-block match-beg match-end)
+    (let ((dd (concat (char-to-string brec-math-block-delimiter-char)
+                      (char-to-string brec-math-inline-delimiter-char)))
+          is-block match-beg match-end)
       (lambda (limit)
         (setq match-beg (point)); Presumptively.
         (catch 'to-reface
@@ -1049,8 +1061,9 @@ predecessor.  See also ‘brec-is-divider-segment’ and
               ;;; Now mimic in the expression matcher that follows the behaviour of Breccia Web Imager
               ;;; (which never renders a math expression across a granal boundary) by restricting
               ;;; the matcher to the monoface sequence of text that ends at `match-end`. [↑FF]
-            (when (re-search-forward "\\([･\u2060]\\)\\(?:\\([^･\u2060]+\\)\\(\\1\\)\\)?" match-end t)
-              (setq is-block (string= (match-string 1) "･"))
+            (when (re-search-forward
+                   (concat "\\([" dd "]\\)\\(?:\\([^" dd "]+\\)\\(\\1\\)\\)?") match-end t)
+              (setq is-block (eq (string-to-char (match-string 1)) brec-math-block-delimiter-char))
               (setq brec-f; The delimiter face.
                    (if (match-end 2)
                        (if is-block 'brec-math-block-delimiter
@@ -1082,25 +1095,25 @@ See URL ‘http://reluk.ca/project/Breccia/Web/imager/bin/breccia-web-image.brec
 
 
 (defface brec-math-block `((t . (:inherit brec-math)))
-  "The face for a block (aka display) mathematic expression."
+  "The face for block-form (aka display) mathematics."
   :group 'brec)
 
 
 
 (defface brec-math-block-delimiter `((t . (:inherit brec-command-descriptor)))
-  "The face for the delimiters of block expressions."
+  "The face for the delimiters of block-form mathematics."
   :group 'brec)
 
 
 
 (defface brec-math-block-delimiter-error `((t . (:inherit font-lock-warning-face :weight normal)))
-  "The face for the delimiters of malformed (empty or open) block expressions."
+  "The face for the delimiters of malformed (empty or open) block-form mathematics."
   :group 'brec)
 
 
 
 (defface brec-math-inline `((t . (:inherit brec-math)))
-  "The face for an in-line mathematic expression."
+  "The face for in-line mathematics."
   :group 'brec)
 
 
@@ -1408,34 +1421,48 @@ and URL ‘http://reluk.ca/project/Breccia/Emacs/’."
   ;; I. Early set-up
   ;; ═══════════════
 
-  ;; Character syntax
-  ;; ────────────────
-  (let ((s brec-mode-syntax-table))
-    (modify-syntax-entry ?\u2060 "$\u2060" s); Paired-delimiter syntax on in-line
-    (modify-syntax-entry ?･      "$･"      s); and block mathematic delimiters;
-    (modify-syntax-entry ?`      "$`"      s); regular-expression pattern delimiters;
-    (modify-syntax-entry ?\'     "$'"      s); ASCII single
-    (modify-syntax-entry ?\"     "$\""     s); and double quotes.
- ;;;(modify-syntax-entry ?\‘     "$’"      s); ← The same syntax on symmetric single quotes, however,
- ;;;(modify-syntax-entry ?\’     "$‘"      s);   fails to enable `forward-sexp` between each pair
- ;;;(modify-syntax-entry ?\“     "$”"      s); ← (though oddly it succeeds on double quotes).
- ;;;(modify-syntax-entry ?\”     "$“"      s);   Therefore do the following instead.
-    (modify-syntax-entry ?\‘     "(’"      s); Parenthetic syntax
-    (modify-syntax-entry ?\’     ")‘"      s); on symmetric single
-    (modify-syntax-entry ?\“     "(”"      s); and double quotes.
-    (modify-syntax-entry ?\”     ")“"      s))
+  (let ((b (char-to-string brec-math-block-delimiter-char))
+        (i (char-to-string brec-math-inline-delimiter-char)))
 
-  ;; Font Lock integration
-  ;; ─────────────────────
-;;; (brec-set-for-buffer 'font-lock-multiline t)
-;;;;;;; It seems unnecessary and the description for `font-lock-multiline` does not imply otherwise.
-    ;;; It might become necessary if fontification ever demands a rapid response to changes
-    ;;; on subsequent lines.  Meantime it seems `brec-extend-search` alone suffices:
-  (add-hook 'font-lock-extend-region-functions #'brec-extend-search t t)
-    ;;; The alternative to `font-lock-extend-region-functions`, namely the little used
-    ;;; `font-lock-extend-after-change-region-function`, appears to be a design error.
-    ;;; https://lists.gnu.org/archive/html/bug-gnu-emacs/2015-03/msg00818.html
-  (brec-set-for-buffer 'font-lock-defaults '(brec-keywords))
+    ;; Character syntax
+    ;; ────────────────
+    (let ((s brec-mode-syntax-table)
+          (sb (concat "$" b))
+          (si (concat "$" i)))
+      (modify-syntax-entry        ?\' "$'"  s); Paired-delimiter syntax on ASCII single
+      (modify-syntax-entry        ?\" "$\"" s); and double quotes,
+      (modify-syntax-entry        ?`  "$`"  s); regular-expression pattern delimiters,
+      (modify-syntax-entry
+       brec-math-block-delimiter-char  si   s); plus the delimiters for in-line
+      (modify-syntax-entry                  ;;; and block-form mathematics.
+       brec-math-inline-delimiter-char sb   s)
+  ;;; (modify-syntax-entry        ?\‘ "$’"  s); ← The same syntax on symmetric single quotes, however,
+  ;;; (modify-syntax-entry        ?\’ "$‘"  s);   fails to enable `forward-sexp` between each pair
+  ;;; (modify-syntax-entry        ?\“ "$”"  s); ← (though oddly it succeeds on double quotes).
+  ;;; (modify-syntax-entry        ?\” "$“"  s);   Therefore do the following instead.
+      (modify-syntax-entry        ?\‘ "(’"  s); Parenthetic syntax
+      (modify-syntax-entry        ?\’ ")‘"  s); on symmetric single
+      (modify-syntax-entry        ?\“ "(”"  s); and double quotes.
+      (modify-syntax-entry        ?\” ")“"  s))
+
+    ;; Font Lock integration
+    ;; ─────────────────────
+  ;;; (brec-set-for-buffer 'font-lock-multiline t)
+  ;;;;;;; It seems unnecessary and the description for `font-lock-multiline` does not imply otherwise.
+      ;;; It might become necessary if fontification ever demands a rapid response to changes
+      ;;; on subsequent lines.  Meantime it seems `brec-extend-search` alone suffices:
+    (add-hook 'font-lock-extend-region-functions #'brec-extend-search t t)
+      ;;; The alternative to `font-lock-extend-region-functions`, namely the little used
+      ;;; `font-lock-extend-after-change-region-function`, appears to be a design error.
+      ;;; https://lists.gnu.org/archive/html/bug-gnu-emacs/2015-03/msg00818.html
+    (brec-set-for-buffer 'font-lock-defaults '(brec-keywords))
+
+    ;; `math-preview` integration
+    ;; ──────────────────────────
+    (when (package-installed-p 'math-preview)
+      (setq-local
+       math-preview-tex-marks        (list (list b b 0 nil nil))
+       math-preview-tex-marks-inline (list (list i i 0 nil nil)))))
 
   ;; No-break-space display (Unicode A0)
   ;; ──────────────────────
