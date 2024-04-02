@@ -1460,9 +1460,8 @@ and URL ‘http://reluk.ca/project/Breccia/Emacs/’."
     ;; `math-preview` integration
     ;; ──────────────────────────
     (when (package-installed-p 'math-preview)
-      (setq-local
-       math-preview-tex-marks        (list (list b b 0 nil nil))
-       math-preview-tex-marks-inline (list (list i i 0 nil nil)))))
+      (setq-local math-preview-tex-marks        (list (list b b 0 nil nil))
+                  math-preview-tex-marks-inline (list (list i i 0 nil nil)))))
 
   ;; No-break-space display (Unicode A0)
   ;; ──────────────────────
