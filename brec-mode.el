@@ -491,15 +491,7 @@ was required, non-nil otherwise."
 
 
 
-(defface brec-forbidden-whitespace; Cf. `brec-transparent-error`.
-  `((t . (:inherit (font-lock-warning-face nobreak-space))))
-  ;; This inheritance list aims to add the attributes of warning face to those of `nobreak-space`,
-  ;; so treating the latter as the common attributes for whitespace that should be made visible.
-  ;; The addition of the warning attributes can fail with certain user customizations, though it tends
-  ;; to fail gracefully.  E.g. if the user removes the underline from `nobreak-space` and instead sets
-  ;; a background colour — as opposed to the nicer way of setting inverse video — then any misplaced
-  ;; no-break space might appear without its warning colour, which by default is a foreground color.
-  ;; Other forbidden whitespace, however, would at least be made visible.
+(defface brec-forbidden-whitespace `((t . (:inherit brec-transparent-error)))
   "The face for a misplaced no-break space or disallowed whitespace character."
   :group 'brec)
 
@@ -1371,9 +1363,8 @@ Cf. ‘brec-task-bullet-singleton’."
 
 
 
-(defface brec-transparent-error; Cf. `brec-forbidden-whitespace`.
-  `((t . (:inherit font-lock-warning-face :inverse-video t)))
-  "An error face for characters whose glyphs are transparent, such as whitepace."
+(defface brec-transparent-error `((t . (:inherit font-lock-warning-face :inverse-video t)))
+  "An error face for characters whose glyphs are normally transparent, such as whitepace."
   :group 'brec)
 
 
