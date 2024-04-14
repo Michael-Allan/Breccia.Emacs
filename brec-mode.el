@@ -1033,7 +1033,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
           (when found; The character to fontify is just before `p`.
             (set-match-data (list (1- p) (goto-char p) (current-buffer)))
             t)))); Returning t to Font Lock if `found`, else nil.
-    '(0 (list 'face 'default  'line-spacing brec--line-spacing-default)))
+    '(0 (list  'face nil  'line-spacing brec--line-spacing-default))); [NF]
 
 
 
@@ -1515,6 +1515,10 @@ and URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;;
 ;;   NCE  Not `char-equal` or `=`, which fail if the position is out of bounds.
 ;;        Rather `eq` which instead gives nil in that case.
+;;
+;;   NF · In a search-based fontifier, a nil value for the `face` property of a list-form *facespec*
+;;        has the (undocumented) effect of leaving the face property untouched at its present value.
+;;        https://www.gnu.org/software/emacs/manual/html_node/elisp/Search_002dbased-Fontification.html
 ;;
 ;;   OCA  Overrides in comment-appender fontification.  The fontifier must override (t) any facing
 ;;        of the appender’s containing head, and must therefore follow it in `brec-keywords`.
