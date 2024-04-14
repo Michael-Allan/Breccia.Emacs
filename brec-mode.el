@@ -1073,9 +1073,9 @@ predecessor.  See also ‘brec-is-divider-segment’ and
 
 
 
-(defvar brec--line-spacing-default); The line spacing that would have been in effect had it not been
-  ;;; zeroed in the present mode’s after-hook, or nil if there would have been none.  This is never
-  ;;; zero, so a simple nil test suffices to determine whether real spacing would have been in effect.
+(defvar brec--line-spacing-default); The line spacing that would have applied had it not been zeroed
+  ;;; in the present mode’s after-hook, or nil if none would have applied.  Its value is never zero;
+  ;;; a simple nil test suffices to determine whether positive spacing would have applied.
 
 
 
