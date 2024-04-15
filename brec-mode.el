@@ -1318,8 +1318,8 @@ See also ‘brec-gap-pattern’.");
 
 
 (defun brec-t (&rest _args)
-  "Ignore any arguments and return t.
-In other words, do the opposite of ‘ignore’."
+  "Ignore _ARGUMENTS, do nothing, and return t.
+Cf. ‘ignore’ which instead returns nil."
   t)
 
 
