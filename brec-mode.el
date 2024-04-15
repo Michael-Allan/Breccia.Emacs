@@ -153,13 +153,13 @@ Cf. ‘brec-alarm-bullet-singleton’ and ‘brec-alarm-bullet-terminator’."
 
 
 (defface brec-alarm-bullet-singleton `((t . (:inherit brec-alarm-bullet)))
-  "The face for an alarm bullet that comprises ‘!!’ alone."
+  "The face for an alarm bullet that comprises \\=`!!\\=` alone."
   :group 'brec)
 
 
 
 (defface brec-alarm-bullet-terminator `((t . (:inherit font-lock-comment-face)))
-  "The face for the bullet terminator ‘!!’ of an alarm point.
+  "The face for the bullet terminator \\=`!!\\=` of an alarm point.
 Cf. ‘brec-alarm-bullet-singleton’."
   :group 'brec)
 
@@ -286,7 +286,7 @@ See also ‘brec-segment-end’ and ‘brec-body-segment-start-pattern-unanchore
 
 (defconst brec-body-segment-start-pattern-unanchored
   (substring-no-properties brec-body-segment-start-pattern 1)
-  "Pattern ‘brec-body-segment-start-pattern’ without the leading anchor ‘^’.")
+  "Pattern ‘brec-body-segment-start-pattern’ without the leading anchor \\=`^\\=`.")
 
 
 
@@ -324,11 +324,11 @@ This applies to alarm, task and plain bullets."
 
 (defvar brec-command-matcher-components
   (let ((end brec-term-end-boundary-pattern); To reject any command directly followed by further
-          ;;; term characters, e.g. the misplaced delimiter ‘:’ of an appendage clause.
+          ;;; term characters, e.g. the misplaced delimiter \\=`:\\=` of an appendage clause.
         (gap brec-gap-pattern))
     (list
-     "^ \\{4\\}*: +\\(?:privately +\\)?\\(?:"; Anchoring on the perfectly indented (PI) bullet ‘:’,
-     ;; ┈──────┘          so precluding a match that begins instead with an appendage delimiter ‘:’.
+     "^ \\{4\\}*: +\\(?:privately +\\)?\\(?:"; Anchoring on the perfectly indented (PI) bullet `:`,
+     ;; ┈──────┘          so precluding a match that begins instead with an appendage delimiter `:`.
      ;;    PI
 
      ;; Afterlinker
@@ -659,7 +659,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
    ;; Command point
    ;; ═════════════
 
-   (list; A command point starts with a perfectly indented (PI) bullet comprising one colon ‘:’.
+   (list; A command point starts with a perfectly indented (PI) bullet comprising one colon `:`.
     "^ \\{4\\}*\\(:\\) +[^ \n\\]"; (1) Anchoring on the bullet, initial space separator and first
     ;; ┈──────┘    character of the following term.  Assume that no term starts with a backslash,
     ;;    PI       so saving the cost of distinguishing it from a comment appender.
@@ -671,7 +671,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
     (list; (3, anchored highlighter) Always a descriptor follows the bullet,
      "\\(\\(?:.\\|\n\\)+\\)"; extending thence to the end of the point head.
      '(progn; (2, pre-form)
-        (goto-char (match-end 1)); Starting from the end boundary of the bullet ‘:’.
+        (goto-char (match-end 1)); Starting from the end boundary of the bullet `:`.
         (setq
          brec-f (match-beginning 0)  ; Saving the start boundary of the present fractal segment
          brec-g (1- (match-end 0))   ; and the end boundaries both of the initial space separator
@@ -692,7 +692,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
      nil '(1 'brec-pattern-delimiter t) '(2 'brec-pattern t) '(3 'brec-pattern-delimiter t)
      '(4 'brec-pattern-match-modifier t t))
 
-    ;; Context operators ‘@’
+    ;; Context operators `@`
     ;; ─────────────────
     (list; (7, anchored highlighter)
      (lambda (limit)
@@ -704,7 +704,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
                          brec-succeeding-gap-character-pattern)
                  limit t)
            (let ((face (get-text-property (match-beginning 0) 'face)))
-             (unless (eq face 'brec-pattern); Not to accept ‘@’ characters that form pattern content.
+             (unless (eq face 'brec-pattern); Not to accept `@` characters that form pattern content.
                (throw 'to-reface t))))
          nil))
      '(progn; (6, pre-form)
@@ -712,7 +712,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
         brec-x); again extend the search region over the whole descriptor.
      nil '(1 'brec-command-operator t))
 
-    ;; Appendage delimiter ‘:’ and content
+    ;; Appendage delimiter `:` and content
     ;; ───────────────────
     (list; (9, anchored highlighter)
      (lambda (limit)
@@ -726,7 +726,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
            (let* ((m1-beg (match-beginning 0))
                   (m1-end (point))
                   (face (get-text-property m1-beg 'face)))
-             (unless (eq face 'brec-pattern); Not to accept ‘:’ characters that form pattern content.
+             (unless (eq face 'brec-pattern); Not to accept `:` characters that form pattern content.
                (set-match-data (list m1-beg limit
                                      m1-beg m1-end m1-end (goto-char limit) (current-buffer)))
                (throw 'to-reface t))))
@@ -741,7 +741,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
     (list; (11, anchored highlighter)
      (mapconcat #'identity brec-command-matcher-components ""); Joining all components to one string.
      '(progn; (10, pre-form)
-        (goto-char brec-f); Starting this time from the bullet ‘:’ itself,
+        (goto-char brec-f); Starting this time from the bullet `:` itself,
         brec-x); again extend the search region over the whole descriptor.
      nil
      '(1 'brec-command-operator t t) '(2 'brec-command-operator t t) '(3 'brec-command-operator t t)
@@ -845,8 +845,8 @@ predecessor.  See also ‘brec-is-divider-segment’ and
 
             (let ((end m1-end)); Trim from the match any unwanted end boundary missed above.
                ;;; It is either the start of a descriptor that starts with a comment appender
-               ;;; (regular-expression pattern ‘ +\\+’) or a sequence of trailing space
-               ;;; at end of the line (‘ +$’).  Trim it thus:
+               ;;; (regular-expression pattern ` +\\+`) or a sequence of trailing space
+               ;;; at end of the line (` +$`).  Trim it thus:
               (while (= (char-before end) ?\\); For any trailing backslashes captured,
                 (setq end (1- end)))          ; scan backward past them.
               (while (= (char-before end) ?\s); For any trailing space characters,
@@ -1339,13 +1339,13 @@ Cf. ‘brec-task-bullet-singleton’ and ‘brec-task-bullet-terminator’."
 
 
 (defface brec-task-bullet-singleton `((t . (:inherit brec-task-bullet)))
-  "The face for a task bullet that comprises ‘+’ alone."
+  "The face for a task bullet that comprises \\=`+\\=` alone."
   :group 'brec)
 
 
 
 (defface brec-task-bullet-terminator `((t . (:inherit font-lock-comment-face)))
-  "The face for the bullet terminator ‘+’ of a non-singleton task point.
+  "The face for the bullet terminator \\=`+\\=` of a non-singleton task point.
 Cf. ‘brec-task-bullet-singleton’."
   :group 'brec)
 
@@ -1484,8 +1484,8 @@ and URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;;        and convention dictates that package names take the same prefix.  Likewise file names
 ;;        in cases where the package comprises a single file.
 ;;            Moreover `package-lint-current-buffer` assumes this convention and would complain under
-;;        package name `breccia-mode` in regard to each symbol prefixed `brec-` that it ‘doesn't start
-;;        with package's prefix "breccia".’  Apparently there is no way to silence such complaints.
+;;        package name `breccia-mode` in regard to each symbol prefixed `brec-` that it ‹doesn't start
+;;        with package's prefix "breccia".›  Apparently there is no way to silence such complaints.
 ;;
 ;;   BUG  This code is incorrect.
 ;;
@@ -1531,7 +1531,7 @@ and URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;;   PBD  Paragraph boundary definition.  It is used by the command `fill-paragraph`, for instance
 ;;        (though not by the Breccian equivalents of `backward-paragraph` and `forward-paragraph`,
 ;;        namely `brec-backward` and `brec-forward`, to which the keys of the former are remapped).
-;;            The manual says it “should not use ‘^’ to anchor the match”; yet without that anchor,
+;;            The manual says it “should not use `^` to anchor the match”; yet without that anchor,
 ;;        `fill-paragraph` fails, instead collapsing each paragraph (fractal head) to a single line.
 ;;        https://www.gnu.org/software/emacs/manual/html_node/elisp/Standard-Regexps.html
 ;;
