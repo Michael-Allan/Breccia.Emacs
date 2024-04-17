@@ -16,14 +16,14 @@
 
 ;;; Commentary:
 
-;;   This package introduces a major mode (`brec-mode`) for editing Breccia.
+;;   This package implements Brec Mode, a major mode for editing Breccia.
 ;;   Breccia is a lightweight markup language for point-form outlining and drafting.
 ;;   For more information, see `http://reluk.ca/project/Breccia/`
 ;;   and `http://reluk.ca/project/Breccia/Emacs/`.
 ;;
 ;; Installation
 ;;
-;;   If you install this package from MELPA using a package manager, then already `brec-mode` should
+;;   If you install this package from MELPA using a package manager, then already Brec Mode should
 ;;   activate for any `.brec` file you load.  Alternatively you may want to install the mode manually:
 ;;
 ;;       1. Put a copy of the file `brec-mode.el` on your load path.
@@ -46,14 +46,14 @@
 ;;   If you set a `line-spacing` other than zero, then the `line-spacing` will snap back to zero for any
 ;;   line that pushes past the right edge of the window, causing the text to bounce in the buffer as you
 ;;   edit it.  [http://reluk.ca/project/Breccia/Emacs/notes.brec.xht#bounces,whenever,newline]
-;;   The workaround is to zero the `line-spacing` for your Breccia Mode buffers.  For example,
+;;   The workaround is to zero the `line-spacing` for your Brec Mode buffers.  For example,
 ;;   put this in your initialization file:
 ;;
 ;;      (add-hook 'brec-mode-hook (lambda () (setq line-spacing 0)))
 ;;
 ;; Customization
 ;;
-;;   To see a list of customizeable faces, enter a `brec-mode` buffer (or otherwise load `brec-mode`)
+;;   To see a list of customizeable faces, enter a Brec Mode buffer (or otherwise load Brec Mode)
 ;;   and type `M-x customize-group <RET> brec <RET>`.  Alternatively, look through the `defface`
 ;;   definitions of file `brec-mode.el`.
 ;;
@@ -64,7 +64,7 @@
 
 ;;; Code:
 
-;; For anyone coding a derivation of Breccia Mode, see `brec-command-matcher-components`.
+;; For anyone coding a derivation of Brec Mode, see `brec-command-matcher-components`.
 
 
 (eval-when-compile (require 'cl-lib)); Built into Emacs since version 24.3.
@@ -131,7 +131,7 @@ This is either a space or a line end.");
 
 
 (defgroup brec nil
-  "A major mode for editing Breccian text."
+  "A major mode for editing Breccia."
   :group 'text :group 'faces
   :prefix "brec-"
   :link '(url-link "http://reluk.ca/project/Breccia/Emacs/"))
@@ -1382,7 +1382,7 @@ Cf. ‘brec-task-bullet-singleton’."
 
 
 ;;;###autoload
-(define-derived-mode brec-mode text-mode; [BM]
+(define-derived-mode brec-mode text-mode
   "Breccia"
   "A major mode for editing Breccia.
 Breccia is a lightweight markup language for point-form outlining and drafting.
@@ -1457,7 +1457,7 @@ and URL ‘http://reluk.ca/project/Breccia/Emacs/’."
   ;; ──────────────────────
   (setq-local nobreak-char-display nil); Default application of standard face `nobreak-space`. [SF]
      ;;; Defeat it, because it applies the face by a method unamenable to override in `brec-keywords`.
-     ;;; Instead let Breccia Mode face these characters using standard, Font Lock methods.
+     ;;; Instead let Brec Mode face these characters using standard, Font Lock methods.
 
   ;; Paragraph detection and transit
   ;; ───────────────────────────────
@@ -1475,18 +1475,11 @@ and URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 
 
 
-(provide 'brec-mode); [BM]
+(provide 'brec-mode)
 
 
 ;; NOTES
 ;; ─────
-;;   BM · Package name `brec-mode`, as opposed to `breccia-mode`.  Symbol names are prefixed `brec-`
-;;        and convention dictates that package names take the same prefix.  Likewise file names
-;;        in cases where the package comprises a single file.
-;;            Moreover `package-lint-current-buffer` assumes this convention and would complain under
-;;        package name `breccia-mode` in regard to each symbol prefixed `brec-` that it ‹doesn't start
-;;        with package's prefix "breccia".›  Apparently there is no way to silence such complaints.
-;;
 ;;   BUG  This code is incorrect.
 ;;
 ;;   CCP  Comment-carriage pattern.  Marking an instance of a pattern or anti-pattern related to
