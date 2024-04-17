@@ -26,7 +26,7 @@
 ;;   If you install this package from MELPA using a package manager, then already `brec-mode` should
 ;;   activate for any `.brec` file you load.  Alternatively you may want to install the mode manually:
 ;;
-;;       1. Put a copy of `brec-mode.el` on your load path.
+;;       1. Put a copy of the file `brec-mode.el` on your load path.
 ;;          https://www.gnu.org/software/emacs/manual/html_node/elisp/Library-Search.html
 ;;
 ;;       2. Optionally compile that copy.  E.g. load it into an Emacs buffer and type
@@ -55,7 +55,7 @@
 ;;
 ;;   To see a list of customizeable faces, enter a `brec-mode` buffer (or otherwise load `brec-mode`)
 ;;   and type `M-x customize-group <RET> brec <RET>`.  Alternatively, look through the `defface`
-;;   definitions in `brec-mode.el`.
+;;   definitions of file `brec-mode.el`.
 ;;
 ;;   For reference, a working example of customization is available:
 ;;
