@@ -52,9 +52,9 @@
 ;;
 ;; Customization
 ;;
-;;   To see a list of customizeable faces, enter a Brec Mode buffer, or otherwise load Brec Mode,
-;;   and type `M-x customize-group <RET> brec <RET>`.  Alternatively, look through the `defface`
-;;   definitions of file `brec-mode.el`.
+;;   To see a list of customizeable faces and variables, enter a Brec Mode buffer, or otherwise load
+;;   Brec Mode, and type `M-x customize-group <RET> brec <RET>`.  Alternatively, look through
+;;   the `defcustom` and `defface` definitions of file `brec-mode.el`.
 ;;
 ;;   For a working example, see:
 ;;
@@ -1354,6 +1354,25 @@ Cf. ‘brec-task-bullet-singleton’."
   :group 'brec)
 
 
+(defcustom brec-to-collapse-indent-blinds nil
+  "Whether to collapse the line spacing of indent blinds to zero.
+This can be useful to enable seamless jointing of semigraphics
+such as box-drawing characters.
+
+When t, any ‘line-spacing’ in effect for the buffer is zeroed then selectively
+restored outside of indent blinds using the \\=`line-spacing\\=` text property.
+Note however that this restoration works only for lines that fit the width of
+the display window without truncation.  Longer lines will get the same (zero)
+line spacing as indent blinds.  This can be annoying.  Therefore you may want
+to limit the scope of this option by setting it as a file variable just where
+it is needed."
+  :group 'brec
+  :link '(url-link
+          "https://www.gnu.org/software/emacs/manual/html_node/emacs/Specifying-File-Variables.html")
+  :safe #'booleanp
+  :type 'boolean)
+
+
 
 (defface brec-transparent-error `((t . (:inherit font-lock-warning-face :inverse-video t)))
   "An error face for characters whose glyphs are normally transparent, such as whitepace."
@@ -1391,14 +1410,15 @@ and URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 
     ;; Seamless jointing of semigraphics in indent blinds
     ;; ─────────────────────────────────
-    (let ((s (or line-spacing (frame-parameter nil 'line-spacing))))
-      (when (and s (/= 0 s))
-        (brec-set-for-buffer 'line-spacing 0); Text properties can enlarge it only, they cannot zero it.
-          ;;; Therefore zero it up front, then use text properties to restore the default value outside
-          ;;; of indent blinds:
-        (make-local-variable 'font-lock-extra-managed-props)
-        (add-to-list 'font-lock-extra-managed-props 'line-spacing)
-        (font-lock-add-keywords nil (list (brec--keyword-to-restore-line-spacing s)) 'append)))); [↑FF]
+    (when brec-to-collapse-indent-blinds
+      (let ((s (or line-spacing (frame-parameter nil 'line-spacing))))
+        (when (and s (/= 0 s)); Text properties can enlarge line spacing only, they cannot zero it.
+          (brec-set-for-buffer 'line-spacing 0); Therefore zero it for the whole buffer, then
+            ;;; selectively restore it outside of indent blinds using the namesake text property:
+          (make-local-variable 'font-lock-extra-managed-props)
+          (add-to-list 'font-lock-extra-managed-props 'line-spacing)
+          (font-lock-add-keywords
+           nil (list (brec--keyword-to-restore-line-spacing s)) 'append))))); [↑FF]
 
 
 
