@@ -1010,31 +1010,6 @@ predecessor.  See also ‘brec-is-divider-segment’ and
     '(0 brec-f prepend)); Prepended only in case the original face is ever wanted.
 
 
-   (cons; Selectively restore (outside of indent blinds) the line spacing earlier zeroed.
-    (lambda (limit)
-      (defvar brec--line-spacing-default); [FV]
-      (when brec--line-spacing-default; Then restoration is needed.
-        (let ((p (point))
-              c face found in-blind)
-          (while (and (not found) (< p limit))
-            (setq c (char-after p))
-            (cond
-             ((= c ?\u00A0)
-              (setq face (get-text-property p 'face))
-              (when (and (listp face) (memq 'brec-indent-blind-delimiter face))
-                  ;;; Here `face` would be a list, having been set using `prepend`, q.v. further above.
-                (setq in-blind t)))
-             ((= c ?\n)
-              (if in-blind; Then keep going, seeking one that is outside a blind.
-                  (setq in-blind nil)
-                (setq found t)))); Else (being outside a blind) restore the line spacing.
-            (setq p (1+ p)))
-          (when found; The character to fontify is just before `p`.
-            (set-match-data (list (1- p) (goto-char p) (current-buffer)))
-            t)))); Returning t to Font Lock if `found`, else nil.
-    '(0 (list  'face nil  'line-spacing brec--line-spacing-default))); [NF]
-
-
 
    ;; ═════════════════════
    ;; Mathematic expression  [↑FF, ME]
@@ -1071,9 +1046,28 @@ predecessor.  See also ‘brec-is-divider-segment’ and
 
 
 
-(defvar brec--line-spacing-default); The line spacing that would have applied had it not been zeroed
-  ;;; in the present mode’s after-hook, or nil if none would have applied.  Its value is never zero;
-  ;;; a simple nil test suffices to determine whether positive spacing would have applied.
+(defun brec--keyword-to-restore-line-spacing (original-value); [↑FF]
+  (cons; Selectively restore (outside of indent blinds) the line spacing earlier zeroed.
+   (lambda (limit)
+     (let ((p (point))
+           c face found in-blind)
+       (while (and (not found) (< p limit))
+         (setq c (char-after p))
+         (cond
+          ((= c ?\u00A0)
+           (setq face (get-text-property p 'face))
+           (when (and (listp face) (memq 'brec-indent-blind-delimiter face)); Here `face`
+               ;;; would be a list, having been set using `prepend`, q.v. further above. [↑FF]
+             (setq in-blind t)))
+          ((= c ?\n)
+           (if in-blind; Then keep going, seeking one that is outside a blind.
+               (setq in-blind nil)
+             (setq found t)))); Else (being outside a blind) restore the line spacing.
+         (setq p (1+ p)))
+       (when found; The character to fontify is just before `p`.
+         (set-match-data (list (1- p) (goto-char p) (current-buffer)))
+         t))); Returning t to Font Lock if `found`, else nil.
+   `(0 (list  'face nil  'line-spacing ,original-value)))); [NF]
 
 
 
@@ -1395,14 +1389,16 @@ and URL ‘http://reluk.ca/project/Breccia/Emacs/’."
     ;; II. Late set-up
     ;; ═══════════════
 
-    ;; Seamless jointing of semigraphics in indent blinds (late part)
+    ;; Seamless jointing of semigraphics in indent blinds
     ;; ─────────────────────────────────
-    (setq brec--line-spacing-default (or line-spacing (frame-parameter nil 'line-spacing)))
-    (when (and brec--line-spacing-default (= 0 brec--line-spacing-default))
-      (setq brec--line-spacing-default nil)); Honouring its contract.
-    (brec-set-for-buffer 'line-spacing 0)); Text properties can enlarge it only, they cannot zero it.
-      ;;; Therefore zero it up front, then use text properties to restore the default value outside
-      ;;; of indent blinds.
+    (let ((s (or line-spacing (frame-parameter nil 'line-spacing))))
+      (when (and s (/= 0 s))
+        (brec-set-for-buffer 'line-spacing 0); Text properties can enlarge it only, they cannot zero it.
+          ;;; Therefore zero it up front, then use text properties to restore the default value outside
+          ;;; of indent blinds:
+        (make-local-variable 'font-lock-extra-managed-props)
+        (add-to-list 'font-lock-extra-managed-props 'line-spacing)
+        (font-lock-add-keywords nil (list (brec--keyword-to-restore-line-spacing s)) 'append)))); [↑FF]
 
 
 
@@ -1466,11 +1462,7 @@ and URL ‘http://reluk.ca/project/Breccia/Emacs/’."
      ;;; Indent blinds, comment blocks and blank lines, that is.
   (let ((m brec-mode-map))
     (define-key m [remap backward-paragraph] #'brec-backward)
-    (define-key m [remap forward-paragraph] #'brec-forward))
-
-  ;; Seamless jointing of semigraphics in indent blinds (early part)
-  ;; ─────────────────────────────────
-  (setq-local font-lock-extra-managed-props '(line-spacing)))
+    (define-key m [remap forward-paragraph] #'brec-forward)))
 
 
 
