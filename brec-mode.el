@@ -140,40 +140,40 @@ This is either a space or a line end.");
 (defface brec-alarm-bullet
   `((t . (:inherit (brec-bullet font-lock-warning-face))))
   "The face for the bullet of an alarm point."
-  :group 'brec)
+  :group 'brec-point-faces)
 
 
 
 (defface brec-alarm-bullet-punctuation  `((t . (:inherit brec-alarm-bullet)))
   "The face for a non-alphanumeric character of an alarm bullet.
 Cf. ‘brec-alarm-bullet-singleton’ and ‘brec-alarm-bullet-terminator’."
-  :group 'brec)
+  :group 'brec-point-faces)
 
 
 
 (defface brec-alarm-bullet-singleton `((t . (:inherit brec-alarm-bullet)))
   "The face for an alarm bullet that comprises \\=`!!\\=` alone."
-  :group 'brec)
+  :group 'brec-point-faces)
 
 
 
 (defface brec-alarm-bullet-terminator `((t . (:inherit font-lock-comment-face)))
   "The face for the bullet terminator \\=`!!\\=` of an alarm point.
 Cf. ‘brec-alarm-bullet-singleton’."
-  :group 'brec)
+  :group 'brec-point-faces)
 
 
 
 (defface brec-aside-bullet
   `((t . (:inherit (brec-bullet brec-aside-descriptor))))
   "The face for the bullet of an aside point."
-  :group 'brec)
+  :group 'brec-point-faces)
 
 
 
 (defface brec-aside-descriptor `((t . (:inherit shadow)))
   "The face for the descriptor of an aside point."
-  :group 'brec)
+  :group 'brec-point-faces)
 
 
 
@@ -291,33 +291,33 @@ See also ‘brec-segment-end’ and ‘brec-body-segment-start-pattern-unanchore
 
 (defface brec-bullet `((t . (:inherit bold)))
   "The face for a bullet."
-  :group 'brec)
+  :group 'brec-point-faces)
 
 
 
 (defface brec-bullet-nobreak-space `((t . (:inherit brec-nobreak-space)))
   "The face for a no-break space in a free-form bullet.
 This applies to alarm, task and plain bullets."
-  :group 'brec)
+  :group 'brec-point-faces)
 
 
 
 (defface brec-command-appendage `((t . (:inherit brec-aside-descriptor)))
   "The face for the content of a command appendage."
-  :group 'brec)
+  :group 'brec-point-faces)
 
 
 
 (defface brec-command-bullet
   `((t . (:inherit (brec-bullet brec-command-descriptor))))
   "The face for the bullet of a command point."
-  :group 'brec)
+  :group 'brec-point-faces)
 
 
 
 (defface brec-command-descriptor `((t . (:inherit font-lock-builtin-face)))
   "The face for the descriptor of a command point."
-  :group 'brec)
+  :group 'brec-point-faces)
 
 
 
@@ -369,53 +369,60 @@ code and comments of this variable’s definition before attempting to do that."
 
 (defface brec-command-operator `((t . (:inherit brec-command-descriptor)))
   "The face for an operator or other key element of a command-point descriptor."
-  :group 'brec)
+  :group 'brec-point-faces)
 
 
 
 (defface brec-comment-appender `((t . (:inherit font-lock-comment-face)))
   "The face for the content of a comment appender."
-  :group 'brec)
+  :group 'brec-comment-faces)
 
 
 
 (defface brec-comment-appender-delimiter
   `((t . (:inherit font-lock-comment-delimiter-face)))
   "The face for the delimiter of a comment appender."
-  :group 'brec)
+  :group 'brec-comment-faces)
 
 
 
 (defface brec-commentary-nobreak-space
   `((t . (:inherit (brec-comment-block brec-nobreak-space))))
   "The face for a no-break space in a block comment."
-  :group 'brec)
+  :group 'brec-comment-faces)
 
 
 
 (defface brec-comment-block `((t . (:inherit font-lock-comment-face)))
   "The face for comment-block content other than a comment-block label.
 See also ‘brec-comment-block-label’."
-  :group 'brec)
+  :group 'brec-comment-faces)
 
 
 
 (defface brec-comment-block-delimiter
   `((t . (:inherit font-lock-comment-delimiter-face)))
   "The face for the delimiter of a comment block."
-  :group 'brec)
+  :group 'brec-comment-faces)
 
 
 
 (defface brec-comment-block-label `((t . (:inherit font-lock-doc-face)))
   "The face for a comment-block label."
-  :group 'brec)
+  :group 'brec-comment-faces)
+
+
+
+(defgroup brec-comment-faces nil
+  "Faces for comment carriers."
+  :group 'brec-faces
+  :prefix "brec-")
 
 
 
 (defface brec-divider `((t . (:inherit font-lock-doc-face)))
   "The face for a divider."
-  :group 'brec)
+  :group 'brec-faces)
 
 
 
@@ -433,7 +440,7 @@ and ‘brec-is-divider-segment-successor’."
 
 (defface brec-division-label `((t . (:inherit brec-divider)))
   "The face for a label in a divider."
-  :group 'brec)
+  :group 'brec-faces)
 
 
 
@@ -490,9 +497,16 @@ was required, non-nil otherwise."
 
 
 
+(defgroup brec-faces nil
+  "Faces for Breccia."
+  :group 'brec
+  :prefix "brec-")
+
+
+
 (defface brec-forbidden-whitespace `((t . (:inherit brec-transparent-error)))
   "The face for a misplaced no-break space or disallowed whitespace character."
-  :group 'brec)
+  :group 'brec-faces)
 
 
 
@@ -590,7 +604,7 @@ is out of bounds.  See also ‘current-column’ and ‘current-indentation’."
 
 (defface brec-indent-blind-delimiter `((t . (:inherit brec-nobreak-space)))
   "The face for the no-break spaces that delimit an indent blind."
-  :group 'brec)
+  :group 'brec-faces)
 
 
 
@@ -1074,31 +1088,38 @@ predecessor.  See also ‘brec-is-divider-segment’ and
 (defface brec-math `((t . (:inherit italic)))
   "The face for a mathematic expression.
 See URL ‘http://reluk.ca/project/Breccia/Web/imager/bin/breccia-web-image.brec.xht#math’."
-  :group 'brec)
+  :group 'brec-math-faces)
 
 
 
 (defface brec-math-block `((t . (:inherit brec-math)))
   "The face for block-form (aka display) mathematics."
-  :group 'brec)
+  :group 'brec-math-faces)
 
 
 
 (defface brec-math-block-delimiter `((t . (:inherit brec-command-descriptor)))
   "The face for the delimiters of block-form mathematics."
-  :group 'brec)
+  :group 'brec-math-faces)
 
 
 
 (defface brec-math-block-delimiter-error `((t . (:inherit font-lock-warning-face :weight normal)))
   "The face for the delimiters of malformed (empty or open) block-form mathematics."
-  :group 'brec)
+  :group 'brec-math-faces)
+
+
+
+(defgroup brec-math-faces nil
+  "Faces for mathematic expressions."
+  :group 'brec-faces
+  :prefix "brec-")
 
 
 
 (defface brec-math-inline `((t . (:inherit brec-math)))
   "The face for in-line mathematics."
-  :group 'brec)
+  :group 'brec-math-faces)
 
 
 
@@ -1165,25 +1186,25 @@ the fractum itself or an ancestor of the fractum, or nil if there is none."
 
 (defface brec-nobreak-space `((t . (:inherit nobreak-space)))
   "The face for a no-break space (Unicode A0) in Breccia."
-  :group 'brec)
+  :group 'brec-faces)
 
 
 
 (defface brec-pattern `((t . (:inherit brec-command-descriptor)))
   "The face for a regular-expression pattern in the descriptor of a command point."
-  :group 'brec)
+  :group 'brec-faces)
 
 
 
 (defface brec-pattern-delimiter `((t . (:inherit brec-command-descriptor)))
   "The face for each of the delimiters of a regular-expression pattern."
-  :group 'brec)
+  :group 'brec-faces)
 
 
 
 (defface brec-pattern-element `((t . (:inherit brec-pattern)))
   "The face for a formal element of a regular-expression pattern."
-  :group 'brec)
+  :group 'brec-faces)
 
 
 
@@ -1194,19 +1215,26 @@ the fractum itself or an ancestor of the fractum, or nil if there is none."
 
 (defface brec-pattern-match-modifier `((t . (:inherit brec-pattern-element)))
   "The face for a match modifier of a regular-expression pattern."
-  :group 'brec)
+  :group 'brec-faces)
 
 
 
 (defface brec-plain-bullet `((t . (:inherit (brec-bullet font-lock-keyword-face))))
   "The face for the bullet of a plain point."
-  :group 'brec)
+  :group 'brec-point-faces)
 
 
 
 (defface brec-plain-bullet-punctuation `((t . (:inherit brec-plain-bullet)))
   "The face for non-alphanumeric characters in the bullet of a plain point."
-  :group 'brec)
+  :group 'brec-point-faces)
+
+
+
+(defgroup brec-point-faces nil
+  "Faces for points."
+  :group 'brec-faces
+  :prefix "brec-")
 
 
 
@@ -1320,27 +1348,27 @@ Cf. ‘ignore’ which instead returns nil."
 (defface brec-task-bullet
   `((t . (:inherit (brec-bullet font-lock-function-name-face))))
   "The face for the bullet of a task point."
-  :group 'brec)
+  :group 'brec-point-faces)
 
 
 
 (defface brec-task-bullet-punctuation `((t . (:inherit brec-task-bullet)))
   "The face for a non-alphanumeric character of a task bullet.
 Cf. ‘brec-task-bullet-singleton’ and ‘brec-task-bullet-terminator’."
-  :group 'brec)
+  :group 'brec-point-faces)
 
 
 
 (defface brec-task-bullet-singleton `((t . (:inherit brec-task-bullet)))
   "The face for a task bullet that comprises \\=`+\\=` alone."
-  :group 'brec)
+  :group 'brec-point-faces)
 
 
 
 (defface brec-task-bullet-terminator `((t . (:inherit font-lock-comment-face)))
   "The face for the bullet terminator \\=`+\\=` of a non-singleton task point.
 Cf. ‘brec-task-bullet-singleton’."
-  :group 'brec)
+  :group 'brec-point-faces)
 
 
 
@@ -1351,7 +1379,7 @@ Cf. ‘brec-task-bullet-singleton’."
 
 (defface brec-titling-label `((t . (:inherit (bold brec-division-label))))
   "The face for a division label that contributes to the division title, or titles."
-  :group 'brec)
+  :group 'brec-faces)
 
 
 (defcustom brec-to-collapse-indent-blinds nil
@@ -1376,7 +1404,7 @@ it is needed."
 
 (defface brec-transparent-error `((t . (:inherit font-lock-warning-face :inverse-video t)))
   "An error face for characters whose glyphs are normally transparent, such as whitepace."
-  :group 'brec)
+  :group 'brec-faces)
 
 
 
