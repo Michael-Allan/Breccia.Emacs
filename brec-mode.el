@@ -1374,16 +1374,16 @@ Cf. ‘brec-task-bullet-singleton’."
 
 (defcustom brec-to-collapse-indent-blinds nil
   "Whether to collapse the line spacing of indent blinds to zero.
-This can be useful to enable seamless jointing of semigraphics
-such as box-drawing characters.
-
 When t, any ‘line-spacing’ in effect for the buffer is zeroed then selectively
 restored outside of indent blinds using the \\=`line-spacing\\=` text property.
-Note however that this restoration works only for lines that fit the width of
-the display window without truncation.  Longer lines will get the same (zero)
-line spacing as indent blinds.  This can be annoying.  Therefore you may want
-to limit the scope of this option by setting it as a file variable just where
-it is needed."
+This can be useful to enable seamless jointing of semigraphics,
+such as box-drawing characters, within indent blinds.
+
+Note however that the line-spacing restoration *outside* of indent blinds
+works only for lines that fit the width of the display window.  Longer lines
+(which Emacs truncates) will get the same (zero) line spacing as indent blinds.
+This can be annoying.  Consider limiting the use of this option to just
+those files that need it by setting it as a file variable."
   :group 'brec
   :link '(url-link
           "https://www.gnu.org/software/emacs/manual/html_node/emacs/Specifying-File-Variables.html")
