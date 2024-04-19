@@ -1492,9 +1492,13 @@ and URL ‘http://reluk.ca/project/Breccia/Emacs/’."
      ;;; Defeat it, because it applies the face by a method unamenable to override in `brec-keywords`.
      ;;; Instead let Brec Mode face these characters using standard, Font Lock methods.
 
-  ;; Paragraph detection and transit
-  ;; ───────────────────────────────
+  ;; Paragraph handling: detection, filling and transit among fracta and fractal heads as “paragraphs”
+  ;; ──────────────────
   (setq-local
+   adaptive-fill-regexp
+     " *\\([[:alnum:]]?[-+/:.′″…⋮⋯∅∞×=≠∼)∵∴∃¶§'`\"?¿$¢°–―!‼|#%;>*†‡·•‣▹▸▷▶⁃◦○◌⋅∙]+ *\\)*"; This at least
+       ;;; works for most bullets of one or two characters length, though it could be better expressed,
+       ;;; or even better generalized to cover all forms of bullet.
    paragraph-start brec-body-segment-start-pattern; [PBD]
    paragraph-separate "^ *\\(?:\u00A0.*\\|\\\\+\\( +.*\\)?\\)?$"); [CCP, PBD]
      ;;; Indent blinds, comment blocks and blank lines, that is.
