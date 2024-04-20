@@ -1328,13 +1328,6 @@ See also ‘brec-gap-pattern’.");
 
 
 
-(defun brec-t (&rest _args)
-  "Ignore _ARGUMENTS, do nothing, and return t.
-Cf. ‘ignore’ which instead returns nil."
-  t)
-
-
-
 (defface brec-task-bullet
   `((t . (:inherit (brec-bullet font-lock-function-name-face))))
   "The face for the bullet of a task point."
