@@ -1489,9 +1489,9 @@ and URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 
   ;; No-break-space display (Unicode A0)
   ;; ──────────────────────
-  (setq-local nobreak-char-display nil); Default application of standard face `nobreak-space`. [SF]
-     ;;; Defeat it, because it applies the face by a method unamenable to override in `brec-keywords`.
-     ;;; Instead let Brec Mode face these characters using standard, Font Lock methods.
+  (setq-local nobreak-char-display nil); Defeat automatic application of face `nobreak-space`. [SF]
+     ;;; It is unamenable to override by Font Lock.  Instead let Brec Mode face no-break spaces
+     ;;; (Unicode A0) using standard, Font Lock methods.
 
   ;; Paragraph handling: detection, filling and transit among fracta and fractal heads as “paragraphs”
   ;; ──────────────────
