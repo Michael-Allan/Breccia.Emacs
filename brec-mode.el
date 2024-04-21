@@ -1444,9 +1444,14 @@ and URL ‘http://reluk.ca/project/Breccia/Emacs/’."
   ;; ═══════════════
   ;; I. Early set-up
   ;; ═══════════════
-
   (let ((b (char-to-string brec-math-block-delimiter-char))
         (i (char-to-string brec-math-inline-delimiter-char)))
+
+    ;; Character display
+    ;; ─────────────────
+    (setq-local nobreak-char-display nil); Defeat automatic application of face `nobreak-space`. [SF]
+       ;;; It is unamenable to override by Font Lock.  Instead let Brec Mode face no-break spaces
+       ;;; (Unicode A0) using standard, Font Lock methods.
 
     ;; Character syntax
     ;; ────────────────
@@ -1486,12 +1491,6 @@ and URL ‘http://reluk.ca/project/Breccia/Emacs/’."
     (when (package-installed-p 'math-preview)
       (setq-local math-preview-tex-marks        (list (list b b 0 nil nil))
                   math-preview-tex-marks-inline (list (list i i 0 nil nil)))))
-
-  ;; No-break-space display (Unicode A0)
-  ;; ──────────────────────
-  (setq-local nobreak-char-display nil); Defeat automatic application of face `nobreak-space`. [SF]
-     ;;; It is unamenable to override by Font Lock.  Instead let Brec Mode face no-break spaces
-     ;;; (Unicode A0) using standard, Font Lock methods.
 
   ;; Paragraph handling: detection, filling and transit among fracta and fractal heads as “paragraphs”
   ;; ──────────────────
