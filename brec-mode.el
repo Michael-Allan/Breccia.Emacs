@@ -97,7 +97,7 @@ the same delimiter as recognized by Breccia Web Imager,
 URL ‘http://reluk.ca/project/Breccia/Web/imager/bin/breccia-web-image.brec.xht#math’.
 
 Normally Brec Mode gives this character a width of zero in the display.
-But where it delimits a malformed (empty or open) expression, Brec Mode
+But where it delimits a malformed (blank or open) expression, Brec Mode
 leaves its width unchanged (that of a thin space, by default)
 and instead applies the face ‘brec-transparent-error’.")
 
@@ -1036,7 +1036,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
    (list; Face mathematics by appending face `brec-math-inline` or `brec-math-block`.
     (let ((dd (concat (char-to-string brec-math-block-delimiter-char)
                       (char-to-string brec-math-inline-delimiter-char)))
-          is-block match-beg match-end)
+          exp is-block match-beg match-end)
       (lambda (limit)
         (setq match-beg (point)); Presumptively.
         (catch 'to-reface
@@ -1047,14 +1047,15 @@ predecessor.  See also ‘brec-is-divider-segment’ and
               ;;; the matcher to the monoface sequence of text that ends at `match-end`. [↑FF]
             (when (re-search-forward
                    (concat "\\([" dd "]\\)\\(?:\\([^" dd "]+\\)\\(\\1\\)\\)?") match-end t)
-              (setq is-block (eq (string-to-char (match-string 1)) brec-math-block-delimiter-char))
+              (setq exp (match-string-no-properties 2)
+                    is-block (eq (string-to-char (match-string 1)) brec-math-block-delimiter-char))
               (setq brec-f; The delimiter face.
-                    (if (match-end 2)
-                        ;; Well-formed, viz. any delimiter of a pair that encloses a non-empty expression:
+                    (if (and exp (not (string-blank-p exp)))
+                        ;; Well-formed: (any delimiter of a pair that encloses a non-blank expression)
                         (if is-block
                             'brec-math-block-delimiter; Block-form.
                           (list 'face nil 'display '(space :width 0))); In-line: zero-width display.
-                      ;; Malformed, viz. all other delimiters, whether of empty or open expressions:
+                      ;; Malformed: (all other delimiters, whether of blank or open expressions)
                       (if is-block
                           'brec-math-block-delimiter-error; Block-form.
                         'brec-transparent-error))); In-line.
@@ -1114,7 +1115,7 @@ See ‘brec-math-block-delimiter-char’."
 
 
 (defface brec-math-block-delimiter-error `((t . (:inherit font-lock-warning-face :weight normal)))
-  "The face for the delimiters of malformed (empty or open) block-form mathematics."
+  "The face for the delimiters of malformed (blank or open) block-form mathematics."
   :group 'brec-math-faces)
 
 
