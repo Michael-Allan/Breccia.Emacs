@@ -833,7 +833,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
     (let ((rough-bullet-pattern; The best a regular expression can do here, allowing some false matches.
            (concat
             "^ \\{4\\}*\\("; Perfectly indented, the start of the bullet roughly comprises [CCP]
-            "\\(?:\\\\+[\u00A0]"; either (←) a backslash sequence preceding a no-break-space,
+            "\\(?:\\\\+[\u00A0]"; either (←) a backslash sequence preceding a no-break space,
               ;;; or (↓) zero or more backslashes preceding a character neither whitespace nor backslash.
             "\\|\\\\*\\(?:[[:alnum:]]+ *\\|[^[:alnum:][:space:]\\][\u00A0]?\\)\\)"
 
@@ -1481,8 +1481,8 @@ and URL ‘http://reluk.ca/project/Breccia/Emacs/’."
       ;;; https://lists.gnu.org/archive/html/bug-gnu-emacs/2015-03/msg00818.html
     (brec-set-for-buffer 'font-lock-defaults '(brec-keywords))
 
-    ;; `math-preview` integration
-    ;; ──────────────────────────
+    ;; Math Preview integration
+    ;; ────────────────────────
     (when (package-installed-p 'math-preview)
       (setq-local math-preview-tex-marks        (list (list b b 0 nil nil))
                   math-preview-tex-marks-inline (list (list i i 0 nil nil)))))
@@ -1577,8 +1577,9 @@ and URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;;   SBF  Search-based fontification.
 ;;        https://www.gnu.org/software/emacs/manual/html_node/elisp/Search_002dbased-Fontification.html
 ;;
-;;   SF · Standard faces: `https://www.gnu.org/software/emacs/manual/html_node/emacs/Standard-Faces.html`
-;;        and § Standard faces at `http://git.savannah.gnu.org/cgit/emacs.git/tree/lisp/faces.el`.
+;;   SF · Standard faces.
+;;        https://www.gnu.org/software/emacs/manual/html_node/emacs/Standard-Faces.html
+;;        http://git.savannah.gnu.org/cgit/emacs.git/tree/lisp/faces.el § Standard faces
 ;;
 ;;   UCN  Unicode character name. https://en.wikipedia.org/wiki/Unicode_character_property#Name
 
