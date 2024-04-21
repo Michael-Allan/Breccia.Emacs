@@ -1049,15 +1049,15 @@ predecessor.  See also ‘brec-is-divider-segment’ and
                    (concat "\\([" dd "]\\)\\(?:\\([^" dd "]+\\)\\(\\1\\)\\)?") match-end t)
               (setq is-block (eq (string-to-char (match-string 1)) brec-math-block-delimiter-char))
               (setq brec-f; The delimiter face.
-                   (if (match-end 2)
-                       ;; Well-formed, viz. any delimiter of a pair that encloses a non-empty expression:
-                       (if is-block
-                           'brec-math-block-delimiter; Block-form.
-                         (list 'face nil 'display '(space :width 0))); In-line: zero-width display.
-                     ;; Malformed, viz. all other delimiters, whether of empty or open expressions:
-                     (if is-block
-                         'brec-math-block-delimiter-error; Block-form.
-                       'brec-transparent-error))); In-line.
+                    (if (match-end 2)
+                        ;; Well-formed, viz. any delimiter of a pair that encloses a non-empty expression:
+                        (if is-block
+                            'brec-math-block-delimiter; Block-form.
+                          (list 'face nil 'display '(space :width 0))); In-line: zero-width display.
+                      ;; Malformed, viz. all other delimiters, whether of empty or open expressions:
+                      (if is-block
+                          'brec-math-block-delimiter-error; Block-form.
+                        'brec-transparent-error))); In-line.
               (setq brec-g; The expression face.
                    (if is-block 'brec-math-block 'brec-math))
               (throw 'to-reface t))
