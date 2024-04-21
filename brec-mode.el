@@ -841,7 +841,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
             "\\|\\\\*\\(?:[[:alnum:]]+ *\\|[^[:alnum:][:space:]\\][\u00A0]?\\)\\)"
 
             ;; It ends just before either a) a space directly after a non-alphanumeric, non-space
-            ;; character, or b) a newline.  Note that a no-break space (Unicode A0) will not end it.
+            ;; character, or b) a newline.  Note that a no-break space (A0) will not end it.
             "\\(?:[[:alnum:]]+ *\\|[^[:alnum:][:space:]]+[\u00A0]?\\)*\\)"))
               ;;; The repetition nest here could fail catastrophically.  Overall a regular expression
               ;;; is inapt for seeking bullet boundaries.  It should be replaced by a function.
@@ -1453,8 +1453,8 @@ and URL ‘http://reluk.ca/project/Breccia/Emacs/’."
     ;; Character display
     ;; ─────────────────
     (setq-local nobreak-char-display nil); Defeat automatic application of face `nobreak-space`. [SF]
-       ;;; It is unamenable to override by Font Lock.  Instead let Brec Mode face no-break spaces
-       ;;; (Unicode A0) using standard, Font Lock methods.
+       ;;; It is unamenable to override by Font Lock.  Instead let Brec Mode face no-break spaces (A0)
+       ;;; using standard, Font Lock methods.
     (let ((d (make-display-table)))
       (aset d brec-math-block-delimiter-char (vector (make-glyph-code ?·))); Display as middle dot (B7).
       (brec-set-for-buffer 'buffer-display-table d))
