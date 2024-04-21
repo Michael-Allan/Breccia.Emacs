@@ -79,13 +79,19 @@ of a gap without having to matching the whole of it, which could be lengthy.")
 
 
 
-(defconst brec-math-block-delimiter-char ?･; Halfwidth katakana middle dot (FF65).
-  "The delimiter character for block-form mathematics.")
+(defconst brec-math-block-delimiter-char ?･
+  "The delimiter character for block-form (aka display) mathematics.
+This is a halfwidth katakana middle dot (Unicode FF65),
+the same delimiter as recognized by Breccia Web Imager,
+URL ‘http://reluk.ca/project/Breccia/Web/imager/bin/breccia-web-image.brec.xht#math’.")
 
 
 
-(defconst brec-math-inline-delimiter-char ?\u2060; Word joiner.
-  "The delimiter character for in-line mathematics.")
+(defconst brec-math-inline-delimiter-char ?\u2060
+  "The delimiter character for in-line mathematics.
+This is a word joiner (Unicode 2060),
+the same delimiter as recognized by Breccia Web Imager,
+URL ‘http://reluk.ca/project/Breccia/Web/imager/bin/breccia-web-image.brec.xht#math’.")
 
 
 
@@ -1076,20 +1082,21 @@ predecessor.  See also ‘brec-is-divider-segment’ and
 
 
 (defface brec-math `((t . (:inherit italic)))
-  "The face for a mathematic expression.
-See URL ‘http://reluk.ca/project/Breccia/Web/imager/bin/breccia-web-image.brec.xht#math’."
+  "The face for a LaTeX/TeX mathematic expression."
   :group 'brec-math-faces)
 
 
 
 (defface brec-math-block `((t . (:inherit brec-math)))
-  "The face for block-form (aka display) mathematics."
+  "The face for a LaTeX/TeX block-form (aka display) mathematic expression.
+See ‘brec-math-block-delimiter-char’."
   :group 'brec-math-faces)
 
 
 
 (defface brec-math-block-delimiter `((t . (:inherit brec-command-descriptor)))
-  "The face for the delimiters of block-form mathematics."
+  "The face for the delimiters of block-form (aka display) mathematics.
+See ‘brec-math-block-delimiter-char’."
   :group 'brec-math-faces)
 
 
@@ -1101,14 +1108,15 @@ See URL ‘http://reluk.ca/project/Breccia/Web/imager/bin/breccia-web-image.brec
 
 
 (defgroup brec-math-faces nil
-  "Faces for mathematic expressions."
+  "Faces for LaTeX/TeX mathematics."
   :group 'brec-faces
   :prefix "brec-")
 
 
 
 (defface brec-math-inline `((t . (:inherit brec-math)))
-  "The face for in-line mathematics."
+  "The face for a LaTeX/TeX in-line mathematic expression.
+See ‘brec-math-inline-delimiter-char’."
   :group 'brec-math-faces)
 
 
