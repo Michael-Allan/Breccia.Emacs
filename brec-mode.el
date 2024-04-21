@@ -94,7 +94,12 @@ Therefore Brec Mode displays it as a plain middle dot (Unicode B7).")
   "The delimiter character for in-line mathematics.
 This is a word joiner (Unicode 2060),
 the same delimiter as recognized by Breccia Web Imager,
-URL ‘http://reluk.ca/project/Breccia/Web/imager/bin/breccia-web-image.brec.xht#math’.")
+URL ‘http://reluk.ca/project/Breccia/Web/imager/bin/breccia-web-image.brec.xht#math’.
+
+Normally Brec Mode gives this character a width of zero in the display.
+But where it delimits a malformed (empty or open) expression, Brec Mode
+leaves its width unchanged (that of a thin space, by default)
+and instead applies the face ‘brec-transparent-error’.")
 
 
 
@@ -1048,7 +1053,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
                        ;; Well-formed, viz. any delimiter of a pair that encloses a non-empty expression:
                        (if is-block
                            'brec-math-block-delimiter; Block-form.
-                         nil); In-line.
+                         (list 'face nil 'display '(space :width 0))); In-line: zero-width display.
                      ;; Malformed, viz. all other delimiters, whether of empty or open expressions:
                      (if is-block
                          'brec-math-block-delimiter-error; Block-form.
@@ -1441,7 +1446,6 @@ and URL ‘http://reluk.ca/project/Breccia/Emacs/’."
         (when (and s (/= 0 s)); Text properties can enlarge line spacing only, they cannot zero it.
           (brec-set-for-buffer 'line-spacing 0); Therefore zero it for the whole buffer, then
             ;;; selectively restore it outside of indent blinds using the namesake text property:
-          (make-local-variable 'font-lock-extra-managed-props)
           (add-to-list 'font-lock-extra-managed-props 'line-spacing)
           (font-lock-add-keywords
            nil (list (brec--keyword-to-restore-line-spacing s)) 'append))))); [↑FF]
@@ -1456,6 +1460,8 @@ and URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 
     ;; Character display
     ;; ─────────────────
+    (make-local-variable 'font-lock-extra-managed-props)
+    (add-to-list 'font-lock-extra-managed-props 'display)
     (setq-local nobreak-char-display nil); Defeat automatic application of face `nobreak-space`. [SF]
        ;;; It is unamenable to override by Font Lock.  Instead let Brec Mode face no-break spaces (A0)
        ;;; using standard, Font Lock methods.
