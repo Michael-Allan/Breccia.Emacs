@@ -1045,10 +1045,14 @@ predecessor.  See also ‘brec-is-divider-segment’ and
               (setq is-block (eq (string-to-char (match-string 1)) brec-math-block-delimiter-char))
               (setq brec-f; The delimiter face.
                    (if (match-end 2)
-                       (if is-block 'brec-math-block-delimiter nil)
-                          ;;; For any delimiter of a pair that encloses a non-empty expression.
-                     (if is-block 'brec-math-block-delimiter-error 'brec-transparent-error)))
-                        ;;; For all other delimiters, whether of empty or open expressions.
+                       ;; Well-formed, viz. any delimiter of a pair that encloses a non-empty expression:
+                       (if is-block
+                           'brec-math-block-delimiter; Block-form.
+                         nil); In-line.
+                     ;; Malformed, viz. all other delimiters, whether of empty or open expressions:
+                     (if is-block
+                         'brec-math-block-delimiter-error; Block-form.
+                       'brec-transparent-error))); In-line.
               (setq brec-g; The expression face.
                    (if is-block 'brec-math-block 'brec-math))
               (throw 'to-reface t))
