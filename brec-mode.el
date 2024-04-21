@@ -83,7 +83,10 @@ of a gap without having to matching the whole of it, which could be lengthy.")
   "The delimiter character for block-form (aka display) mathematics.
 This is a halfwidth katakana middle dot (Unicode FF65),
 the same delimiter as recognized by Breccia Web Imager,
-URL ‘http://reluk.ca/project/Breccia/Web/imager/bin/breccia-web-image.brec.xht#math’.")
+URL ‘http://reluk.ca/project/Breccia/Web/imager/bin/breccia-web-image.brec.xht#math’.
+
+Users’ preferred fonts may often lack a glyph for this character.
+Therefore Brec Mode displays it as a plain middle dot (Unicode B7).")
 
 
 
@@ -1452,6 +1455,9 @@ and URL ‘http://reluk.ca/project/Breccia/Emacs/’."
     (setq-local nobreak-char-display nil); Defeat automatic application of face `nobreak-space`. [SF]
        ;;; It is unamenable to override by Font Lock.  Instead let Brec Mode face no-break spaces
        ;;; (Unicode A0) using standard, Font Lock methods.
+    (let ((d (make-display-table)))
+      (aset d brec-math-block-delimiter-char (vector (make-glyph-code ?·))); Display as middle dot (B7).
+      (brec-set-for-buffer 'buffer-display-table d))
 
     ;; Character syntax
     ;; ────────────────
