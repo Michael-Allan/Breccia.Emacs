@@ -1049,18 +1049,21 @@ predecessor.  See also ‘brec-is-divider-segment’ and
                    (concat "\\([" dd "]\\)\\(?:\\([^" dd "]+\\)\\(\\1\\)\\)?") match-end t)
               (setq exp (match-string-no-properties 2)
                     is-block (eq (string-to-char (match-string 1)) brec-math-block-delimiter-char))
-              (setq brec-f; The delimiter face.
-                    (if (and exp (not (string-blank-p exp)))
-                        ;; Well-formed: (any delimiter of a pair that encloses a non-blank expression)
-                        (if is-block
-                            'brec-math-block-delimiter; Block-form.
-                          (list 'face nil 'display '(space :width 0))); In-line: zero-width display.
-                      ;; Malformed: (all other delimiters, whether of blank or open expressions)
-                      (if is-block
-                          'brec-math-block-delimiter-error; Block-form.
-                        'brec-transparent-error))); In-line.
-              (setq brec-g; The expression face.
-                   (if is-block 'brec-math-block 'brec-math))
+              (if (or (null exp) (string-blank-p exp))
+
+                  ;; Malformed math, either an open expression (stray delimiter) or blank expression
+                  ;; ──────────────
+                  (setq brec-f (if is-block 'brec-math-block-delimiter-error 'brec-transparent-error))
+                    ;;; brec-g nil
+                    ;;;;;; irrelevant, there is no expression to face
+
+                ;; Well-formed math, a delimiter pair enclosing a non-blank expression
+                ;; ────────────────
+                (if is-block
+                    (setq brec-f 'brec-math-block-delimiter; The delimiter face.
+                          brec-g 'brec-math-block); The expression face.
+                  (setq brec-f (list 'face nil 'display '(space :width 0)); Zero-width display.
+                        brec-g 'brec-math-block)))
               (throw 'to-reface t))
             (setq match-beg match-end)
             (goto-char match-beg))
