@@ -1030,7 +1030,7 @@ predecessor.  See also ‘brec-is-divider-segment’ and
 
 
    ;; ═════════════════════
-   ;; Mathematic expression  [↑FF, ME]
+   ;; Mathematic expression  [↑FF]
    ;; ═════════════════════
 
    (list; Face mathematics by appending face `brec-math-inline` or `brec-math-block`.
@@ -1547,9 +1547,6 @@ and URL ‘http://reluk.ca/project/Breccia/Emacs/’."
 ;;            (1) Use of `$` has caused busy looping, and `\n?` was the repair.
 ;;        https://github.com/Michael-Allan/Breccia.Emacs/commit/fec92482f6c3bb1a859792dcec409bc4f3264763
 ;;            (2) Now `\n?` itself is the cause and the original `$` the repair (2021-7, Emacs 27.2).
-;;
-;;   ME · Breccia Web Imager includes an option to render mathematic expressions.
-;;        http://reluk.ca/project/Breccia/Web/imager/bin/breccia-web-image.brec.xht#math
 ;;
 ;;   NBB  No-break space in a bullet.  Alone a face test suffices to guard the application
 ;;        of `brec-bullet-nobreak-space` only because already the bullet fontifier detects
