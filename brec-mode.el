@@ -182,7 +182,7 @@ Cf. ‘brec-alarm-bullet-singleton’."
 
 
 (defun brec-at-body-fractum-start ()
-  "Whether point is at the start of a body fractum.
+  "Tell whether point is at the start of a body fractum.
 Returns the fractum’s first non-space position if so, nil otherwise.
 See also ‘brec-body-fractum-start’."
   (let ((start (brec-at-body-segment-start)))
@@ -194,7 +194,7 @@ See also ‘brec-body-fractum-start’."
 
 
 (defun brec-at-body-segment-start ()
-  "Whether point is at the start of a body segment.
+  "Tell whether point is at the start of a body segment.
 Returns the segment’s first non-space position if so, nil otherwise.
 See also ‘brec-body-segment-start’."
   (defvar brec-body-segment-start-pattern-unanchored); [FV]
@@ -204,7 +204,7 @@ See also ‘brec-body-segment-start’."
 
 
 (defun brec-at-fractum-start ()
-  "Whether point is at the start of a fractum.
+  "Tell whether point is at the start of a fractum.
 See also ‘brec-fractum-start’."
   (when (not (eobp)); Being neither in an empty buffer, nor at the end of the buffer where nothing starts,
     ;; Moreover being at the start of either the buffer or a body fractum.
@@ -559,7 +559,7 @@ and segments, see ‘brec-body-fractum-start’ and ‘brec-body-segment-start�
 
 
 (defun brec-in-body-fractum-start ()
-  "Whether point is on the start line of a body fractum.
+  "Tell whether point is on the start line of a body fractum.
 Returns the fractum’s first non-space position, or nil if point is not
 on the start line of a body fractum.  See also ‘brec-body-fractum-start’."
   (if (bolp)
@@ -571,7 +571,7 @@ on the start line of a body fractum.  See also ‘brec-body-fractum-start’."
 
 
 (defun brec-in-body-segment-start ()
-  "Whether point is on the start line of a body segment.
+  "Tell whether point is on the start line of a body segment.
 Returns the segment’s first non-space position, or nil if point is not
 on the start line of a body segment.  See also ‘brec-body-segment-start’."
   (if (bolp)
@@ -613,7 +613,7 @@ is out of bounds.  See also ‘current-column’ and ‘current-indentation’."
 
 
 (defun brec-in-fractum-start ()
-  "Whether point is on the start line of a fractum.
+  "Tell whether point is on the start line of a fractum.
 See also ‘brec-fractum-start’."
   (if (bolp)
       (brec-at-fractum-start)
@@ -624,13 +624,13 @@ See also ‘brec-fractum-start’."
 
 
 (defun brec-is-divider-drawing (char)
-  "Whether CHAR is a divider drawing character."
+  "Tell whether CHAR is a divider drawing character."
  (and (>= char ?\u2500) (<= char ?\u259F)))
 
 
 
 (defun brec-is-divider-segment (segment-start)
-  "Whether a body segment is a divider segment.
+  "Tell whether a body segment is a divider segment.
 SEGMENT-START is the position of the segment’s first non-space character.
 The return value is t if the body segment is a divider segment, nil otherwise."
   (brec-is-divider-drawing (char-after segment-start)))
@@ -638,7 +638,7 @@ The return value is t if the body segment is a divider segment, nil otherwise."
 
 
 (defun brec-is-divider-segment-successor (segment-start)
-  "Whether a body segment is a divider segment that directly succeeds another.
+  "Tell whether a body segment is a divider segment that directly succeeds another.
 SEGMENT-START is the position of the segment’s first non-space character.
 The return value is the correponding position in the preceding divider segment,
 or nil if the body segment is not a divider segment or has no divider-segment
@@ -1390,7 +1390,7 @@ Cf. ‘brec-task-bullet-singleton’."
 
 
 (defcustom brec-to-collapse-indent-blinds nil
-  "Whether to collapse the line spacing of indent blinds to zero.
+  "Tell whether to collapse the line spacing of indent blinds to zero.
 When t, any ‘line-spacing’ in effect for the buffer is zeroed then selectively
 restored outside of indent blinds using the \\=`line-spacing\\=` text property.
 This can be useful to enable seamless jointing of semigraphics,
