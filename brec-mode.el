@@ -1076,7 +1076,7 @@ predecessor.  See also `brec-is-divider-segment' and
                     (setq brec-f 'brec-math-block-delimiter; The delimiter face.
                           brec-g 'brec-math-block); The expression face.
                   (setq brec-f (list 'face nil 'display '(space :width 0)); Zero-width display.
-                        brec-g 'brec-math-block))
+                        brec-g 'brec-math-inline))
                 (when (and (brec--delete-original-math-overlay (match-beginning 1))
                            (brec--delete-original-math-overlay (match-beginning 3)))
                   (push (list (match-beginning 0) (match-end 0) (match-beginning 2) (match-end 2))
