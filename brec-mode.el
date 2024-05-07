@@ -1176,7 +1176,7 @@ non-space character in the next segment, or nil if no next segment exists."
   (let (next)
     (save-excursion
       (goto-char position)
-      (while (and (= 0 (forward-line))
+      (while (and (zerop (forward-line))
                   (not (setq next (brec-at-body-segment-start))))))
     next))
 
