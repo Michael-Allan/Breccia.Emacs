@@ -168,6 +168,14 @@ Cf. `brec-alarm-bullet-singleton'."
 
 
 
+(defun brec--are-co-granal (f g)
+  "Tell whether contiguous faces F and G are co-granal for math purposes."
+  (or (eq f g)
+      (brec--is-bullet-punctuation-transit f g)  ; Ignore punctuation in free-form bullets, as does
+      (brec--is-bullet-punctuation-transit g f))); (in effect) Breccia Web Imager for math purposes.
+
+
+
 (defface brec-aside-bullet
   `((t . (:inherit (brec-bullet brec-aside-descriptor))))
   "The face for the bullet of an aside point."
@@ -661,6 +669,14 @@ predecessor.  See also `brec-is-divider-segment' and
 
 
 
+(defun brec--is-bullet-punctuation-transit (f g); Tells whether face `f` is that of ordinary, free-form
+  (and (or (eq f 'brec-plain-bullet)            ; bullet content and `g` its punctuation variant.
+           (eq f 'brec-task-bullet)
+           (eq f 'brec-alarm-bullet))
+       (eq g (intern (concat (symbol-name f) "-punctuation")))))
+
+
+
 (defun brec-keywords ()
   "Return the value of `font-lock-keywords' to use for highlighting Breccian text."
   (list
@@ -1045,19 +1061,23 @@ predecessor.  See also `brec-is-divider-segment' and
    ;; Mathematic expression  [↑FF]
    ;; ═════════════════════
 
-   (list; Face mathematics by appending face `brec-math-inline` or `brec-math-block`.
+   (list; Face mathematics.
     (let ((dd (concat (char-to-string brec-math-block-delimiter-char)
                       (char-to-string brec-math-inline-delimiter-char)))
-          exp is-block match-beg match-end)
+          exp is-block match-beg match-beg-face match-end match-end-face)
       (lambda (limit)
         (defvar brec--original-math-spool); [FV]
-        (setq match-beg (point)); Presumptively.
+        (setq match-beg (point); Presumptively.
+              match-beg-face (get-text-property match-beg 'face)
+              match-end match-beg)
         (catch 'to-reface
-          (while (< match-beg limit)
-            (setq match-end (next-single-property-change match-beg 'face (current-buffer) limit))
-              ;;; Now mimic in the expression matcher that follows the behaviour of Breccia Web Imager
-              ;;; (which never renders a math expression across a granal boundary) by restricting
-              ;;; the matcher to the monoface sequence of text that ends at `match-end`. [↑FF]
+          (while (< match-beg limit); Search for mathematics, here mimicing the behaviour of Breccia
+            (while; Web Imager by recognizing no math expression that extends across a granal boundary.
+                (progn
+                  (setq match-end (next-single-property-change match-end 'face (current-buffer) limit)
+                        match-end-face (get-text-property match-end 'face))
+                  (and (/= match-end limit)
+                       (brec--are-co-granal match-beg-face match-end-face)))); [↑FF]
             (when (re-search-forward
                    (concat "\\([" dd "]\\)\\(?:\\([^" dd "]+\\)\\(\\1\\)\\)?") match-end t)
               (setq exp (match-string-no-properties 2)
@@ -1082,10 +1102,11 @@ predecessor.  See also `brec-is-divider-segment' and
                   (push (list (match-beginning 0) (match-end 0) (match-beginning 2) (match-end 2))
                         brec--original-math-spool)))
               (throw 'to-reface t))
-            (setq match-beg match-end)
+            (setq match-beg match-end
+                  match-beg-face match-end-face)
             (goto-char match-beg))
           nil)))
-    '(1 brec-f t) '(2 brec-g append t) '(3 brec-f t t))))
+    '(1 brec-f t) '(2 brec-g t t) '(3 brec-f t t))))
 
 
 
