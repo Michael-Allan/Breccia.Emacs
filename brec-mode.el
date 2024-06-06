@@ -955,6 +955,8 @@ predecessor.  See also `brec-is-divider-segment' and
     '(1 brec-f) '(2 brec-g nil t))
 
 
+
+
    (cons; Reface the non-alphanumeric characters of free-form bullets.
     (let (face match-beg match-end)
       (lambda (limit)
@@ -1106,7 +1108,7 @@ predecessor.  See also `brec-is-divider-segment' and
                   match-beg-face match-end-face)
             (goto-char match-beg))
           nil)))
-    '(1 brec-f t) '(2 brec-g t t) '(3 brec-f t t))))
+    '(1 brec-f t) '(2 brec-g prepend t) '(3 brec-f t t)))); [BSM]
 
 
 
@@ -1136,8 +1138,8 @@ predecessor.  See also `brec-is-divider-segment' and
 
 
 
-(defface brec-math `((t . (:inherit italic)))
-  "The face for a LaTeX/TeX mathematic expression."
+(defface brec-math `((t . (:inherit italic :weight normal))); Mimicing Breccia Web Imager’s math face,
+  "The face for a LaTeX/TeX mathematic expression."         ; which has these properties. [BSM]
   :group 'brec-math-faces)
 
 
@@ -1618,6 +1620,13 @@ and URL `http://reluk.ca/project/Breccia/Emacs/'."
 
 ;; NOTES
 ;; ─────
+;;   BSM  Bold suppression in mathematics.  Had face `brec-math` not specified a normal weight,
+;;        then its italic slant (also specified) might in some cases fail to display.  This is
+;;        because `brec-math` is applied to mathematics by prepending it to other faces which
+;;        might themselves specify a bold weight, and sometimes (depending maybe on the font)
+;;        italics fail to display in combination with with bold.  Specifying a normal weight
+;;        in `brec-math` forestalls this by overriding any bold weight proper to the other faces.
+;;
 ;;   BUG  This code is incorrect.
 ;;
 ;;   CCP  Comment-carriage pattern.  Marking an instance of a pattern or anti-pattern related to
