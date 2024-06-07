@@ -1557,22 +1557,12 @@ and URL `http://reluk.ca/project/Breccia/Emacs/'."
     ;; ────────────────
     (let ((s brec-mode-syntax-table)
           (sb (concat "$" b))
-          (si (concat "$" i)))
-      (modify-syntax-entry        ?\' "$'"  s); Paired-delimiter syntax on ASCII single
-      (modify-syntax-entry        ?\" "$\"" s); and double quotes,
-      (modify-syntax-entry        ?`  "$`"  s); regular-expression pattern delimiters,
+          (si (concat "$" i)))                 ; Paired-delimiter syntax for
+      (modify-syntax-entry        ?`  "$`"  s) ; regular-expression pattern delimiters.
       (modify-syntax-entry
-       brec-math-block-delimiter-char  si   s); plus the delimiters for in-line
-      (modify-syntax-entry                  ;;; and block-form mathematics.
-       brec-math-inline-delimiter-char sb   s)
-  ;;; (modify-syntax-entry        ?\‘ "$’"  s); ← The same syntax on symmetric single quotes, however,
-  ;;; (modify-syntax-entry        ?\’ "$‘"  s);   fails to enable `forward-sexp` between each pair
-  ;;; (modify-syntax-entry        ?\“ "$”"  s); ← (though oddly it succeeds on double quotes).
-  ;;; (modify-syntax-entry        ?\” "$“"  s);   Therefore do the following instead.
-      (modify-syntax-entry        ?\‘ "(’"  s); Parenthetic syntax
-      (modify-syntax-entry        ?\’ ")‘"  s); on symmetric single
-      (modify-syntax-entry        ?\“ "(”"  s); and double quotes.
-      (modify-syntax-entry        ?\” ")“"  s))
+       brec-math-block-delimiter-char  si   s) ; Likewise for the delimiters of in-line
+      (modify-syntax-entry                     ; and block-form mathematics.
+       brec-math-inline-delimiter-char sb   s))
 
     ;; Font Lock integration
     ;; ─────────────────────
