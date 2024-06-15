@@ -681,7 +681,6 @@ predecessor.  See also `brec-is-divider-segment' and
   "Return the value of `font-lock-keywords' to use for highlighting Breccian text."
   (list
 
-
    ;; ═══════════
    ;; Aside point
    ;; ═══════════
@@ -711,8 +710,8 @@ predecessor.  See also `brec-is-divider-segment' and
 
     '(1 'brec-command-bullet)
 
-    ;; Descriptor
-    ;; ──────────
+    ;; descriptor
+    ;; ┈┈┈┈┈┈┈┈┈┈
     (list; (3, anchored highlighter) Always a descriptor follows the bullet,
      "\\(\\(?:.\\|\n\\)+\\)"; extending thence to the end of the point head.
      '(progn; (2, pre-form)
@@ -724,8 +723,8 @@ predecessor.  See also `brec-is-divider-segment' and
            ;;; returning the latter and so extending the search region over the whole descriptor. [REP]
      nil '(1 'brec-command-descriptor))
 
-    ;; Pattern matchers
-    ;; ────────────────
+    ;; pattern matchers
+    ;; ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
     (list; (5, anchored highlighter)
      "\\(`\\)\\(\\(?:\\\\.\\|[^\n\\`]\\)+\\)\\(`\\)\\([isp]+\\)?"
      ;;  ╵           └────┘  └──────┘          ╵      └────┘     See `brec-pattern-matcher-pattern`
@@ -737,8 +736,8 @@ predecessor.  See also `brec-is-divider-segment' and
      nil '(1 'brec-pattern-delimiter t) '(2 'brec-pattern t) '(3 'brec-pattern-delimiter t)
      '(4 'brec-pattern-match-modifier t t))
 
-    ;; Context operators `@`
-    ;; ─────────────────
+    ;; context operators `@`
+    ;; ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
     (list; (7, anchored highlighter)
      (lambda (limit)
        (defvar brec-preceding-gap-character-pattern); [FV]
@@ -757,8 +756,8 @@ predecessor.  See also `brec-is-divider-segment' and
         brec-x); again extend the search region over the whole descriptor.
      nil '(1 'brec-command-operator t))
 
-    ;; Appendage delimiter `:` and content
-    ;; ───────────────────
+    ;; appendage delimiter `:` and content
+    ;; ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
     (list; (9, anchored highlighter)
      (lambda (limit)
        (defvar brec-preceding-gap-character-pattern); [FV]
@@ -781,8 +780,8 @@ predecessor.  See also `brec-is-divider-segment' and
         brec-x); again extend the search region over the whole descriptor.
      nil '(1 'brec-command-operator t) '(2 'brec-command-appendage t))
 
-    ;; Command (last that any `error` face it applies might override the foregoing)
-    ;; ───────
+    ;; command, last that any `error` face it applies might override the foregoing
+    ;; ┈┈┈┈┈┈┈
     (list; (11, anchored highlighter)
      (mapconcat #'identity brec-command-matcher-components ""); Joining all components to one string.
      '(progn; (10, pre-form)
@@ -953,8 +952,6 @@ predecessor.  See also `brec-is-divider-segment' and
               (throw 'to-fontify t)))
           nil)))
     '(1 brec-f) '(2 brec-g nil t))
-
-
 
 
    (cons; Reface the non-alphanumeric characters of free-form bullets.
@@ -1506,13 +1503,12 @@ and URL `http://reluk.ca/project/Breccia/Emacs/'."
   :group 'brec
   :after-hook (progn
 
-
     ;; ═══════════════
     ;; II. Late set-up
     ;; ═══════════════
 
-    ;; Mathematic content — q.v. also at § I. Early set-up (further below)
-    ;; ──────────────────
+    ;; Mathematics II
+    ;; ──────────────
     (setq-local
      font-lock-fontify-region-function
      (lambda (beg end &optional verbose)
@@ -1522,6 +1518,7 @@ and URL `http://reluk.ca/project/Breccia/Emacs/'."
              (apply #'run-hook-with-args 'brec-original-math-functions (pop brec--original-math-spool)))
          (when brec--original-math-spool
            (setq brec--original-math-spool ()))))); No listeners waiting, just empty the spool.
+
 
     ;; Seamless jointing of semigraphics in indent blinds
     ;; ─────────────────────────────────
@@ -1542,6 +1539,7 @@ and URL `http://reluk.ca/project/Breccia/Emacs/'."
   (let ((b (char-to-string brec-math-block-delimiter-char))
         (i (char-to-string brec-math-inline-delimiter-char)))
 
+
     ;; Character display
     ;; ─────────────────
     (make-local-variable 'font-lock-extra-managed-props)
@@ -1553,6 +1551,7 @@ and URL `http://reluk.ca/project/Breccia/Emacs/'."
       (aset d brec-math-block-delimiter-char (vector (make-glyph-code ?·))); Display as middle dot (B7).
       (brec-set-for-buffer 'buffer-display-table d))
 
+
     ;; Character syntax
     ;; ────────────────
     (let ((s brec-mode-syntax-table)
@@ -1563,6 +1562,7 @@ and URL `http://reluk.ca/project/Breccia/Emacs/'."
        brec-math-block-delimiter-char  si   s) ; Likewise for the delimiters of in-line
       (modify-syntax-entry                     ; and block-form mathematics.
        brec-math-inline-delimiter-char sb   s))
+
 
     ;; Font Lock integration
     ;; ─────────────────────
@@ -1576,18 +1576,20 @@ and URL `http://reluk.ca/project/Breccia/Emacs/'."
       ;;; https://lists.gnu.org/archive/html/bug-gnu-emacs/2015-03/msg00818.html
     (brec-set-for-buffer 'font-lock-defaults '(brec-keywords))
 
-    ;; Mathematic content — q.v. also at § II. Late set-up (above)
-    ;; ──────────────────
+
+    ;; Mathematics I
+    ;; ─────────────
     (save-excursion
       (goto-char (point-min))
       (while (re-search-forward (concat "[" b i "]") nil t)
         (overlay-put (make-overlay (match-beginning 0) (point) nil t) 'brec-original-content 'math)))
 
     ;; Math Preview integration
-    ;; ────────────────────────
+    ;; ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
     (when (package-installed-p 'math-preview)
       (setq-local math-preview-tex-marks        (list (list b b 0 nil nil))
                   math-preview-tex-marks-inline (list (list i i 0 nil nil)))))
+
 
   ;; Paragraph handling: detection, filling and transit among fracta and fractal heads as “paragraphs”
   ;; ──────────────────
