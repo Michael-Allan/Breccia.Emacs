@@ -65,6 +65,10 @@
 ;; ══════════════════════════════════════════════════════════════════════════════════════════════════════
 
 
+(defconst brec-category-table (copy-category-table))
+
+
+
 (defconst brec-gap-pattern
   (concat; The gap comprises one or more of the following.
    "\\(?:^ *[ \\].*$"; Indent blind, comment block
@@ -142,37 +146,37 @@ This is either a space or a line end.");
 
 
 (defface brec-alarm-bullet
-  `((t . (:inherit (brec-bullet font-lock-warning-face))))
+  `((t . (:inherit (brec-bullet font-lock-warning-face) :weight normal)))
   "The face for the bullet of an alarm point."
   :group 'brec-point-faces)
 
 
 
-(defface brec-alarm-bullet-punctuation  `((t . (:inherit brec-alarm-bullet)))
-  "The face for a non-alphanumeric character of an alarm bullet.
-Cf. `brec-alarm-bullet-singleton' and `brec-alarm-bullet-terminator'."
+(defface brec-alarm-bullet-bold `((t . (:inherit brec-alarm-bullet :weight bold)))
+  "The bold face for the free-form part of an alarm bullet."
   :group 'brec-point-faces)
 
 
 
-(defface brec-alarm-bullet-singleton `((t . (:inherit brec-alarm-bullet)))
-  "The face for an alarm bullet that comprises \\=`!!\\=` alone."
+(defface brec-alarm-bullet-minor `((t . (:inherit brec-alarm-bullet)))
+  "The face for free-form, minor character inclusions in an alarm bullet.
+Brec mode applies this face only to sequences of minor characters where they
+are mixed with other free-form content, not to sequences that alone constitute
+the free-form content."
   :group 'brec-point-faces)
 
 
 
-(defface brec-alarm-bullet-terminator `((t . (:inherit font-lock-comment-face)))
-  "The face for the bullet terminator \\=`!!\\=` of an alarm point.
-Cf. `brec-alarm-bullet-singleton'."
+(defface brec-alarm-type-mark `((t . (:inherit font-lock-comment-face)))
+  "The face for a type mark \\=`!!\\=` that terminates an alarm bullet.
+Cf. `brec-alarm-type-mark-singleton'."
   :group 'brec-point-faces)
 
 
 
-(defun brec--are-co-granal (f g)
-  "Tell whether contiguous faces F and G are co-granal for math purposes."
-  (or (eq f g)
-      (brec--is-bullet-punctuation-transit f g)  ; Ignore punctuation in free-form bullets, as does
-      (brec--is-bullet-punctuation-transit g f))); (in effect) Breccia Web Imager for math purposes.
+(defface brec-alarm-type-mark-singleton `((t . (:inherit brec-alarm-bullet-bold)))
+  "The face for a type mark \\=`!!\\=` that constitutes an alarm bullet."
+  :group 'brec-point-faces)
 
 
 
@@ -301,9 +305,29 @@ See also `brec-segment-end' and `brec-body-segment-start-pattern-unanchored'.")
 
 
 
-(defface brec-bullet `((t . (:inherit bold)))
+(defface brec-bullet `((t . nil))
   "The face for a bullet."
   :group 'brec-point-faces)
+
+
+
+(defconst brec-bullet-boldable-category
+  (let ((c (get-unused-category brec-category-table)))
+    (cl-assert c)
+    (define-category c "Bold-stylable where it occurs in the free-form part of bullets"
+      brec-category-table)
+    c)
+  "The category name for characters that are bold-stylable in bullets.")
+
+
+
+(defconst brec-bullet-minor-category
+  (let ((c (get-unused-category brec-category-table)))
+    (cl-assert c)
+    (define-category c "Minor-stylable where it occurs in the free-form part of bullets"
+      brec-category-table)
+    c)
+  "The category name for characters that are minor-stylable in bullets.")
 
 
 
@@ -669,14 +693,6 @@ predecessor.  See also `brec-is-divider-segment' and
 
 
 
-(defun brec--is-bullet-punctuation-transit (f g); Tells whether face `f` is that of ordinary, free-form
-  (and (or (eq f 'brec-plain-bullet)            ; bullet content and `g` its punctuation variant.
-           (eq f 'brec-task-bullet)
-           (eq f 'brec-alarm-bullet))
-       (eq g (intern (concat (symbol-name f) "-punctuation")))))
-
-
-
 (defun brec-keywords ()
   "Return the value of `font-lock-keywords' to use for highlighting Breccian text."
   (list
@@ -820,8 +836,8 @@ predecessor.  See also `brec-is-divider-segment' and
       "\\|\\(?1:\\\\\\).";                   \·  (backslash-literal pair)
       "\\|\\(?2:[][{}]\\)\\)");        [ ]  { }  (reserved symbols)
      '(progn; (2, pre-form)
-        (goto-char brec-f); To `match-beg` of the anchor effectively.
-        brec-g); Limiting the search region (∵ return value is > point) effectively to `match-end`.
+        (goto-char brec-f); Effectively to `match-beg` of the anchor,
+        brec-g); while limiting the search region to `match-end` of the same.
      nil '(1 'brec-pattern-element t t) '(2 'error t t)))
 
 
@@ -865,28 +881,31 @@ predecessor.  See also `brec-is-divider-segment' and
    ;; ════════════════
 
    (list; Face each bullet of an alarm, task or plain point.
-    (let ((rough-bullet-pattern; The best a regular expression can do here, allowing some false matches.
-           (concat
-            "^ \\{4\\}*\\("; Perfectly indented, the start of the bullet roughly comprises [CCP]
-            "\\(?:\\\\+[\u00A0]"; either (←) a backslash sequence preceding a no-break space,
-              ;;; or (↓) zero or more backslashes preceding a character neither whitespace nor backslash.
-            "\\|\\\\*\\(?:[[:alnum:]]+ *\\|[^[:alnum:][:space:]\\][\u00A0]?\\)\\)"
+    (let* ((rough-bullet-pattern; The best a regular expression can do here, allowing some false matches.
+            (concat
+             "^ \\{4\\}*\\("; Perfectly indented, the start of the bullet roughly comprises [CCP]
+             "\\(?:\\\\+[\u00A0]"; either (←) a backslash sequence preceding a no-break space, or
+               ;;; (↓) zero or more backslashes preceding a character neither whitespace nor backslash.
+             "\\|\\\\*\\(?:[[:alnum:]]+ *\\|[^[:alnum:][:space:]\\][\u00A0]?\\)\\)"
 
-            ;; It ends just before either a) a space directly after a non-alphanumeric, non-space
-            ;; character, or b) a newline.  Note that a no-break space (A0) will not end it.
-            "\\(?:[[:alnum:]]+ *\\|[^[:alnum:][:space:]]+[\u00A0]?\\)*\\)"))
-              ;;; The repetition nest here could fail catastrophically.  Overall a regular expression
-              ;;; is inapt for seeking bullet boundaries.  It should be replaced by a function.
-          char-first char-last is-match-changed length m1-beg m1-end m2-beg m2-end
-          match-last match-end)
+             ;; It ends just before either a) a space directly after a non-alphanumeric, non-space
+             ;; character, or b) a newline.  Note that a no-break space (A0) will not end it.
+             "\\(?:[[:alnum:]]+ *\\|[^[:alnum:][:space:]]+[\u00A0]?\\)*\\)"))
+               ;;; The repetition nest here could fail catastrophically.  Overall a regular expression
+               ;;; is inapt for seeking bullet boundaries.  It should be replaced by a function.
+           (minor-cat (char-to-string brec-bullet-minor-category))
+           (minor (concat "\\c" minor-cat "\\(?: \\|\\c" minor-cat "\\)*")); The pattern of a free-form
+             ;;; sequence comprising minor-stylable characters, possibly separated by no-break spaces.
+           char-first char-last length m1-beg m1-end m2-beg m2-end
+           match-beg match-last match-end)
       (lambda (limit); Seek the next such bullet.
         (catch 'to-fontify
           (while (re-search-forward rough-bullet-pattern limit t); Starting the search on this naive
-            (setq match-end (match-end 0)                        ; pattern, thence ensure each match
-                  m1-beg (match-beginning 1)                     ; is correct, as follows:
+            (setq match-beg (match-beginning 0)                  ; pattern, thence ensure each match
+                  match-end (match-end 0)                        ; is correct, as follows:
+                  m1-beg (match-beginning 1)
                   m1-end match-end
-                  m2-beg nil m2-end nil is-match-changed nil)
-
+                  m2-beg nil m2-end nil)
             (let ((end m1-end)); Trim from the match any unwanted end boundary missed above.
                ;;; It is either the start of a descriptor that starts with a comment appender
                ;;; (regular-expression pattern ` +\\+`) or a sequence of trailing space
@@ -895,44 +914,41 @@ predecessor.  See also `brec-is-divider-segment' and
                 (setq end (1- end)))          ; scan backward past them.
               (while (= (char-before end) ?\s); For any trailing space characters,
                 (setq end (1- end)            ; scan backward past them, and trim
-                      m1-end end              ; the whole from the captive group.
-                      is-match-changed t)))
+                      m1-end end)))           ; the whole from the captive group.
             (when
                 (catch 'is-free-form-bullet
                   (setq length (- m1-end m1-beg)
                         match-last (1- m1-end); The last position in the match, that is.
                         char-last (char-after match-last))
 
-                  ;; Task bullet
-                  ;; ───────────
+                  ;; task bullet
+                  ;; ┈┈┈┈┈┈┈┈┈┈┈
                   (when (= ?+ char-last)
                     (if (= length 1)
-                        (setq brec-f 'brec-task-bullet-singleton)
+                        (setq brec-f 'brec-task-type-mark-singleton)
                       (setq m2-end m1-end
                             m2-beg match-last
                             m1-end m2-beg
                             brec-f 'brec-task-bullet
-                            brec-g 'brec-task-bullet-terminator
-                            is-match-changed t))
+                            brec-g 'brec-task-type-mark))
                     (throw 'is-free-form-bullet t))
 
-                  ;; Alarm bullet
-                  ;; ────────────
+                  ;; alarm bullet
+                  ;; ┈┈┈┈┈┈┈┈┈┈┈┈
                   (when (and (> length 1)
                              (= ?! char-last)
                              (= ?! (char-before match-last)))
                     (if (= length 2)
-                        (setq brec-f 'brec-alarm-bullet-singleton)
+                        (setq brec-f 'brec-alarm-type-mark-singleton)
                       (setq m2-end m1-end
                             m2-beg (1- match-last)
                             m1-end m2-beg
                             brec-f 'brec-alarm-bullet
-                            brec-g 'brec-alarm-bullet-terminator
-                            is-match-changed t))
+                            brec-g 'brec-alarm-type-mark))
                     (throw 'is-free-form-bullet t))
 
-                  ;; Miscapture of non-bullet (divider) or non-free-form (aside|command) bullet
-                  ;; ──────────
+                  ;; miscapture of non-bullet (divider) or non-free-form (aside|command) bullet
+                  ;; ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
                   (setq char-first (char-after m1-beg))
                   (when (and (= 1 length)           ; When an aside or command bullet
                              (or (= ?/ char-first)  ; is captured, abandon the match
@@ -941,38 +957,29 @@ predecessor.  See also `brec-is-divider-segment' and
                   (when (brec-is-divider-drawing char-first); When a drawing character leads the match,
                     (throw 'is-free-form-bullet nil))       ; abandon the match and continue seeking.
 
-                  ;; Plain bullet
-                  ;; ──────────────
+                  ;; plain bullet
+                  ;; ┈┈┈┈┈┈┈┈┈┈┈┈
                   (setq brec-f 'brec-plain-bullet)
                   t)
 
-              (when is-match-changed
-                (set-match-data
-                 (list (match-beginning 0) match-end m1-beg m1-end m2-beg m2-end (current-buffer))))
+              ;; Free-form bullet, verified
+              ;; ────────────────
+
+              ;; purely minor characters, mark this case now (when detection is easy) for later reference
+              ;; ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
+              (goto-char m1-beg)
+              (when (and (looking-at minor)
+                         (= (match-end 0) m1-end))
+                  (with-silent-modifications
+                    (put-text-property m1-beg m1-end 'brec-purely-minor t)))
+
+              ;; fontify the bullet
+              ;; ┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈
+              (goto-char match-end)
+              (set-match-data (list match-beg match-end m1-beg m1-end m2-beg m2-end (current-buffer)))
               (throw 'to-fontify t)))
           nil)))
     '(1 brec-f) '(2 brec-g nil t))
-
-
-   (cons; Reface the non-alphanumeric characters of free-form bullets.
-    (let (face match-beg match-end)
-      (lambda (limit)
-        (setq match-beg (point)); Presumptively.
-        (catch 'to-reface
-          (while (< match-beg limit)
-            (setq face (get-text-property match-beg 'face)
-                  match-end (next-single-property-change match-beg 'face (current-buffer) limit))
-            (when (or (eq face 'brec-plain-bullet)
-                      (eq face 'brec-task-bullet)
-                      (eq face 'brec-alarm-bullet))
-              (goto-char match-beg)
-              (when (re-search-forward "[^[:alnum:] \u00A0]+" match-end t)
-                (setq brec-f (intern (concat (symbol-name face) "-punctuation")))
-                  ;;; To the punctuation variant of the face.
-                (throw 'to-reface t)))
-            (setq match-beg match-end))
-          nil)))
-    '(0 brec-f t))
 
 
 
@@ -1001,8 +1008,8 @@ predecessor.  See also `brec-is-divider-segment' and
             ;;;                                 \⋯        C
 
           (let ((face (get-text-property (match-beginning 1) 'face)))
-            (unless (or (eq face 'brec-comment-block); Not naively to reface block commentary where it
-                        (eq face 'brec-comment-block-label)); takes the superficial form of an appender.
+            (unless (memq face '(brec-comment-block brec-comment-block-label)); Not naively to reface
+                ;;; block commentary where superficially it takes the form of an appender.
               (throw 'to-reface t))))
         nil))
     '(1 'brec-comment-appender-delimiter t) '(2 'brec-comment-appender t t)); [OCA]
@@ -1056,27 +1063,24 @@ predecessor.  See also `brec-is-divider-segment' and
 
 
 
-   ;; ═════════════════════
-   ;; Mathematic expression  [↑FF]
-   ;; ═════════════════════
+   ;; ════════════════════════════
+   ;; Extra-Breccian fontification — after all face-based parsing of proper Breccia,    [↑FF]
+   ;; ════════════════════════════   to leave unaffected the faces on which it depends
 
-   (list; Face mathematics.
+   ;; Mathematics [↑FF]
+   ;; ───────────
+   (list
     (let ((dd (concat (char-to-string brec-math-block-delimiter-char)
                       (char-to-string brec-math-inline-delimiter-char)))
-          exp is-block match-beg match-beg-face match-end match-end-face)
+          exp is-block match-beg match-end)
       (lambda (limit)
         (defvar brec--original-math-spool); [FV]
-        (setq match-beg (point); Presumptively.
-              match-beg-face (get-text-property match-beg 'face)
-              match-end match-beg)
+        (setq match-beg (point)); Presumptively.
         (catch 'to-reface
-          (while (< match-beg limit); Search for mathematics, here mimicing the behaviour of Breccia
-            (while; Web Imager by recognizing no math expression that extends across a granal boundary.
-                (progn
-                  (setq match-end (next-single-property-change match-end 'face (current-buffer) limit)
-                        match-end-face (get-text-property match-end 'face))
-                  (and (/= match-end limit)
-                       (brec--are-co-granal match-beg-face match-end-face)))); [↑FF]
+          (while (< match-beg limit); Search for mathematics as does Breccia Web Imager, recognizing no
+              ;;; instance of math that extends across a granal boundary, detecting these boundaries
+            (setq match-end (next-single-property-change; by their accompanying face changes. [↑FF]
+                             match-beg 'face (current-buffer) limit))
             (when (re-search-forward
                    (concat "\\([" dd "]\\)\\(?:\\([^" dd "]+\\)\\(\\1\\)\\)?") match-end t)
               (setq exp (match-string-no-properties 2)
@@ -1101,12 +1105,51 @@ predecessor.  See also `brec-is-divider-segment' and
                   (push (list (match-beginning 0) (match-end 0) (match-beginning 2) (match-end 2))
                         brec--original-math-spool)))
               (throw 'to-reface t))
-            (setq match-beg match-end
-                  match-beg-face match-end-face)
+            (setq match-beg match-end)
             (goto-char match-beg))
           nil)))
-    '(1 brec-f t) '(2 brec-g prepend t) '(3 brec-f t t)))); [BSM]
+    '(1 brec-f t) '(2 brec-g prepend t) '(3 brec-f t t)); [BSM]
 
+
+   ;; Text styling in free-form bullets, as per Breccia Web Imager [↑FF]
+   ;; ────────────
+   (cons; Reface the bold and minor-stylable sequences in the free-form content of bullets.
+    (let* ((boldable-cat (char-to-string brec-bullet-boldable-category))
+           (boldable (concat "\\=\\c" boldable-cat "\\(?: \\|\\c" boldable-cat "\\)*"))
+             ;;; The pattern of a bold-stylable sequence at point.
+           (minor-cat (char-to-string brec-bullet-minor-category))
+           (minor (concat "\\=\\c" minor-cat "+")); The pattern of a minor-stylable sequence at point.
+           face match-beg match-end)
+      (lambda (limit)
+        (setq match-beg (point)); Presumptively.
+        (catch 'to-reface
+          (while
+              (progn
+                (setq face (get-text-property match-beg 'face)
+                      match-end (next-single-property-change match-beg 'face (current-buffer) limit))
+                (when (and (memq face '(brec-alarm-bullet brec-plain-bullet brec-task-bullet)); [↑FF]
+                           (not (get-text-property match-beg 'brec-purely-minor))); [↑FF]
+                             ;;; Not to subdue the minor characters where no others are present.
+                  (while
+                      (progn
+                        (goto-char match-beg)
+                        (cond
+                         ((re-search-forward boldable match-end t)
+                          (setq brec-f (intern (concat (symbol-name face) "-bold")))
+                            ;;; To the bold variant of the face.
+                          (throw 'to-reface t))
+
+                         ((re-search-forward minor match-end t)
+                          (setq brec-f (intern (concat (symbol-name face) "-minor")))
+                            ;;; To the minor variant of the face.
+                          (throw 'to-reface t))
+
+                         (t (setq match-beg (1+ match-beg)))); Scanning past each non-stylable character
+                        (< match-beg match-end))))           ; in order to test those which follow.
+                (setq match-beg match-end)
+                (< match-beg limit)))
+          nil)))
+    '(0 brec-f t))))
 
 
 
@@ -1298,14 +1341,23 @@ Functions for this hook should take four arguments:
 
 
 
-(defface brec-plain-bullet `((t . (:inherit (brec-bullet font-lock-keyword-face))))
+(defface brec-plain-bullet `((t . (:inherit (brec-bullet font-lock-keyword-face) :weight normal)))
   "The face for the bullet of a plain point."
   :group 'brec-point-faces)
 
 
 
-(defface brec-plain-bullet-punctuation `((t . (:inherit brec-plain-bullet)))
-  "The face for non-alphanumeric characters in the bullet of a plain point."
+(defface brec-plain-bullet-bold `((t . (:inherit brec-plain-bullet :weight bold)))
+  "The bold face for the free-form part of a plain bullet."
+  :group 'brec-point-faces)
+
+
+
+(defface brec-plain-bullet-minor `((t . (:inherit brec-plain-bullet)))
+  "The face for free-form, minor character inclusions in a plain bullet.
+Brec mode applies this face only to sequences of minor characters where they
+are mixed with other free-form content, not to sequences that alone constitute
+the free-form content."
   :group 'brec-point-faces)
 
 
@@ -1418,28 +1470,36 @@ See also `brec-gap-pattern'.");
 
 
 (defface brec-task-bullet
-  `((t . (:inherit (brec-bullet font-lock-function-name-face))))
+  `((t . (:inherit (brec-bullet font-lock-function-name-face) :weight normal)))
   "The face for the bullet of a task point."
   :group 'brec-point-faces)
 
 
 
-(defface brec-task-bullet-punctuation `((t . (:inherit brec-task-bullet)))
-  "The face for a non-alphanumeric character of a task bullet.
-Cf. `brec-task-bullet-singleton' and `brec-task-bullet-terminator'."
+(defface brec-task-bullet-bold `((t . (:inherit brec-task-bullet :weight bold)))
+  "The bold face for the free-form part of a task bullet."
   :group 'brec-point-faces)
 
 
 
-(defface brec-task-bullet-singleton `((t . (:inherit brec-task-bullet)))
-  "The face for a task bullet that comprises \\=`+\\=` alone."
+(defface brec-task-bullet-minor `((t . (:inherit brec-task-bullet)))
+  "The face for free-form, minor character inclusions in a task bullet.
+Brec mode applies this face only to sequences of minor characters where they
+are mixed with other free-form content, not to sequences that alone constitute
+the free-form content."
   :group 'brec-point-faces)
 
 
 
-(defface brec-task-bullet-terminator `((t . (:inherit font-lock-comment-face)))
-  "The face for the bullet terminator \\=`+\\=` of a non-singleton task point.
-Cf. `brec-task-bullet-singleton'."
+(defface brec-task-type-mark `((t . (:inherit font-lock-comment-face)))
+  "The face for a type mark \\=`+\\=` that terminates a task bullet.
+Cf. `brec-task-type-mark-singleton'."
+  :group 'brec-point-faces)
+
+
+
+(defface brec-task-type-mark-singleton `((t . (:inherit brec-task-bullet-bold)))
+  "The face for a type mark \\=`+\\=` that constitutes a task bullet."
   :group 'brec-point-faces)
 
 
@@ -1536,24 +1596,40 @@ and URL `http://reluk.ca/project/Breccia/Emacs/'."
   ;; ═══════════════
   ;; I. Early set-up
   ;; ═══════════════
+  (make-local-variable 'font-lock-extra-managed-props); Q.v. further below.
+
+
+  ;; Character categories
+  ;; ────────────────────
+  (set-category-table brec-category-table)
+  (let ((gc-table (unicode-property-table-internal 'general-category))
+        c)
+    (map-char-table
+     (lambda (range gc)
+       (setq gc (symbol-name gc))
+       (when (setq c (cond ((or (string-prefix-p "L" gc) (string-prefix-p "N" gc)); Letters and numbers.
+                            brec-bullet-boldable-category)
+                           ((string-prefix-p "P" gc); Punctuation.
+                            brec-bullet-minor-category)))
+         (modify-category-entry range c brec-category-table)))
+     gc-table))
+
+
+  ;; Character display
+  ;; ─────────────────
+  (add-to-list 'font-lock-extra-managed-props 'display)
+  (setq-local nobreak-char-display nil); Defeat automatic application of face `nobreak-space`. [SF]
+     ;;; It is unamenable to override by Font Lock.  Instead let Brec Mode face no-break spaces (A0)
+     ;;; using standard, Font Lock methods.
+  (let ((d (make-display-table)))
+    (aset d brec-math-block-delimiter-char (vector (make-glyph-code ?·))); Display as middle dot (B7).
+    (brec-set-for-buffer 'buffer-display-table d))
+
+
+  ;; Character syntax
+  ;; ────────────────
   (let ((b (char-to-string brec-math-block-delimiter-char))
         (i (char-to-string brec-math-inline-delimiter-char)))
-
-
-    ;; Character display
-    ;; ─────────────────
-    (make-local-variable 'font-lock-extra-managed-props)
-    (add-to-list 'font-lock-extra-managed-props 'display)
-    (setq-local nobreak-char-display nil); Defeat automatic application of face `nobreak-space`. [SF]
-       ;;; It is unamenable to override by Font Lock.  Instead let Brec Mode face no-break spaces (A0)
-       ;;; using standard, Font Lock methods.
-    (let ((d (make-display-table)))
-      (aset d brec-math-block-delimiter-char (vector (make-glyph-code ?·))); Display as middle dot (B7).
-      (brec-set-for-buffer 'buffer-display-table d))
-
-
-    ;; Character syntax
-    ;; ────────────────
     (let ((s brec-mode-syntax-table)
           (sb (concat "$" b))
           (si (concat "$" i)))                 ; Paired-delimiter syntax for
@@ -1562,19 +1638,6 @@ and URL `http://reluk.ca/project/Breccia/Emacs/'."
        brec-math-block-delimiter-char  si   s) ; Likewise for the delimiters of in-line
       (modify-syntax-entry                     ; and block-form mathematics.
        brec-math-inline-delimiter-char sb   s))
-
-
-    ;; Font Lock integration
-    ;; ─────────────────────
-  ;;; (brec-set-for-buffer 'font-lock-multiline t)
-  ;;;;;;; It seems unnecessary and the description for `font-lock-multiline` does not imply otherwise.
-      ;;; It might become necessary if fontification ever demands a rapid response to changes
-      ;;; on subsequent lines.  Meantime it seems `brec-extend-search` alone suffices:
-    (add-hook 'font-lock-extend-region-functions #'brec-extend-search t t)
-      ;;; The alternative to `font-lock-extend-region-functions`, namely the little used
-      ;;; `font-lock-extend-after-change-region-function`, appears to be a design error.
-      ;;; https://lists.gnu.org/archive/html/bug-gnu-emacs/2015-03/msg00818.html
-    (brec-set-for-buffer 'font-lock-defaults '(brec-keywords))
 
 
     ;; Mathematics I
@@ -1589,6 +1652,20 @@ and URL `http://reluk.ca/project/Breccia/Emacs/'."
     (when (package-installed-p 'math-preview)
       (setq-local math-preview-tex-marks        (list (list b b 0 nil nil))
                   math-preview-tex-marks-inline (list (list i i 0 nil nil)))))
+
+
+  ;; Font Lock integration
+  ;; ─────────────────────
+;;; (brec-set-for-buffer 'font-lock-multiline t)
+;;;;;;; It seems unnecessary and the description for `font-lock-multiline` does not imply otherwise.
+    ;;; It might become necessary if fontification ever demands a rapid response to changes
+    ;;; on subsequent lines.  Meantime it seems `brec-extend-search` alone suffices:
+  (add-hook 'font-lock-extend-region-functions #'brec-extend-search t t)
+    ;;; The alternative to `font-lock-extend-region-functions`, namely the little used
+    ;;; `font-lock-extend-after-change-region-function`, appears to be a design error.
+    ;;; https://lists.gnu.org/archive/html/bug-gnu-emacs/2015-03/msg00818.html
+  (add-to-list 'font-lock-extra-managed-props 'brec-purely-minor)
+  (brec-set-for-buffer 'font-lock-defaults '(brec-keywords))
 
 
   ;; Paragraph handling: detection, filling and transit among fracta and fractal heads as “paragraphs”
